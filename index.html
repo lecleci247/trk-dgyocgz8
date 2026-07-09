@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PPLUA">
+<title>PPLUA Command</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0e0c;--s1:#1a1917;--s2:#222120;--s3:#2a2826;--bd:#2e2c29;--bd2:#3d3a36;
+  --t1:#e8e4de;--t2:#9a9490;--t3:#625f5a;
+  --ac:#c8975a;--ac2:#e8b87a;
+  --gr:#6ab86a;--gr2:#4a9a4a;--gr-bg:#0e1a0e;
+  --am:#c8a84a;--am-bg:#1a160a;
+  --bl:#6a9ab8;--bl-bg:#0a1420;
+  --pu:#9a7ab8;--pu-bg:#120e1a;
+  --re:#c87a7a;--re-bg:#1a0e0e;--re-bd:#3a1e1e;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{font-size:15px;}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-weight:400;line-height:1.5;min-height:100vh;padding-bottom:calc(70px + var(--safe-bot));}
+.app{max-width:430px;margin:0 auto;}
+.mono{font-family:'DM Mono',monospace;}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:0;z-index:200;background:var(--bg);border-bottom:1px solid var(--bd);padding:calc(var(--safe-top) + 10px) 16px 10px;}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.hdr-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--ac);text-transform:uppercase;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.hdr-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3);}
+.hdr-exam{font-family:'DM Mono',monospace;font-size:10px;color:var(--re);background:var(--re-bg);padding:2px 7px;border-radius:4px;border:1px solid var(--re-bd);}
+.prog-wrap{height:2px;background:var(--s2);border-radius:2px;overflow:hidden;}
+.prog-bar{height:100%;background:var(--gr);border-radius:2px;transition:width .3s;}
+.prog-row{display:flex;justify-content:space-between;margin-top:4px;}
+.prog-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+
+/* ── TABS ── */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--s1);border-top:1px solid var(--bd);display:flex;padding-bottom:var(--safe-bot);max-width:430px;margin:0 auto;}
+.tab{flex:1;background:none;border:none;padding:9px 4px calc(9px);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--t3);transition:color .15s;}
+.tab.active{color:var(--ac);}
+.tab-ic{font-size:19px;line-height:1;}
+.tab-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;}
+.tab-dot{position:absolute;top:6px;margin-left:16px;width:6px;height:6px;border-radius:50%;background:var(--re);}
+
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── WEEK STRIP ── */
+.week-wrap{padding:10px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.week-wrap::-webkit-scrollbar{display:none;}
+.week-inner{display:flex;gap:6px;min-width:max-content;}
+.wd{width:52px;border-radius:8px;border:1px solid var(--bd);background:var(--s1);padding:7px 5px;text-align:center;flex-shrink:0;}
+.wd.today{border-color:var(--ac);background:var(--s2);}
+.wd.done{border-color:var(--gr2);background:var(--gr-bg);}
+.wd-dow{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;}
+.wd-date{font-size:14px;font-weight:600;color:var(--t1);margin:2px 0;}
+.wd-tag{font-family:'DM Mono',monospace;font-size:8px;padding:1px 3px;border-radius:3px;display:block;margin-bottom:2px;background:var(--s3);color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wd-pct{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+.wd-uw{font-family:'DM Mono',monospace;font-size:8px;color:var(--bl);}
+
+/* ── SEGMENTS ── */
+.seg{display:flex;margin:6px 16px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;overflow:hidden;}
+.seg-btn{flex:1;padding:9px 4px;background:none;border:none;color:var(--t3);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.04em;cursor:pointer;transition:all .15s;line-height:1.3;}
+.seg-btn.active{background:var(--s2);color:var(--ac);border-radius:6px;}
+
+/* ── CYCLE ── */
+.cycle-wrap{padding:4px 16px 8px;}
+.cycle-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--t3);text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;}
+.cycle-auto{color:var(--ac);cursor:pointer;text-transform:none;letter-spacing:0;}
+.cycle-days{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.cycle-days::-webkit-scrollbar{display:none;}
+.cbtn{flex-shrink:0;padding:6px 9px;background:var(--s1);border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.cbtn.active{background:var(--ac);border-color:var(--ac);color:#1a1310;font-weight:500;}
+.cbtn.suggest{border-color:var(--ac);color:var(--ac2);}
+
+/* ── GENERIC CARD ── */
+.card{margin:0 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+.card-hd{padding:12px 14px 10px;}
+.card-tr{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.card-ttl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;}
+.card-tag{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+
+/* ── HEALTH SYNC ── */
+.sync-card{margin:6px 16px 8px;background:linear-gradient(135deg,var(--s1),var(--s2));border:1px solid var(--bd2);border-radius:12px;padding:14px;}
+.sync-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.sync-title{font-family:'DM Sans';font-size:14px;font-weight:600;color:var(--t1);}
+.sync-time{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+.sync-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.sync-val{text-align:center;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 4px;}
+.sv-n{font-size:17px;font-weight:600;color:var(--ac2);line-height:1.1;}
+.sv-l{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.05em;color:var(--t3);text-transform:uppercase;margin-top:3px;}
+.sv-flag{color:var(--re);}
+.sync-btn{width:100%;padding:10px;background:var(--ac);border:none;border-radius:8px;color:#1a1310;font-family:'DM Sans';font-size:13px;font-weight:600;cursor:pointer;}
+.sync-btn:active{background:var(--ac2);}
+.sync-alt{width:100%;padding:8px;background:none;border:1px solid var(--bd);border-radius:8px;color:var(--t3);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;margin-top:6px;}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 16px 8px;}
+.met{background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:10px;}
+.met-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:5px;}
+.met.sunday{border-color:var(--ac);}
+.met input{width:100%;background:none;border:none;color:var(--t1);font-family:'DM Sans';font-size:20px;font-weight:600;outline:none;padding:0;}
+.met input:disabled{color:var(--t3);}
+.met-unit{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);margin-top:2px;}
+
+/* ── DELOAD / READINESS ── */
+.rd-card{margin:6px 16px 8px;border-radius:12px;padding:14px;border:1px solid;}
+.rd-card.ok{background:var(--gr-bg);border-color:var(--gr2);}
+.rd-card.watch{background:var(--am-bg);border-color:var(--am);}
+.rd-card.alert{background:var(--re-bg);border-color:var(--re);}
+.rd-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.rd-ttl{font-family:'DM Sans';font-size:14px;font-weight:600;}
+.rd-card.ok .rd-ttl{color:var(--gr);}
+.rd-card.watch .rd-ttl{color:var(--am);}
+.rd-card.alert .rd-ttl{color:var(--re);}
+.rd-score{font-family:'DM Mono',monospace;font-size:10px;color:var(--t2);}
+.rd-msg{font-size:12.5px;color:var(--t2);margin-bottom:8px;line-height:1.5;}
+.rd-triggers{display:flex;flex-direction:column;gap:4px;}
+.rd-trig{display:flex;align-items:center;gap:7px;font-size:11.5px;}
+.rd-trig .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.rd-trig.hot{color:var(--t1);}
+.rd-trig.hot .dot{background:var(--re);}
+.rd-trig.cold{color:var(--t3);}
+.rd-trig.cold .dot{background:var(--bd2);}
+
+/* ── UWORLD ── */
+.uw-card{margin:6px 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+.uw-top{padding:12px 14px 10px;}
+.uw-tr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.uw-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--bl);}
+.uw-phase{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);background:var(--bl-bg);padding:2px 7px;border-radius:4px;border:1px solid #1a2833;}
+.uw-inputs{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.uw-ig{flex:1;}
+.uw-il{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.uw-in{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--t1);font-family:'DM Sans';font-size:22px;font-weight:600;text-align:center;padding:7px 4px;outline:none;-webkit-appearance:none;appearance:none;}
+.uw-in:focus{border-color:var(--bl);}
+.uw-in.suggest-in{color:var(--ac2);background:var(--bg);border-color:var(--bd);}
+.mini-prog-wrap{height:5px;background:var(--s2);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.mini-prog{height:100%;border-radius:3px;transition:width .3s;}
+.uw-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bd);}
+.uw-stat{padding:9px 4px;text-align:center;border-right:1px solid var(--bd);}
+.uw-stat:last-child{border-right:none;}
+.uw-sn{font-size:15px;font-weight:600;color:var(--t1);}
+.uw-sl{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--t3);text-transform:uppercase;margin-top:2px;letter-spacing:.04em;}
+.uw-pace{padding:9px 14px;border-top:1px solid var(--bd);font-size:11.5px;color:var(--t2);display:flex;align-items:center;gap:7px;}
+.uw-pace .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.uw-pace.ahead .dot{background:var(--gr);}
+.uw-pace.ontrack .dot{background:var(--bl);}
+.uw-pace.behind .dot{background:var(--am);}
+.uw-pace.crit .dot{background:var(--re);}
+
+/* ── ANKI ── */
+.anki-card{margin:0 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+.anki-top{padding:12px 14px;}
+.anki-tr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.anki-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--pu);}
+.anki-pct{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+.anki-inputs{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.anki-ig{flex:1;}
+.anki-il{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.anki-in{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--t1);font-family:'DM Sans';font-size:22px;font-weight:600;text-align:center;padding:7px 4px;outline:none;-webkit-appearance:none;appearance:none;}
+.anki-in:focus{border-color:var(--pu);}
+.anki-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+
+/* ── WATER ── */
+.water-card{margin:6px 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;}
+.water-tr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.water-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--bl);}
+.water-cnt{font-family:'DM Mono',monospace;font-size:10px;color:var(--t2);}
+.water-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.wb{width:44px;height:44px;border-radius:9px;border:1px solid var(--bd);background:var(--s2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.wb.on{border-color:var(--bl);background:var(--bl-bg);}
+.wb.half{border-color:var(--bl);background:var(--bl-bg);opacity:.7;}
+.water-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+
+/* ── COACH LINE ── */
+.coach{margin:6px 16px 8px;background:var(--s1);border:1px solid var(--bd);border-left:2px solid var(--ac);border-radius:8px;padding:11px 13px;}
+.coach-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.14em;color:var(--ac);text-transform:uppercase;margin-bottom:5px;}
+.coach-txt{font-size:12.5px;color:var(--t2);line-height:1.55;}
+.coach-txt b{color:var(--t1);font-weight:600;}
+
+/* ── CHECKLIST ── */
+#checklistContainer{padding:0 16px;}
+.sec{margin-bottom:8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+.sec-hdr{display:flex;align-items:center;gap:9px;padding:11px 13px;cursor:pointer;}
+.sec-ic{font-size:15px;}
+.sec-ttl{flex:1;font-size:13px;font-weight:500;color:var(--t1);}
+.sec-cnt{font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);}
+.sec-chev{color:var(--t3);font-size:11px;transition:transform .2s;}
+.sec-chev.cl{transform:rotate(-90deg);}
+.sec-items{max-height:1000px;overflow:hidden;transition:max-height .3s;}
+.sec-items.hi{max-height:0;}
+.ci{display:flex;gap:11px;padding:10px 13px;border-top:1px solid var(--bd);cursor:pointer;align-items:flex-start;}
+.ci.done .cl2{color:var(--t3);text-decoration:line-through;}
+.ci.dis{opacity:.4;pointer-events:none;}
+.cb{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--bd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s;}
+.cb.ch{background:var(--gr);border-color:var(--gr);}
+.ck{color:#0e1a0e;font-size:12px;font-weight:700;opacity:0;}
+.cb.ch .ck{opacity:1;}
+.cc{flex:1;}
+.cl2{font-size:13px;color:var(--t1);line-height:1.4;}
+.cs{font-size:11px;color:var(--t3);margin-top:1px;}
+.excl-note{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--am);margin-top:3px;}
+
+/* ── SECTION ACCENTS ── */
+.s-am .sec-ic{filter:none;} 
+.sec.s-am{border-left:2px solid var(--am);}
+.sec.s-pre{border-left:2px solid var(--ac);}
+.sec.s-wo{border-left:2px solid var(--re);}
+.sec.s-po{border-left:2px solid var(--gr2);}
+.sec.s-nu{border-left:2px solid var(--ac2);}
+.sec.s-ev{border-left:2px solid var(--pu);}
+
+/* ── BANNER ── */
+.done-banner{margin:8px 16px;background:var(--gr-bg);border:1px solid var(--gr2);border-radius:10px;padding:13px;text-align:center;display:none;}
+.done-banner.show{display:block;}
+.db-t{font-size:14px;font-weight:600;color:var(--gr);}
+.db-s{font-size:11px;color:var(--t2);margin-top:3px;}
+
+/* ── SECTION TITLES (workout/study pages) ── */
+.ptitle{padding:14px 16px 4px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);}
+.psub{padding:0 16px 8px;font-size:12px;color:var(--t3);}
+
+/* ── WORKOUT DAY ── */
+.wo-hero{margin:6px 16px 8px;background:linear-gradient(135deg,var(--s1),var(--s2));border:1px solid var(--bd2);border-radius:12px;padding:16px;}
+.wo-hero-day{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--ac);text-transform:uppercase;}
+.wo-hero-name{font-size:24px;font-weight:700;color:var(--t1);margin:2px 0 4px;}
+.wo-hero-target{font-size:12px;color:var(--t2);}
+.wo-hero-meta{display:flex;gap:14px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);}
+.wo-hm{flex:1;}
+.wo-hm-n{font-size:15px;font-weight:600;color:var(--ac2);}
+.wo-hm-l{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);text-transform:uppercase;margin-top:2px;letter-spacing:.05em;}
+
+.ex{margin:0 16px 6px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+.ex-hd{display:flex;gap:10px;padding:12px 13px;align-items:flex-start;cursor:pointer;}
+.ex-num{width:22px;height:22px;border-radius:6px;background:var(--s3);color:var(--ac);font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:500;}
+.ex-body{flex:1;min-width:0;}
+.ex-name{font-size:13.5px;font-weight:500;color:var(--t1);line-height:1.35;}
+.ex-scheme{font-family:'DM Mono',monospace;font-size:10px;color:var(--ac2);margin-top:3px;}
+.ex-tag{font-family:'DM Mono',monospace;font-size:8px;padding:2px 5px;border-radius:4px;background:var(--s3);color:var(--t2);flex-shrink:0;margin-top:1px;}
+.ex-tag.wk1{background:var(--am-bg);color:var(--am);}
+.ex-tag.ss{background:var(--pu-bg);color:var(--pu);}
+.ex-tag.int{background:var(--re-bg);color:var(--re);}
+.ex-detail{border-top:1px solid var(--bd);padding:11px 13px;display:none;}
+.ex.open .ex-detail{display:block;}
+.ex-row{display:flex;gap:8px;margin-bottom:7px;}
+.ex-cell{flex:1;background:var(--s2);border-radius:6px;padding:7px 9px;}
+.ex-cell-l{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;}
+.ex-cell-v{font-size:12px;color:var(--t1);margin-top:2px;font-weight:500;}
+.ex-notes{font-size:11.5px;color:var(--t2);line-height:1.5;padding:8px 10px;background:var(--bg);border-radius:6px;}
+.ex-last{margin-top:7px;font-family:'DM Mono',monospace;font-size:9px;color:var(--bl);}
+
+/* ── PROGRESSION READOUT ── */
+.prog-item{margin:0 16px 5px;background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:11px 13px;}
+.prog-ex-tr{display:flex;justify-content:space-between;align-items:center;}
+.prog-ex-name{font-size:12.5px;font-weight:500;color:var(--t1);flex:1;min-width:0;}
+.prog-ex-verdict{font-family:'DM Mono',monospace;font-size:8.5px;padding:2px 6px;border-radius:4px;white-space:nowrap;margin-left:8px;}
+.pv-up{background:var(--gr-bg);color:var(--gr);}
+.pv-hold{background:var(--s3);color:var(--t2);}
+.pv-stall{background:var(--am-bg);color:var(--am);}
+.pv-dl{background:var(--re-bg);color:var(--re);}
+.prog-ex-last{font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);margin-top:4px;}
+
+/* ── REFERENCE / RULES ── */
+.ref-card{margin:0 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:13px;}
+.ref-h{font-size:13px;font-weight:600;color:var(--ac2);margin-bottom:8px;}
+.ref-row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px;}
+.ref-row:last-child{border-bottom:none;}
+.ref-k{color:var(--t3);flex-shrink:0;width:38%;}
+.ref-v{color:var(--t1);}
+
+/* ── UTILITY ── */
+.hint{margin:0 16px 8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);line-height:1.6;text-align:center;padding:8px;}
+.reset-btn{display:block;margin:14px auto 4px;background:none;border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-family:'DM Mono',monospace;font-size:10px;padding:8px 16px;cursor:pointer;}
+.guide-card{margin:6px 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px;}
+.guide-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);margin-bottom:10px;}
+.guide-step{position:relative;padding-left:26px;margin-bottom:10px;font-size:12px;color:var(--t2);line-height:1.5;counter-increment:gs;}
+.guide-step::before{content:counter(gs);position:absolute;left:0;top:0;width:18px;height:18px;border-radius:5px;background:var(--s3);color:var(--ac);font-family:'DM Mono',monospace;font-size:10px;display:flex;align-items:center;justify-content:center;}
+#guideSteps{counter-reset:gs;}
+.guide-code{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:9px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gr);word-break:break-all;line-height:1.5;margin-top:6px;}
+.divider{height:1px;background:var(--bd);margin:16px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <span class="hdr-title">PPLUA Command</span>
+    <div class="hdr-right">
+      <span class="hdr-date" id="hdrDate">—</span>
+      <span class="hdr-exam" id="hdrExam">—</span>
+    </div>
+  </div>
+  <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+  <div class="prog-row">
+    <span class="prog-lbl" id="progTxt">0/0 done</span>
+    <span class="prog-lbl" id="progPct">0%</span>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: TODAY ═══════════ -->
+<div class="page active" id="page-today">
+
+  <!-- WEEK STRIP -->
+  <div class="week-wrap"><div class="week-inner" id="weekStrip"></div></div>
+
+  <!-- DAY TYPE -->
+  <div class="seg">
+    <button class="seg-btn" id="btnTraining" onclick="setDayType('training')">🏋️ Training</button>
+    <button class="seg-btn" id="btnRest" onclick="setDayType('rest')">🛌 Rest</button>
+    <button class="seg-btn" id="btnCardio" onclick="setDayType('cardio')">🚴 Cardio</button>
+  </div>
+
+  <!-- CYCLE -->
+  <div class="cycle-wrap">
+    <div class="cycle-lbl">
+      <span>PPLUA cycle day</span>
+      <span class="cycle-auto" id="cycleAuto" onclick="acceptSuggestedCycle()"></span>
+    </div>
+    <div class="cycle-days" id="cycleDays"></div>
+  </div>
+
+  <!-- HEALTH SYNC -->
+  <div class="sync-card">
+    <div class="sync-hd">
+      <span class="sync-title">❤️ Health Sync</span>
+      <span class="sync-time" id="syncTime">Not synced</span>
+    </div>
+    <div class="sync-grid">
+      <div class="sync-val"><div class="sv-n" id="syncSleep">—</div><div class="sv-l">Sleep h</div></div>
+      <div class="sync-val"><div class="sv-n" id="syncHR">—</div><div class="sv-l" id="syncHRl">Rest HR</div></div>
+      <div class="sync-val"><div class="sv-n" id="syncSteps">—</div><div class="sv-l">Steps</div></div>
+      <div class="sync-val"><div class="sv-n" id="syncWeight">—</div><div class="sv-l">Weight</div></div>
+    </div>
+    <button class="sync-btn" onclick="openShortcut()">⚡ Run PPLUA Sync</button>
+    <button class="sync-alt" onclick="switchTab('setup')">Set up the Shortcut →</button>
+  </div>
+
+  <!-- READINESS / DELOAD -->
+  <div class="rd-card ok" id="rdCard">
+    <div class="rd-top">
+      <span class="rd-ttl" id="rdTtl">Readiness</span>
+      <span class="rd-score" id="rdScore"></span>
+    </div>
+    <div class="rd-msg" id="rdMsg"></div>
+    <div class="rd-triggers" id="rdTriggers"></div>
+  </div>
+
+  <!-- COACH LINE -->
+  <div class="coach" id="coachCard" style="display:none">
+    <div class="coach-lbl">Today</div>
+    <div class="coach-txt" id="coachTxt"></div>
+  </div>
+
+  <!-- METRICS (manual fallback / edit) -->
+  <div class="metrics">
+    <div class="met" id="weightBox">
+      <div class="met-lbl" id="weightLbl">Weight</div>
+      <input type="number" id="metWeight" inputmode="decimal" placeholder="—">
+      <div class="met-unit" id="weightUnit">log Sundays</div>
+    </div>
+    <div class="met">
+      <div class="met-lbl">Sleep</div>
+      <input type="number" id="metSleep" inputmode="decimal" placeholder="—">
+      <div class="met-unit">hours</div>
+    </div>
+    <div class="met">
+      <div class="met-lbl">Rest HR</div>
+      <input type="number" id="metHR" inputmode="numeric" placeholder="—">
+      <div class="met-unit">bpm AM</div>
+    </div>
+  </div>
+
+  <!-- WATER -->
+  <div class="water-card">
+    <div class="water-tr">
+      <span class="water-title">💧 Water</span>
+      <span class="water-cnt" id="waterCount">0/5</span>
+    </div>
+    <div class="water-btns" id="waterBtns"></div>
+    <div class="water-sub" id="waterSub"></div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div id="checklistContainer"></div>
+
+  <!-- DONE BANNER -->
+  <div class="done-banner" id="doneBanner">
+    <div class="db-t">✓ Day complete</div>
+    <div class="db-s">Everything checked. Log the session in JEFIT if you haven't.</div>
+  </div>
+
+  <button class="reset-btn" onclick="resetDay()">Reset today's checkmarks</button>
+</div>
+
+<!-- ═══════════ PAGE: TRAIN ═══════════ -->
+<div class="page" id="page-train">
+  <div class="ptitle">Today's session</div>
+  <div id="woHeroWrap"></div>
+  <div id="woExercises"></div>
+  <div class="divider"></div>
+  <div class="ptitle">Cycle picker</div>
+  <div class="psub">Tap a day to preview its full session.</div>
+  <div class="cycle-wrap"><div class="cycle-days" id="cycleDaysTrain"></div></div>
+</div>
+
+<!-- ═══════════ PAGE: STUDY ═══════════ -->
+<div class="page" id="page-study">
+  <div class="ptitle">ABIM board prep</div>
+
+  <!-- UWORLD -->
+  <div class="uw-card">
+    <div class="uw-top">
+      <div class="uw-tr">
+        <span class="uw-title">📋 UWorld</span>
+        <span class="uw-phase" id="uwPhaseTag">—</span>
+      </div>
+      <div class="uw-inputs">
+        <div class="uw-ig">
+          <div class="uw-il">Done today</div>
+          <input class="uw-in" type="number" id="uwDone" inputmode="numeric" min="0" placeholder="0">
+        </div>
+        <div class="uw-ig">
+          <div class="uw-il">Today's goal</div>
+          <input class="uw-in suggest-in" type="number" id="uwGoal" inputmode="numeric" min="0" placeholder="50">
+        </div>
+      </div>
+      <div class="mini-prog-wrap"><div class="mini-prog" id="uwProg" style="width:0%;background:var(--bl)"></div></div>
+      <div class="uw-tr" style="margin-bottom:0">
+        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwWeekLbl">Week: 0/300</span>
+        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwCumLbl">Total: 0 done</span>
+      </div>
+    </div>
+    <div class="uw-stats">
+      <div class="uw-stat"><div class="uw-sn" id="uwUnused">720</div><div class="uw-sl">First-pass left</div></div>
+      <div class="uw-stat"><div class="uw-sn" id="uwRedo">400</div><div class="uw-sl">Redo pool</div></div>
+      <div class="uw-stat"><div class="uw-sn" id="uwDaysLeft">—</div><div class="uw-sl">Days to exam</div></div>
+      <div class="uw-stat"><div class="uw-sn" id="uwSuggest">50</div><div class="uw-sl">Suggested/day</div></div>
+    </div>
+    <div class="uw-pace ontrack" id="uwPace">
+      <span class="dot"></span>
+      <span id="uwPaceTxt">On track.</span>
+    </div>
+  </div>
+
+  <!-- ANKI -->
+  <div class="anki-card">
+    <div class="anki-top">
+      <div class="anki-tr">
+        <span class="anki-title">🃏 Anki</span>
+        <span class="anki-pct" id="ankiPct">Set due cards</span>
+      </div>
+      <div class="anki-inputs">
+        <div class="anki-ig">
+          <div class="anki-il">Done</div>
+          <input class="anki-in" type="number" id="ankiDone" inputmode="numeric" min="0" placeholder="0">
+        </div>
+        <div class="anki-ig">
+          <div class="anki-il">Due</div>
+          <input class="anki-in" type="number" id="ankiDue" inputmode="numeric" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="mini-prog-wrap"><div class="mini-prog" id="ankiProg" style="width:0%;background:var(--pu)"></div></div>
+      <div class="anki-sub" id="ankiSub">Set due cards, update done as you go</div>
+    </div>
+  </div>
+
+  <!-- UPDATE POOL -->
+  <div class="ref-card">
+    <div class="ref-h">Update your UWorld pool</div>
+    <p style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:10px;">When your used/incorrect counts change, update them here. The daily target recalculates from these.</p>
+    <div class="uw-inputs">
+      <div class="uw-ig">
+        <div class="uw-il">First-pass remaining</div>
+        <input class="uw-in" type="number" id="poolUnused" inputmode="numeric" min="0" placeholder="720">
+      </div>
+      <div class="uw-ig">
+        <div class="uw-il">Redo pool</div>
+        <input class="uw-in" type="number" id="poolRedo" inputmode="numeric" min="0" placeholder="400">
+      </div>
+    </div>
+    <div class="anki-sub" style="margin-top:8px">Set once when your UWorld stats change. Persists across days.</div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="ptitle">Study rules</div>
+  <div class="ref-card">
+    <div class="ref-row"><span class="ref-k">Missed a day</span><span class="ref-v">Never double up. Spread the deficit over the next 3 days.</span></div>
+    <div class="ref-row"><span class="ref-k">Main block</span><span class="ref-v">40 timed mixed questions, review same day.</span></div>
+    <div class="ref-row"><span class="ref-k">Add-on</span><span class="ref-v">10 targeted or mixed.</span></div>
+    <div class="ref-row"><span class="ref-k">Stamina</span><span class="ref-v">60-question timed blocks 2–3×/week in Phase 2–3.</span></div>
+    <div class="ref-row"><span class="ref-k">Taper (Aug 24)</span><span class="ref-v">0–20 questions max. Sleep and logistics.</span></div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: SETUP ═══════════ -->
+<div class="page" id="page-setup">
+  <div class="ptitle">iOS Health Shortcut</div>
+  <div class="psub">Build this once. After that, opening the app and tapping "Run PPLUA Sync" auto-fills sleep, resting HR, steps, and water. WaterMinder writes water into Apple Health, so it imports too.</div>
+
+  <div class="guide-card">
+    <div class="guide-title">Build the shortcut</div>
+    <div id="guideSteps">
+      <div class="guide-step">Open <strong>Shortcuts</strong> → tap <strong>+</strong> → rename the shortcut to exactly <strong>PPLUA Sync</strong> (must match exactly — this is how the app's sync button finds it).</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Sample Type: Sleep Analysis → Sort: Start Date, Latest First → Limit 1.</div>
+      <div class="guide-step">Add <strong>Time Between Dates</strong> → Start: tap the Health Sample result → choose "Start Date". End: tap it again → choose "End Date". Unit: Hours. This is your sleep hours.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Resting Heart Rate → Latest → Limit 1. Tap the result → choose "Value" for the bpm number.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Step Count → filter Start Date is Today → Get All (no limit). Add <strong>Calculate Statistics</strong> → Operation: Sum. That's today's steps.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Dietary Water → filter Start Date is Today → Get All. Add <strong>Calculate Statistics</strong> → Sum. Divide by 950 for bottles (≈32oz). Check units the first time — if the number looks like ounces already, divide by 32 instead.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Body Mass (Weight) → Latest → Limit 1. Tap → "Value". No need to gate this by day — the app only applies it on Sundays automatically.</div>
+      <div class="guide-step">Final action: <strong>Open URLs</strong>. Build the URL below directly in that field, inserting each variable chip where shown.</div>
+    </div>
+    <div class="guide-code" id="shortcutUrl"></div>
+  </div>
+
+  <div class="ref-card">
+    <div class="ref-h">Getting the exact URL</div>
+    <p style="font-size:11.5px;color:var(--t2);line-height:1.6;">Once this app is hosted, open it on your phone and come back to this Setup tab — the code block above will show your real, live URL with the correct domain already filled in. Copy that instead of retyping it, to avoid a typo breaking the sync.</p>
+  </div>
+
+  <div class="ref-card">
+    <div class="ref-h">Why the tap is needed</div>
+    <p style="font-size:11.5px;color:var(--t2);line-height:1.6;">Apple Health has no web connection, so a web app can't read it silently. This Shortcut is the bridge: it reads Health and hands the numbers to the app through the link. One tap when you open the app in the morning covers the whole day. Everything else in here runs automatically from that data.</p>
+  </div>
+
+  <div class="ref-card">
+    <div class="ref-h">Host it for full auto-fill</div>
+    <p style="font-size:11.5px;color:var(--t2);line-height:1.6;">Right now this runs from a saved file. If you host it on GitHub Pages (free), the Shortcut can open a real URL and the values land without you pasting anything. Ask in the project chat and I'll walk you through the 10-minute setup.</p>
+  </div>
+
+  <div class="divider"></div>
+  <div class="ptitle">Program reference</div>
+  <div class="ref-card">
+    <div class="ref-h">Hard rules</div>
+    <div class="ref-row"><span class="ref-k">Protein floor</span><span class="ref-v">Never below 122g/day.</span></div>
+    <div class="ref-row"><span class="ref-k">Sleep floor</span><span class="ref-v">Never under 7h on a training day.</span></div>
+    <div class="ref-row"><span class="ref-k">Scale weight</span><span class="ref-v">7-day average only. Never react to one reading.</span></div>
+    <div class="ref-row"><span class="ref-k">Day 5 laterals</span><span class="ref-v">Submaximal, RIR 2–3. Protect Day 6.</span></div>
+    <div class="ref-row"><span class="ref-k">Steam + Watch</span><span class="ref-v">Apple Watch never enters the steam room.</span></div>
+    <div class="ref-row"><span class="ref-k">Creatine</span><span class="ref-v">5 grams daily, every day.</span></div>
+  </div>
+  <div class="ref-card">
+    <div class="ref-h">Zone 2 target</div>
+    <div class="ref-row"><span class="ref-k">Heart rate</span><span class="ref-v">115–134 bpm, conversational pace.</span></div>
+    <div class="ref-row"><span class="ref-k">Day 4 / Day 7</span><span class="ref-v">20–30 min cycling or rower. No stairmaster around leg day.</span></div>
+  </div>
+  <div class="hint">PPLUA Command · single source of truth is the Master Handoff · v3 consolidated</div>
+</div>
+
+</div>
+
+<!-- TAB BAR -->
+<div class="tabbar">
+  <button class="tab active" id="tab-today" onclick="switchTab('today')"><span class="tab-ic">✓</span><span class="tab-lbl">Today</span></button>
+  <button class="tab" id="tab-train" onclick="switchTab('train')"><span class="tab-ic">🏋️</span><span class="tab-lbl">Train</span></button>
+  <button class="tab" id="tab-study" onclick="switchTab('study')"><span class="tab-ic">📋</span><span class="tab-lbl">Study</span></button>
+  <button class="tab" id="tab-setup" onclick="switchTab('setup')"><span class="tab-ic">⚙︎</span><span class="tab-lbl">Setup</span></button>
+</div>
+
+<!-- JS -->
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+//  PPLUA COMMAND · consolidated tracker
+//  Source of truth: Master_Handoff (corrected gym-verified program)
+// ══════════════════════════════════════════════════════════════════════════
+
+const EXAM = '2026-08-25';
+const TRACKER_START = '2026-07-06';
+const STUDY_END = '2026-08-23';   // last full study day before taper
+
+// ── UWORLD BASELINE (editable via Study page pool inputs, persisted) ────────
+// From QBank screenshot: 1248 total, 568 used, 680 unused, 262 incorrect (redo pool).
+const UW_DEFAULT = {unused:680, redo:262, total:1248, histDone:568};
+
+const PHASES = [
+  {num:1,end:'2026-08-03',label:'Phase 1',desc:'First pass'},
+  {num:2,end:'2026-08-17',label:'Phase 2',desc:'Redo incorrect + marked'},
+  {num:3,end:'2026-08-23',label:'Phase 3',desc:'Final mixed pass'},
+  {num:4,end:'2026-08-24',label:'Taper',desc:'Light review only'},
+];
+
+const CYCLE = [
+  {id:'d1',label:'D1 Push',type:'training'},
+  {id:'d2',label:'D2 Pull',type:'training'},
+  {id:'d3',label:'D3 Lower',type:'training'},
+  {id:'d4',label:'D4 Rest',type:'cardio'},
+  {id:'d5',label:'D5 Upper',type:'training'},
+  {id:'d6',label:'D6 Arms',type:'training'},
+  {id:'d7',label:'D7 Rest',type:'cardio'},
+];
+
+const W_TARGETS = {training:5, rest:3.5, cardio:4};
+
+// ── PROGRAM (gym-verified, from Master Handoff) ─────────────────────────────
+const PROGRAM = {
+  d1:{name:'PUSH', target:'Chest · Delts · Triceps · Abs', mins:55, ex:[
+    {n:'Smith Machine Incline Bench Press',s:'3 × 6–10',rest:'120s',tag:'',notes:'35° bench. Bar to upper chest, 1–2" below clavicles. RIR 1–2. 2 ramp sets first.'},
+    {n:'Machine Chest Press',s:'3 × 8–12',rest:'90s',tag:'DS',notes:'Final set only: drop 30%, AMRAP, rest 15s after drop.'},
+    {n:'Cable One-Arm Lateral Raise',s:'4 × 10–15',rest:'45s',tag:'',notes:'Elbow leads, slight bend. RIR 0–1.'},
+    {n:'Dumbbell Shoulder Press',s:'2 × 8–12',rest:'90s',tag:'',notes:'Seated. RIR 1–2. Avoid elbow lockout at top.'},
+    {n:'Cable Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Standing, rope. Full stretch at bottom.'},
+    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'45s',tag:'',notes:'Spread rope at bottom. Elbows pinned.'},
+    {n:'Machine Ab Crunch',s:'3 × 10–15',rest:'45s',tag:'',notes:'Add weight. Ribs to hips. Control the return.'},
+  ]},
+  d2:{name:'PULL', target:'Back · Biceps · Rear Delts · Forearms', mins:56, ex:[
+    {n:'Cable Grip Lat Pulldown (Narrow Grip)',s:'3 × 6–10',rest:'105s',tag:'',notes:'Neutral/close grip. Pull to upper chest. RIR 1–2.'},
+    {n:'Dumbbell Incline Bench Row',s:'3 × 8–12',rest:'90s',tag:'',notes:'Chest on incline pad. Elbows back. Full stretch at bottom.'},
+    {n:'Cable Elevated Row',s:'2 × 10–15',rest:'75s',tag:'',notes:'Pulley set high. Upper back + lat focus. (Replaces machine high row.)'},
+    {n:'Machine Reverse Fly',s:'3 × 12–20',rest:'45s',tag:'',notes:'Wide arc. Squeeze at peak. RIR 0–1. Or DB seated bent-over reverse fly.'},
+    {n:'Dumbbell Shrug',s:'2 × 10–15',rest:'60s',tag:'',notes:'Pause 1s at top. No rolling.'},
+    {n:'EZ Bar Curl',s:'2 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. Controlled descent. RIR 1.'},
+    {n:'Dumbbell Incline Curl',s:'3 × 10–15',rest:'0s',tag:'SS1',notes:'Arms hang back on incline bench. Superset directly into reverse curl.'},
+    {n:'Reverse Curl',s:'3 × 12–15',rest:'60s',tag:'SS2',notes:'Pronated grip. Brachioradialis. Rest 60s then repeat SS.'},
+    {n:'Cable External Rotation (or Face Pull)',s:'1 × 15–20',rest:'45s',tag:'',notes:'Shoulder health only. Light. RIR 2. No intensifiers ever.'},
+  ]},
+  d3:{name:'LOWER', target:'Quads · Hams · Calves · Abs', mins:55, ex:[
+    {n:'Smith Machine Squat',s:'3 × 6–10',rest:'120s',tag:'',notes:'Feet slightly forward, narrow stance, upright torso = quad-dominant. (CrossFit gym: barbell back squat preferred.)'},
+    {n:'Leg Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Narrow-low foot position. Quad bias.'},
+    {n:'Smith Machine Stiff-Leg Deadlift',s:'3 × 6–10',rest:'120s',tag:'',notes:'Hip hinge. Feel hamstring stretch. Bar close to legs. RIR 1–2.'},
+    {n:'Seated Leg Curl',s:'2 × 10–15',rest:'60s',tag:'RP',notes:'Final set only: reach failure, rest 20s, squeeze 2–3 more.'},
+    {n:'Leg Extension',s:'2 × 12–15',rest:'45s',tag:'',notes:'Pause at top. RIR 0–1.'},
+    {n:'Standing Calf Raise',s:'3 × 10–15',rest:'45s',tag:'',notes:'Full stretch at bottom. Pause 1s at top.'},
+    {n:'Hip Abductor Machine',s:'2 × 15–20',rest:'0s',tag:'SS1',notes:'HOIST standing version. Superset into leg raise. (CrossFit: GHD back extension.)'},
+    {n:'Captain Chair Leg Raise',s:'3 × 10–15',rest:'45s',tag:'SS2',notes:'Curl pelvis up. No swinging. Rest 45s then repeat SS. (CrossFit: hanging leg raise.)'},
+  ]},
+  d4:{name:'REST / ZONE 2', target:'Optional 20–30 min Zone 2', mins:0, rest:true, ex:[
+    {n:'Zone 2 cardio (optional)',s:'20–30 min',rest:'—',tag:'',notes:'Peloton, recumbent bike, or Concept2 rower. 115–134 bpm, conversational. Follows leg day: avoid stairmaster and lower-body-heavy cardio.'},
+  ]},
+  d5:{name:'UPPER', target:'Chest #2 · Back #2 · Lateral Delt #2 · Abs', mins:54, ex:[
+    {n:'Dumbbell Bench Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Flat bench. RIR 1. Press slightly inward at top.'},
+    {n:'Machine Fly',s:'2 × 12–15',rest:'45s',tag:'',notes:'Slight elbow bend. Squeeze at peak.'},
+    {n:'Cable Front Lat Pulldown (Close Grip)',s:'3 × 8–12',rest:'90s',tag:'',notes:'Different angle from Day 2. Pull to upper chest.'},
+    {n:'Leverage Machine Iso Row',s:'2 × 10–15',rest:'75s',tag:'',notes:'Mid-back focus. Full stretch each rep.'},
+    {n:'Cable Lateral Raise — SUBMAXIMAL',s:'2 × 12–15',rest:'45s',tag:'CAP',notes:'RIR 2–3 ONLY. Day 6 tomorrow. Never push these hard.'},
+    {n:'Leg Extension',s:'2 × 12–15',rest:'0s',tag:'SS1',notes:'Maintenance only. Superset with leg curl.'},
+    {n:'Seated Leg Curl',s:'2 × 12–15',rest:'45s',tag:'SS2',notes:'Rest 45s then repeat SS.'},
+    {n:'Machine Ab Crunch',s:'2 × 12–15',rest:'45s',tag:'',notes:'Weighted. Controlled tempo.'},
+  ]},
+  d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Calves', mins:50, ex:[
+    {n:'Machine Shoulder Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'RIR 1–2. No elbow lockout at top.'},
+    {n:'Cable Lateral Raise',s:'3 × 12–20 + FS',rest:'45s',tag:'FS',notes:'Final set to failure. PRIMARY lateral delt session.'},
+    {n:'Machine Reverse Fly OR Cable Rear Lateral Raise',s:'2 × 12–20',rest:'45s',tag:'',notes:'Cable single-arm version here (constant tension). Deliberately different from Day 2.'},
+    {n:'EZ Bar Curl',s:'3 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. RIR 1.'},
+    {n:'Dumbbell Hammer Curl',s:'2 × 10–15',rest:'45s',tag:'',notes:'Thumbs-up grip. Brachialis focus.'},
+    {n:'Cable Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Standing, rope. Long-head bias. Full stretch at bottom.'},
+    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'0s',tag:'SS1',notes:'Superset with calf raise.'},
+    {n:'Barbell Seated Calf Raise',s:'3 × 12–20',rest:'45s',tag:'SS2',notes:'Sit on flat bench, bar across padded thighs, 25lb plate under feet. Knee bent = soleus. (No machine calf raise at gym.)'},
+  ]},
+  d7:{name:'REST / ZONE 2', target:'Optional 20–30 min Zone 2', mins:0, rest:true, ex:[
+    {n:'Zone 2 cardio (optional)',s:'20–30 min',rest:'—',tag:'',notes:'Rower, Peloton, or Concept2. 115–134 bpm. Arms recovered, legs fresh. Bag work in Phase 2+.'},
+  ]},
+};
+// ── CHECKLIST SECTIONS ──────────────────────────────────────────────────────
+const SECTIONS = {
+training:[
+  {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
+    {id:'meds',label:'Morning meds',sub:''},
+    {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
+    {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
+    {id:'bfpre',label:'Breakfast before workout',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-workout breakfast'},
+  ]},
+  {id:'pre',label:'Pre-Workout',icon:'⚡',cls:'s-pre',items:[
+    {id:'wpre',label:'500ml water before gym',sub:'60–90 min window before lifting'},
+  ]},
+  {id:'wo',label:'Workout',icon:'🏋️',cls:'s-wo',items:[
+    {id:'warmup',label:'5 min easy warm-up',sub:'Bike or walk · not a workout'},
+    {id:'session',label:'Complete all sets — log in JEFIT',sub:'Compounds 1–3 RIR · isolations 0–2 RIR'},
+    {id:'wgym',label:'500ml water during session',sub:'Sip between sets'},
+    {id:'wpreste',label:'500ml water BEFORE steam',sub:'Non-negotiable · before walking in'},
+    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out'},
+    {id:'wposte',label:'500ml water AFTER steam',sub:'Immediately after exiting'},
+  ]},
+  {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
+    {id:'bfpost',label:'Breakfast post-workout (if skipped)',sub:'30–40g protein + carbs',excl:'bfpre',exclNote:'Exclusive with morning breakfast'},
+    {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Within 2 hours of finishing'},
+    {id:'meal',label:'Post-workout meal — 40–50g protein',sub:'Good Chop protein + carbs'},
+  ]},
+  {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
+    {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
+    {id:'carbs',label:'Carbs around training',sub:'Rice/potatoes/oats pre and post'},
+  ]},
+  {id:'ev',label:'Evening',icon:'🌙',cls:'s-ev',items:[
+    {id:'dinner',label:'Dinner — 40–50g protein',sub:'Good Chop or equivalent'},
+    {id:'weve',label:'Finish remaining water bottles',sub:'Check WaterMinder before bed'},
+    {id:'casein',label:'Pre-sleep: casein or cottage cheese',sub:'40g casein or 250g cottage cheese + half scoop whey'},
+  ]},
+],
+rest:[
+  {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
+    {id:'meds',label:'Morning meds',sub:''},
+    {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
+    {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
+    {id:'creat',label:'5g creatine',sub:'Take daily — with water'},
+    {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
+  ]},
+  {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
+    {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
+  ]},
+  {id:'ev',label:'Evening',icon:'🌙',cls:'s-ev',items:[
+    {id:'dinner',label:'Dinner — 40–50g protein',sub:''},
+    {id:'weve',label:'Hit 3.5 bottles water today',sub:'~3.3L · check WaterMinder'},
+    {id:'casein',label:'Pre-sleep: casein or cottage cheese',sub:'40g casein or 250g cottage cheese'},
+  ]},
+],
+cardio:[
+  {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
+    {id:'meds',label:'Morning meds',sub:''},
+    {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
+    {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
+    {id:'bfpre',label:'Breakfast before cardio',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-cardio breakfast'},
+  ]},
+  {id:'wo',label:'Cardio Session',icon:'🚴',cls:'s-wo',items:[
+    {id:'warmup',label:'5 min easy warm-up',sub:'Let HR rise gradually'},
+    {id:'zone2',label:'20–30 min Zone 2 (115–134 BPM)',sub:'Peloton/recumbent · fully conversational'},
+    {id:'wcard',label:'500ml water during session',sub:'Log in WaterMinder'},
+    {id:'cool',label:'5 min cool-down',sub:'Let HR drop to ~100 BPM'},
+    {id:'logah',label:'Log workout in Apple Health',sub:'Select cycling · check HR zones after'},
+  ]},
+  {id:'po',label:'Post-Cardio',icon:'✓',cls:'s-po',items:[
+    {id:'bfpost',label:'Breakfast post-cardio (if skipped)',sub:'30–40g protein + carbs',excl:'bfpre',exclNote:'Exclusive with morning breakfast'},
+    {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:''},
+  ]},
+  {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
+    {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
+  ]},
+  {id:'ev',label:'Evening',icon:'🌙',cls:'s-ev',items:[
+    {id:'dinner',label:'Dinner — 40–50g protein',sub:''},
+    {id:'weve',label:'Hit 4 bottles water today',sub:'~3.8L · cardio day'},
+    {id:'casein',label:'Pre-sleep: casein or cottage cheese',sub:'40g casein or 250g cottage cheese'},
+  ]},
+],
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let state = {};
+let settings = {};   // persistent across days (UWorld pool, HR baseline)
+
+const todayKey = () => new Date().toISOString().split('T')[0];
+const isSunday = () => new Date().getDay() === 0;
+
+function blankDay() {
+  return {
+    date:todayKey(), dayType:'training', cycleDay:'', checked:{},
+    water:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
+    uworld:{done:'',goal:''}, anki:{done:'',due:''}, syncTime:null, readiness:'',
+  };
+}
+
+function loadSettings() {
+  try {
+    const s = localStorage.getItem('pplua_settings');
+    settings = s ? JSON.parse(s) : {};
+  } catch(e) { settings = {}; }
+  if(settings.unused == null) settings.unused = UW_DEFAULT.unused;
+  if(settings.redo == null) settings.redo = UW_DEFAULT.redo;
+  if(settings.baselineUsed == null) settings.baselineUsed = UW_DEFAULT.histDone;
+  if(settings.hrBaseline == null) settings.hrBaseline = 79;  // Master Handoff baseline
+}
+function saveSettings() {
+  try { localStorage.setItem('pplua_settings', JSON.stringify(settings)); } catch(e){}
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('pplua_' + todayKey());
+    state = s ? {...blankDay(), ...JSON.parse(s)} : blankDay();
+    state.date = todayKey();
+    state.metrics = {...blankDay().metrics, ...(state.metrics||{})};
+  } catch(e) { state = blankDay(); }
+}
+function saveState() {
+  try { localStorage.setItem('pplua_' + state.date, JSON.stringify(state)); } catch(e){}
+}
+function loadDay(dateStr) {
+  try { const s = localStorage.getItem('pplua_' + dateStr); return s ? JSON.parse(s) : null; } catch(e){ return null; }
+}
+// ══════════════════════════════════════════════════════════════════════════
+//  INTELLIGENCE ENGINE
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── HASH IMPORT (iOS Shortcuts bridge) ────────────────────────────────────
+function readHashParams() {
+  if (!window.location.hash || window.location.hash.length < 2) return;
+  const params = {};
+  window.location.hash.slice(1).split('&').forEach(p => {
+    const [k,v] = p.split('=');
+    if(k && v !== undefined) params[k] = decodeURIComponent(v);
+  });
+  let imported = false;
+  if(params.sleep) { state.metrics.sleep = parseFloat(params.sleep).toFixed(1); imported = true; }
+  if(params.hr) { state.metrics.hr = Math.round(parseFloat(params.hr)); imported = true; }
+  if(params.steps) { state.metrics.steps = Math.round(parseFloat(params.steps)); imported = true; }
+  if(params.weight && isSunday()) { state.metrics.weight = parseFloat(params.weight).toFixed(1); imported = true; }
+  if(params.water) {
+    const bottles = Math.min(Math.floor(parseFloat(params.water) * 2) / 2, W_TARGETS[state.dayType]);
+    state.water = bottles;
+    imported = true;
+  }
+  if(imported) {
+    state.syncTime = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    saveState();
+  }
+  history.replaceState(null, null, window.location.pathname + window.location.search);
+}
+
+// ── DATE HELPERS ───────────────────────────────────────────────────────────
+function getPhase() {
+  const now = new Date();
+  for(const p of PHASES) { if(now <= new Date(p.end + 'T23:59:59')) return p; }
+  return {num:5,label:'Exam Day',desc:'Aug 25'};
+}
+function getDaysLeft() {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const e = new Date(EXAM); e.setHours(0,0,0,0);
+  return Math.max(0, Math.ceil((e-now)/864e5));
+}
+function getStudyDaysLeft() {
+  // All days count as study days (Sundays included), today through STUDY_END inclusive
+  const now = new Date(); now.setHours(0,0,0,0);
+  const end = new Date(STUDY_END+'T00:00:00');
+  if(now > end) return 0;
+  return Math.max(1, Math.round((end-now)/864e5) + 1);
+}
+
+// ── UWORLD CUMULATIVE (from logged daily done values) ──────────────────────
+function getCumDone() {
+  let total = 0;
+  const start = new Date(TRACKER_START+'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  let d = new Date(start);
+  while(d <= today) {
+    const day = loadDay(d.toISOString().split('T')[0]);
+    total += parseInt(day?.uworld?.done||0);
+    d.setDate(d.getDate()+1);
+  }
+  return total;
+}
+function getWeekDone() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay();
+  const mon = new Date(today); mon.setDate(today.getDate()-(dow===0?6:dow-1));
+  let total = 0;
+  for(let i=0;i<7;i++){
+    const d = new Date(mon); d.setDate(mon.getDate()+i);
+    if(d>today) break;
+    const day = loadDay(d.toISOString().split('T')[0]);
+    total += parseInt(day?.uworld?.done||0);
+  }
+  return total;
+}
+
+// ── ADAPTIVE STUDY TARGET ──────────────────────────────────────────────────
+// Recomputes from remaining pool ÷ study days left, then layers the
+// miss-day spread rule: any deficit vs an even daily pace is spread over 3 days,
+// never dumped onto one.
+function computeStudy() {
+  const cum = getCumDone();
+  const unusedLeft = Math.max(0, settings.unused - cum);
+  const redoLeft   = Math.max(0, settings.redo - Math.max(0, cum - settings.unused));
+  const remaining  = unusedLeft + redoLeft;
+  const daysLeft   = getStudyDaysLeft();
+  const evenPace   = daysLeft>0 ? Math.ceil(remaining/daysLeft) : remaining;
+
+  // Deficit is only meaningful once you've actually started logging. It is
+  // measured from your FIRST logged study day, so a fresh start never reads
+  // as "behind," and a lapse only counts days since you began.
+  const first = firstLoggedDate();
+  let deficit = 0, expectedByNow = 0;
+  if(first){
+    const studyDaysSinceStart = studyDaysBetween(first, todayKey()); // inclusive of today
+    // pace you committed to on your first day = pool at that point / study days from then to end
+    const daysFirstToEnd = studyDaysBetween(first, STUDY_END);
+    const poolAtStart = settings.unused + settings.redo + cum; // reconstruct original pool
+    const startPace = daysFirstToEnd>0 ? poolAtStart/daysFirstToEnd : 0;
+    expectedByNow = Math.round(startPace * (studyDaysSinceStart - 1)); // through yesterday
+    deficit = Math.round(expectedByNow - cum); // + = behind
+  }
+
+  // Suggested = even pace to finish, nudged by 1/3 of any live deficit
+  // (spread rule: never dump a full miss onto one day).
+  let target = evenPace + (deficit>0 ? Math.round(deficit/3) : Math.round(deficit/3));
+  const clamped = Math.max(20, Math.min(70, Math.max(evenPace, target)>0?target:evenPace));
+
+  let status='ontrack', txt='';
+  if(daysLeft<=0){ status='ontrack'; txt='Study window closed. Taper: light review, sleep, logistics.'; }
+  else if(!first){ status='ontrack'; txt=`Not started yet. Even pace to clear the pool is ${evenPace}/day. Log today's questions to begin tracking.`; }
+  else if(deficit > 40){ status='crit'; txt=`Behind by ~${deficit}. ${clamped}/day closes the gap over the next few days without a cram.`; }
+  else if(deficit > 10){ status='behind'; txt=`Slightly behind (~${deficit}). Nudged to ${clamped}/day, spread not dumped.`; }
+  else if(deficit < -30){ status='ahead'; txt=`Ahead by ~${Math.abs(deficit)}. Hold ${clamped}/day or bank the buffer.`; }
+  else { status='ontrack'; txt=`On pace. ${clamped}/day keeps you on schedule.`; }
+
+  return {cum, unusedLeft, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
+          totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
+}
+function firstLoggedDate(){
+  const start=new Date(TRACKER_START+'T00:00:00'); const today=new Date(); today.setHours(0,0,0,0);
+  let d=new Date(start);
+  while(d<=today){ const day=loadDay(d.toISOString().split('T')[0]);
+    if(day && parseInt(day.uworld?.done||0)>0) return d.toISOString().split('T')[0];
+    d.setDate(d.getDate()+1); }
+  return null;
+}
+function studyDaysBetween(a,b){
+  const d=new Date(a+'T00:00:00'); const end=new Date(b+'T00:00:00');
+  if(d>end) return 1;
+  return Math.max(1, Math.round((end-d)/864e5) + 1);
+}
+
+// ── CYCLE AUTO-SUGGEST ─────────────────────────────────────────────────────
+// Finds the last cycle day you actually logged (any past day with cycleDay set)
+// and suggests the next one. Handles lapses gracefully: it only advances from
+// what you last recorded, so a skipped day doesn't desync the cycle.
+function suggestCycleDay() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  for(let back=1; back<=21; back++){
+    const d = new Date(today); d.setDate(today.getDate()-back);
+    const day = loadDay(d.toISOString().split('T')[0]);
+    if(day && day.cycleDay){
+      const idx = CYCLE.findIndex(c=>c.id===day.cycleDay);
+      if(idx>=0) return CYCLE[(idx+1)%CYCLE.length].id;
+    }
+  }
+  return 'd1'; // no history → start of cycle
+}
+
+// ── DELOAD / READINESS WATCH ───────────────────────────────────────────────
+// Reads recent stored sleep + HR + readiness and evaluates the documented
+// triggers. Any 2 hot = deload recommended.
+function computeReadiness() {
+  const days = lastNDays(7);
+  const hrBase = settings.hrBaseline || 79;
+
+  // Trigger: AM HR >7 bpm over baseline for 4+ consecutive days
+  let hrStreak=0, hrHot=false;
+  for(let i=days.length-1;i>=0;i--){
+    const hr = parseFloat(days[i]?.metrics?.hr);
+    if(!isNaN(hr) && hr > hrBase+7){ hrStreak++; if(hrStreak>=4){hrHot=true;} }
+    else hrStreak=0;
+  }
+
+  // Trigger: average sleep <6.5h over last 5 days (need ≥3 readings)
+  const sleeps = days.slice(-5).map(d=>parseFloat(d?.metrics?.sleep)).filter(v=>!isNaN(v));
+  const sleepAvg = sleeps.length? sleeps.reduce((a,b)=>a+b,0)/sleeps.length : null;
+  const sleepHot = sleeps.length>=3 && sleepAvg < 6.5;
+
+  // Trigger: self-reported readiness <6/10 for 3 consecutive training days
+  const reads = days.map(d=>({v:parseFloat(d?.readiness), t:d?.dayType})).filter(r=>!isNaN(r.v));
+  let rdStreak=0, readinessHot=false;
+  for(const r of reads){ if(r.v<6){rdStreak++; if(rdStreak>=3)readinessHot=true;} else rdStreak=0; }
+
+  const triggers = [
+    {id:'hr',   label:'AM heart rate elevated >7 bpm for 4+ days', hot:hrHot},
+    {id:'sleep',label:'Sleep averaging under 6.5h over 5 days',     hot:sleepHot},
+    {id:'read', label:'Readiness under 6/10 for 3 training days',   hot:readinessHot},
+    {id:'stall',label:'Two stalled sessions (log in JEFIT)',        hot:false, manual:true},
+    {id:'elbow',label:'Elbow ache between sessions 3+ days',        hot:false, manual:true},
+  ];
+  const hotCount = triggers.filter(t=>t.hot).length;
+
+  let level='ok', ttl='Recovery looks good', msg='No deload triggers are firing from your synced data. Keep progressing.';
+  if(hotCount>=2){ level='alert'; ttl='Deload recommended'; msg='Two or more triggers are live. Next week: same exercises, load at 65–70%, cut sets ~40%, skip all intensifiers, hold protein at 160g.'; }
+  else if(hotCount===1){ level='watch'; ttl='One trigger active'; msg='One trigger is firing. Not a deload yet. Watch it, and check the two manual triggers below in your JEFIT log.'; }
+
+  return {level, ttl, msg, triggers, hotCount, sleepAvg, hrBase};
+}
+function lastNDays(n){
+  const arr=[]; const today=new Date(); today.setHours(0,0,0,0);
+  for(let i=n-1;i>=0;i--){ const d=new Date(today); d.setDate(today.getDate()-i);
+    arr.push(loadDay(d.toISOString().split('T')[0])); }
+  return arr;
+}
+
+// ── COACH LINE (single adaptive nudge for today) ───────────────────────────
+function computeCoach() {
+  const bits=[];
+  const cd = state.cycleDay;
+  const hr = parseFloat(state.metrics.hr);
+  const sleep = parseFloat(state.metrics.sleep);
+  const steps = parseFloat(state.metrics.steps);
+
+  if(cd==='d5') bits.push('Day 5 lateral raises stay <b>submaximal (RIR 2–3)</b> — protect tomorrow\'s Day 6.');
+  if(cd==='d3') bits.push('Legs today: <b>no stairmaster</b> before or after, and Day 4 cardio should skip lower-body-heavy work.');
+  if(cd==='d6') bits.push('Day 6 is your <b>primary lateral delt</b> session — final cable raise set to failure.');
+
+  if(!isNaN(sleep) && sleep<7 && state.dayType==='training')
+    bits.push(`Sleep was <b>${sleep.toFixed(1)}h</b>, under the 7h training-day floor. Expect lower output; keep 1 extra RIR on top sets.`);
+  if(!isNaN(hr)){
+    const base=settings.hrBaseline||79;
+    if(hr>base+7) bits.push(`Resting HR <b>${Math.round(hr)}</b> is ${Math.round(hr-base)} over baseline — a recovery flag if it holds.`);
+  }
+  if(!isNaN(steps) && steps>0 && steps<8000)
+    bits.push(`Steps at <b>${steps.toLocaleString()}</b> — a short Zone 2 walk closes the gap toward 8–10k, the biggest recomp lever outside the gym.`);
+
+  if(state.dayType==='training'){
+    bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
+  }
+  return bits.length ? bits[0] + (bits.length>1 ? '<br><br>'+bits[1] : '') : '';
+}
+// ══════════════════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderHeader() {
+  const now = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('hdrDate').textContent = days[now.getDay()]+' '+months[now.getMonth()]+' '+now.getDate();
+  document.getElementById('hdrExam').textContent = getDaysLeft()+'d to ABIM';
+}
+
+function renderWeekly() {
+  const strip = document.getElementById('weekStrip');
+  strip.innerHTML = '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay();
+  const mon = new Date(today); mon.setDate(today.getDate()-(dow===0?6:dow-1));
+  const dl = ['M','T','W','T','F','S','S'];
+  for(let i=0;i<7;i++){
+    const d = new Date(mon); d.setDate(mon.getDate()+i);
+    const isFut = d > today, isToday = d.getTime()===today.getTime();
+    const data = loadDay(d.toISOString().split('T')[0]);
+    let pct=0, uwDone=0, tag='';
+    if(data && SECTIONS[data.dayType||'training']){
+      const all = SECTIONS[data.dayType].flatMap(s=>s.items);
+      const done = all.filter(it=>data.checked[it.id]).length;
+      pct = all.length>0?Math.round(done/all.length*100):0;
+      uwDone = parseInt(data.uworld?.done||0);
+      tag = data.cycleDay ? CYCLE.find(c=>c.id===data.cycleDay)?.label.split(' ')[0]||'' : '';
+    }
+    const div = document.createElement('div');
+    div.className='wd'+(isToday?' today':'')+((!isFut&&pct===100)?' done':'');
+    div.innerHTML=`<div class="wd-dow">${dl[i]}</div><div class="wd-date">${d.getDate()}</div><span class="wd-tag" style="${tag?'':'opacity:.2'}">${tag||'·'}</span><div class="wd-pct">${isFut?'—':pct+'%'}</div><div class="wd-uw">${(!isFut&&uwDone)?uwDone+'q':''}</div>`;
+    strip.appendChild(div);
+  }
+}
+
+function renderCycle() {
+  const suggest = suggestCycleDay();
+  const wrap = document.getElementById('cycleDays');
+  wrap.innerHTML = '';
+  CYCLE.forEach(cd => {
+    const btn = document.createElement('button');
+    const isActive = state.cycleDay===cd.id;
+    const isSuggest = !state.cycleDay && cd.id===suggest;
+    btn.className='cbtn'+(isActive?' active':'')+(isSuggest?' suggest':'');
+    btn.textContent = cd.label;
+    btn.onclick = () => {
+      state.cycleDay = state.cycleDay===cd.id?'':cd.id;
+      // auto-align day type to the cycle day
+      if(state.cycleDay){ const c=CYCLE.find(x=>x.id===state.cycleDay); if(c) applyDayType(c.type); }
+      saveState(); renderCycle(); renderWeekly(); renderWorkoutPage(); renderCoach();
+    };
+    wrap.appendChild(btn);
+  });
+  // "use suggested" affordance
+  const auto = document.getElementById('cycleAuto');
+  if(!state.cycleDay){
+    const s = CYCLE.find(c=>c.id===suggest);
+    auto.textContent = 'Suggested: '+s.label+' ›';
+    auto.style.display='inline';
+  } else { auto.style.display='none'; }
+}
+function acceptSuggestedCycle(){
+  const s = suggestCycleDay();
+  state.cycleDay = s;
+  const c=CYCLE.find(x=>x.id===s); if(c) applyDayType(c.type);
+  saveState(); renderCycle(); renderWeekly(); renderWorkoutPage(); renderCoach();
+  setDayTypeButtons();
+}
+
+function renderSync() {
+  document.getElementById('syncTime').textContent = state.syncTime ? 'Synced '+state.syncTime : 'Not synced';
+  document.getElementById('syncSleep').textContent = state.metrics.sleep || '—';
+  const hrEl=document.getElementById('syncHR');
+  hrEl.textContent = state.metrics.hr || '—';
+  const base=settings.hrBaseline||79;
+  hrEl.classList.toggle('sv-flag', state.metrics.hr && parseFloat(state.metrics.hr)>base+7);
+  document.getElementById('syncSteps').textContent = state.metrics.steps ? Math.round(state.metrics.steps/100)/10+'k' : '—';
+  document.getElementById('syncWeight').textContent = state.metrics.weight || (isSunday()?'—':'Sun');
+
+  const url = window.location.href.split('#')[0];
+  document.getElementById('shortcutUrl').textContent = url + '#sleep=[sleep_hrs]&hr=[heart_rate]&steps=[steps]&water=[water_bottles]' + (isSunday()?'&weight=[weight_lbs]':'');
+}
+
+function renderReadiness() {
+  const r = computeReadiness();
+  const card = document.getElementById('rdCard');
+  card.className = 'rd-card '+r.level;
+  document.getElementById('rdTtl').textContent = r.ttl;
+  document.getElementById('rdScore').textContent = r.hotCount>0 ? r.hotCount+' active' : 'clear';
+  document.getElementById('rdMsg').textContent = r.msg;
+  const tw = document.getElementById('rdTriggers');
+  tw.innerHTML = '';
+  r.triggers.forEach(t=>{
+    const div=document.createElement('div');
+    div.className='rd-trig '+(t.hot?'hot':'cold');
+    div.innerHTML=`<span class="dot"></span><span>${t.label}${t.manual?' · manual':''}</span>`;
+    tw.appendChild(div);
+  });
+}
+
+function renderCoach() {
+  const txt = computeCoach();
+  const card = document.getElementById('coachCard');
+  if(txt){ card.style.display='block'; document.getElementById('coachTxt').innerHTML=txt; }
+  else card.style.display='none';
+}
+
+function renderMetrics() {
+  const sun = isSunday();
+  const wb = document.getElementById('weightBox');
+  wb.classList.toggle('sunday', sun);
+  document.getElementById('weightLbl').textContent = sun ? 'Weight (Sun)' : 'Weight';
+  document.getElementById('metWeight').disabled = !sun;
+  document.getElementById('weightUnit').textContent = sun ? 'lbs — log today' : 'log Sundays';
+  if(document.activeElement !== document.getElementById('metWeight')) document.getElementById('metWeight').value = state.metrics.weight||'';
+  if(document.activeElement !== document.getElementById('metSleep')) document.getElementById('metSleep').value = state.metrics.sleep||'';
+  if(document.activeElement !== document.getElementById('metHR')) document.getElementById('metHR').value = state.metrics.hr||'';
+}
+
+function renderWater() {
+  const tgt = W_TARGETS[state.dayType];
+  const full = Math.floor(tgt), hasHalf = tgt%1!==0;
+  const total = hasHalf?full+1:full;
+  const wrap = document.getElementById('waterBtns');
+  wrap.innerHTML = '';
+  for(let i=0;i<total;i++){
+    const filled = i < state.water, isHalf = hasHalf && i===total-1;
+    const btn = document.createElement('button');
+    btn.className='wb'+(filled?(isHalf?' half':' on'):'');
+    btn.innerHTML = filled ? '💧' : '🫙';
+    btn.onclick = () => { state.water = (state.water===i+1)?i:i+1; saveState(); renderWater(); renderSync(); };
+    wrap.appendChild(btn);
+  }
+  const oz = (state.water*32).toFixed(0), tgtOz = (tgt*32).toFixed(0);
+  document.getElementById('waterCount').textContent = `${state.water}/${tgt} (${oz}/${tgtOz}oz)`;
+  document.getElementById('waterSub').textContent = ({
+    training:'Training + steam: 5 bottles · Tap as you finish each',
+    rest:'Rest day: 3.5 bottles · Steady throughout the day',
+    cardio:'Cardio day: 4 bottles · Include session water',
+  })[state.dayType];
+}
+
+function renderUWorld() {
+  const c = computeStudy();
+  const done = parseInt(state.uworld.done||0);
+  const goalRaw = state.uworld.goal;
+  const goal = goalRaw!=='' && goalRaw!=null ? parseInt(goalRaw) : c.suggested;
+  const pct = goal>0 ? Math.min(100, Math.round(done/goal*100)) : 0;
+
+  document.getElementById('uwPhaseTag').textContent = getPhase().label;
+  document.getElementById('uwProg').style.width = pct+'%';
+  document.getElementById('uwWeekLbl').textContent = `Week: ${getWeekDone()}/300`;
+  document.getElementById('uwCumLbl').textContent = `Total: ${c.totalDone} done`;
+  document.getElementById('uwUnused').textContent = c.unusedLeft;
+  document.getElementById('uwRedo').textContent = c.redoLeft;
+  document.getElementById('uwDaysLeft').textContent = getDaysLeft();
+  document.getElementById('uwSuggest').textContent = c.suggested;
+
+  const pace = document.getElementById('uwPace');
+  pace.className = 'uw-pace '+c.status;
+  document.getElementById('uwPaceTxt').innerHTML = c.txt;
+
+  if(document.activeElement !== document.getElementById('uwDone')) document.getElementById('uwDone').value = state.uworld.done||'';
+  if(document.activeElement !== document.getElementById('uwGoal')) document.getElementById('uwGoal').value = (goalRaw!=='' && goalRaw!=null) ? goalRaw : c.suggested;
+
+  if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
+  if(document.activeElement !== document.getElementById('poolRedo')) document.getElementById('poolRedo').value = settings.redo;
+}
+
+function renderAnki() {
+  const done = parseInt(state.anki.done||0);
+  const due = parseInt(state.anki.due||0);
+  const pct = due>0 ? Math.min(100, Math.round(done/due*100)) : 0;
+  document.getElementById('ankiProg').style.width = pct+'%';
+  document.getElementById('ankiPct').textContent = due>0 ? (pct+'% done') : 'Set due cards';
+  const rem = Math.max(0, due-done);
+  document.getElementById('ankiSub').textContent = due>0 ?
+    (rem>0 ? `${rem} cards remaining today` : 'All due cards done ✓') :
+    'Set due cards, update done as you go';
+  if(document.activeElement !== document.getElementById('ankiDone')) document.getElementById('ankiDone').value = state.anki.done||'';
+  if(document.activeElement !== document.getElementById('ankiDue')) document.getElementById('ankiDue').value = state.anki.due||'';
+}
+
+// ── WORKOUT PAGE ────────────────────────────────────────────────────────────
+let previewDay = null;
+function renderWorkoutPage() {
+  const cd = previewDay || state.cycleDay || suggestCycleDay();
+  const prog = PROGRAM[cd];
+  const hero = document.getElementById('woHeroWrap');
+  const dayLabel = CYCLE.find(c=>c.id===cd)?.label || '';
+  hero.innerHTML = `<div class="wo-hero">
+    <div class="wo-hero-day">${dayLabel}${previewDay&&previewDay!==state.cycleDay?' · preview':''}</div>
+    <div class="wo-hero-name">${prog.name}</div>
+    <div class="wo-hero-target">${prog.target}</div>
+    ${prog.rest?'':`<div class="wo-hero-meta">
+      <div class="wo-hm"><div class="wo-hm-n">${prog.ex.length}</div><div class="wo-hm-l">Exercises</div></div>
+      <div class="wo-hm"><div class="wo-hm-n">~${prog.mins}</div><div class="wo-hm-l">Minutes</div></div>
+      <div class="wo-hm"><div class="wo-hm-n">${prog.ex.reduce((a,e)=>a+parseInt(e.s),0)}</div><div class="wo-hm-l">Sets</div></div>
+    </div>`}
+  </div>`;
+
+  const wrap = document.getElementById('woExercises');
+  wrap.innerHTML = '';
+  prog.ex.forEach((e,i)=>{
+    const last = lastLoggedFor(e.n);
+    const tagCls = e.tag==='' ? '' : (['SS1','SS2'].includes(e.tag)?'ss':(e.tag==='CAP'?'wk1':'int'));
+    const div = document.createElement('div');
+    div.className='ex';
+    div.innerHTML = `
+      <div class="ex-hd" onclick="this.parentElement.classList.toggle('open')">
+        <div class="ex-num">${i+1}</div>
+        <div class="ex-body">
+          <div class="ex-name">${e.n}</div>
+          <div class="ex-scheme">${e.s} · rest ${e.rest}</div>
+        </div>
+        ${e.tag?`<span class="ex-tag ${tagCls}">${e.tag}</span>`:''}
+      </div>
+      <div class="ex-detail">
+        <div class="ex-notes">${e.notes}</div>
+        ${last?`<div class="ex-last">Last logged: ${last}</div>`:''}
+      </div>`;
+    wrap.appendChild(div);
+  });
+
+  // cycle picker on train page
+  const picker = document.getElementById('cycleDaysTrain');
+  picker.innerHTML='';
+  CYCLE.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='cbtn'+((previewDay||state.cycleDay||suggestCycleDay())===c.id?' active':'');
+    btn.textContent=c.label;
+    btn.onclick=()=>{ previewDay=c.id; renderWorkoutPage(); };
+    picker.appendChild(btn);
+  });
+}
+
+// ── CHECKLIST ───────────────────────────────────────────────────────────────
+function renderChecklist() {
+  const container = document.getElementById('checklistContainer');
+  container.innerHTML = '';
+  SECTIONS[state.dayType].forEach(sec => {
+    const isCol = state.collapsed[sec.id];
+    const doneCnt = sec.items.filter(it=>state.checked[it.id]).length;
+    const div = document.createElement('div');
+    div.className = 'sec '+sec.cls;
+    const items = sec.items.map(item => {
+      const ch = !!state.checked[item.id];
+      const partnerChecked = item.excl && !!state.checked[item.excl];
+      return `<div class="ci${ch?' done':''}${partnerChecked?' dis':''}" data-id="${item.id}" onclick="toggleItem('${item.id}')">
+        <div class="cb${ch?' ch':''}"><span class="ck">✓</span></div>
+        <div class="cc">
+          <div class="cl2">${item.label}</div>
+          ${item.sub?`<div class="cs">${item.sub}</div>`:''}
+          ${item.exclNote&&!ch&&!partnerChecked?`<div class="excl-note">${item.exclNote}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    div.innerHTML = `
+      <div class="sec-hdr" onclick="toggleSection('${sec.id}')">
+        <div class="sec-ic">${sec.icon}</div>
+        <span class="sec-ttl">${sec.label}</span>
+        <span class="sec-cnt">${doneCnt}/${sec.items.length}</span>
+        <span class="sec-chev${isCol?' cl':''}" id="chev_${sec.id}">▾</span>
+      </div>
+      <div class="sec-items${isCol?' hi':''}" id="items_${sec.id}">${items}</div>`;
+    container.appendChild(div);
+  });
+  updateProgress();
+  updateBanner();
+}
+function toggleItem(id) {
+  const secs = SECTIONS[state.dayType];
+  let item = null;
+  for(const sec of secs){ for(const it of sec.items){ if(it.id===id){item=it;break;} } if(item)break; }
+  if(!item) return;
+  if(item.excl && state.checked[item.excl]) return;
+  state.checked[id] = !state.checked[id];
+  saveState(); renderChecklist();
+}
+function toggleSection(id) {
+  state.collapsed[id] = !state.collapsed[id];
+  saveState();
+  document.getElementById('items_'+id)?.classList.toggle('hi', !!state.collapsed[id]);
+  document.getElementById('chev_'+id)?.classList.toggle('cl', !!state.collapsed[id]);
+}
+function updateProgress() {
+  const all = SECTIONS[state.dayType].flatMap(s=>s.items);
+  const done = all.filter(it=>state.checked[it.id]).length;
+  const pct = all.length>0 ? Math.round(done/all.length*100) : 0;
+  document.getElementById('progBar').style.width = pct+'%';
+  document.getElementById('progTxt').textContent = done+'/'+all.length+' done';
+  document.getElementById('progPct').textContent = pct+'%';
+}
+function updateBanner() {
+  const all = SECTIONS[state.dayType].flatMap(s=>s.items);
+  const done = all.filter(it=>state.checked[it.id]).length;
+  document.getElementById('doneBanner').classList.toggle('show', done===all.length && all.length>0);
+}
+// ── JEFIT LAST-LOGGED (local, optional) ─────────────────────────────────────
+// The app can't read JEFIT live (no public API). If you later paste a JEFIT
+// export into the project chat, I can generate a lifts snapshot you drop in as
+// PPLUA_LIFTS below. Until then this returns null and the UI simply omits the line.
+const PPLUA_LIFTS = {}; // e.g. {"Smith Machine Incline Bench Press":"125 × 8 · Jul 4"}
+function lastLoggedFor(name){ return PPLUA_LIFTS[name] || null; }
+
+// ── DAY TYPE ────────────────────────────────────────────────────────────────
+function applyDayType(t){
+  if(state.dayType!==t){ state.dayType=t; state.checked={}; }
+}
+function setDayType(t) {
+  state.dayType = t;
+  state.checked = {};
+  // if the chosen cycle day conflicts with manual type, clear cycle alignment note only
+  saveState();
+  setDayTypeButtons();
+  renderWater(); renderChecklist(); renderCoach();
+}
+function setDayTypeButtons(){
+  ['Training','Rest','Cardio'].forEach(n => document.getElementById('btn'+n).classList.toggle('active',state.dayType===n.toLowerCase()));
+}
+
+// ── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(name){
+  ['today','train','study','setup'].forEach(t=>{
+    document.getElementById('page-'+t).classList.toggle('active', t===name);
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+  });
+  if(name==='train'){ previewDay=null; renderWorkoutPage(); }
+  if(name==='study'){ renderUWorld(); renderAnki(); }
+  window.scrollTo(0,0);
+}
+
+// ── SHORTCUT ────────────────────────────────────────────────────────────────
+function openShortcut(){ window.location.href = 'shortcuts://run-shortcut?name=PPLUA%20Sync'; }
+
+// ── RESET ───────────────────────────────────────────────────────────────────
+function resetDay(){
+  if(!confirm('Reset all checkmarks and water for today?')) return;
+  state.checked={}; state.water=0;
+  saveState(); renderWater(); renderChecklist(); updateProgress();
+}
+
+// ── INPUT HANDLERS ──────────────────────────────────────────────────────────
+function bind(id, fn){ const el=document.getElementById(id); if(el) el.addEventListener('input',fn); }
+
+bind('metWeight',function(){ if(!isSunday())return; state.metrics.weight=this.value; saveState(); renderSync(); });
+bind('metSleep', function(){ state.metrics.sleep=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
+bind('metHR',    function(){ state.metrics.hr=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
+
+bind('uwDone', function(){ state.uworld.done=this.value; saveState(); renderUWorld(); renderWeekly(); });
+bind('uwGoal', function(){ state.uworld.goal=this.value; saveState(); renderUWorld(); });
+
+bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
+bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
+
+bind('poolUnused',function(){ settings.unused=Math.max(0,parseInt(this.value||0)); saveSettings(); renderUWorld(); });
+bind('poolRedo',  function(){ settings.redo=Math.max(0,parseInt(this.value||0)); saveSettings(); renderUWorld(); });
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+function init(){
+  loadSettings();
+  loadState();
+  readHashParams();
+  renderHeader();
+  renderWeekly();
+  renderCycle();
+  renderSync();
+  renderReadiness();
+  renderCoach();
+  renderMetrics();
+  renderWater();
+  renderUWorld();
+  renderAnki();
+  setDayTypeButtons();
+  renderChecklist();
+  renderWorkoutPage();
+}
+init();
+</script>
+</body>
+</html>
