@@ -283,6 +283,24 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 #guideSteps{counter-reset:gs;}
 .guide-code{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:9px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gr);word-break:break-all;line-height:1.5;margin-top:6px;}
 .divider{height:1px;background:var(--bd);margin:16px;}
+
+/* ── DAY DETAIL MODAL ── */
+.dd-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:flex-end;justify-content:center;}
+.dd-modal.show{display:flex;}
+.dd-sheet{width:100%;max-width:430px;max-height:82vh;background:var(--s1);border-radius:16px 16px 0 0;border:1px solid var(--bd2);border-bottom:none;overflow-y:auto;padding-bottom:calc(20px + var(--safe-bot));}
+.dd-hd{position:sticky;top:0;background:var(--s1);display:flex;justify-content:space-between;align-items:center;padding:16px 16px 12px;border-bottom:1px solid var(--bd);font-size:15px;font-weight:600;color:var(--t1);}
+.dd-close{background:var(--s3);border:none;color:var(--t2);width:26px;height:26px;border-radius:7px;font-size:12px;cursor:pointer;}
+.dd-body{padding:12px 16px 4px;}
+.dd-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12.5px;}
+.dd-k{color:var(--t3);}
+.dd-v{color:var(--t1);font-weight:500;}
+.dd-divider{height:1px;background:var(--bd);margin:12px 0;}
+.dd-sec{margin-bottom:12px;}
+.dd-sec-hd{font-size:12.5px;font-weight:600;color:var(--t1);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.dd-sec-cnt{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);font-weight:400;}
+.dd-item{font-size:11.5px;color:var(--gr);padding:3px 0 3px 4px;}
+.dd-item-none{font-size:11.5px;color:var(--t3);font-style:italic;padding:3px 0 3px 4px;}
+.dd-empty{text-align:center;color:var(--t3);font-size:13px;padding:30px 0;}
 </style>
 </head>
 <body>
@@ -563,6 +581,17 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   <div class="hint">PPLUA Command · single source of truth is the Master Handoff · v3 consolidated</div>
 </div>
 
+</div>
+
+<!-- DAY DETAIL MODAL -->
+<div class="dd-modal" id="dayDetailModal" onclick="if(event.target===this)closeDayDetail()">
+  <div class="dd-sheet">
+    <div class="dd-hd">
+      <span id="dayDetailTitle">—</span>
+      <button class="dd-close" onclick="closeDayDetail()">✕</button>
+    </div>
+    <div class="dd-body" id="dayDetailBody"></div>
+  </div>
 </div>
 
 <!-- TAB BAR -->
@@ -1046,8 +1075,57 @@ function renderWeekly() {
     const div = document.createElement('div');
     div.className='wd'+(isToday?' today':'')+((!isFut&&pct===100)?' done':'');
     div.innerHTML=`<div class="wd-dow">${dl[i]}</div><div class="wd-date">${d.getDate()}</div><span class="wd-tag" style="${tag?'':'opacity:.2'}">${tag||'·'}</span><div class="wd-pct">${isFut?'—':pct+'%'}</div><div class="wd-uw">${(!isFut&&uwDone)?uwDone+'q':''}</div>`;
+    if(!isFut){ div.style.cursor='pointer'; div.onclick=()=>openDayDetail(d.toISOString().split('T')[0], isToday); }
     strip.appendChild(div);
   }
+}
+
+// ── PAST DAY DETAIL (read-only) ─────────────────────────────────────────────
+function openDayDetail(dateStr, isToday){
+  const day = isToday ? state : loadDay(dateStr);
+  const modal = document.getElementById('dayDetailModal');
+  const body = document.getElementById('dayDetailBody');
+  if(!day){
+    document.getElementById('dayDetailTitle').textContent = dateStr;
+    body.innerHTML = `<div class="dd-empty">No data logged this day.</div>`;
+    modal.classList.add('show');
+    return;
+  }
+  const dt = day.dayType || 'training';
+  const secs = SECTIONS[dt] || SECTIONS.training;
+  const cycLabel = day.cycleDay ? (CYCLE.find(c=>c.id===day.cycleDay)?.label || day.cycleDay) : 'Not set';
+  const m = day.metrics || {};
+  const [y,mo,da] = dateStr.split('-');
+  const niceDate = new Date(y,mo-1,da).toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  document.getElementById('dayDetailTitle').textContent = niceDate + (isToday?' (today)':'');
+
+  let html = `<div class="dd-row"><span class="dd-k">Day type</span><span class="dd-v">${dt} · ${cycLabel}</span></div>
+    <div class="dd-row"><span class="dd-k">Sleep</span><span class="dd-v">${m.sleep?m.sleep+'h':'—'}</span></div>
+    <div class="dd-row"><span class="dd-k">Resting HR</span><span class="dd-v">${m.hr?m.hr+' bpm':'—'}</span></div>
+    <div class="dd-row"><span class="dd-k">Steps</span><span class="dd-v">${m.steps?Math.round(m.steps).toLocaleString():'—'}</span></div>
+    <div class="dd-row"><span class="dd-k">Weight</span><span class="dd-v">${m.weight?m.weight+' lbs':'—'}</span></div>
+    <div class="dd-row"><span class="dd-k">Water</span><span class="dd-v">${day.water||0}/${W_TARGETS[dt]||5} bottles</span></div>
+    <div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>
+    <div class="dd-row"><span class="dd-k">Anki</span><span class="dd-v">${(day.anki&&day.anki.done)||0} done</span></div>
+    <div class="dd-divider"></div>`;
+
+  secs.forEach(sec=>{
+    const doneItems = sec.items.filter(it=>day.checked && day.checked[it.id]);
+    const total = sec.items.length;
+    html += `<div class="dd-sec"><div class="dd-sec-hd">${sec.icon} ${sec.label} <span class="dd-sec-cnt">${doneItems.length}/${total}</span></div>`;
+    if(doneItems.length===0){
+      html += `<div class="dd-item-none">Nothing checked</div>`;
+    } else {
+      doneItems.forEach(it=>{ html += `<div class="dd-item">✓ ${it.label}</div>`; });
+    }
+    html += `</div>`;
+  });
+
+  body.innerHTML = html;
+  modal.classList.add('show');
+}
+function closeDayDetail(){
+  document.getElementById('dayDetailModal').classList.remove('show');
 }
 
 function renderCycle() {
