@@ -67,6 +67,11 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .seg-btn{flex:1;padding:9px 4px;background:none;border:none;color:var(--t3);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.04em;cursor:pointer;transition:all .15s;line-height:1.3;}
 .seg-btn.active{background:var(--s2);color:var(--ac);border-radius:6px;}
 
+/* ── REAL REST TOGGLE ── */
+.realrest-wrap{margin:2px 16px 6px;}
+.realrest-btn{width:100%;padding:9px 12px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;color:var(--t3);font-family:'DM Mono',monospace;font-size:10.5px;cursor:pointer;text-align:left;transition:all .15s;}
+.realrest-btn.on{background:var(--am-bg);border-color:var(--am);color:var(--am);}
+
 /* ── CYCLE ── */
 .cycle-wrap{padding:4px 16px 8px;}
 .cycle-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--t3);text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;}
@@ -335,6 +340,11 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <button class="seg-btn" id="btnCardio" onclick="setDayType('cardio')">🚴 Cardio</button>
   </div>
 
+  <!-- REAL REST TOGGLE (cardio days only) -->
+  <div class="realrest-wrap" id="realRestWrap" style="display:none">
+    <button class="realrest-btn" id="realRestBtn" onclick="toggleRealRest()">☐ Skipping cardio today? Tap for true rest</button>
+  </div>
+
   <!-- CYCLE -->
   <div class="cycle-wrap">
     <div class="cycle-lbl">
@@ -510,18 +520,21 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
         <input class="uw-in" type="number" id="poolRedo" inputmode="numeric" min="0" placeholder="400">
       </div>
     </div>
-    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Use UWorld's own <b style="color:var(--t2)">Total Incorrect</b> count from the Statistics screen — that's a clean, objective number UWorld already computed for you. Don't add <b style="color:var(--t2)">Marked</b> questions on top: many marked questions are also incorrect, and summing both risks double-counting the overlap. If you want marked-but-correct questions in the redo pool too, add only the ones NOT already incorrect.</p>
+    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Redo pool = <b style="color:var(--t2)">Incorrect</b> + <b style="color:var(--t2)">Marked</b> questions that aren't already counted as incorrect (marked-but-correct — mostly guessed-right or right-answer-wrong-reasoning items). UWorld's basic filter view doesn't expose the exact overlap between Incorrect and Marked, so Incorrect + Marked is used as a safe upper-bound. Update both numbers here whenever your QBank stats change.</p>
     <div class="anki-sub" style="margin-top:8px">Set once when your UWorld stats change. Persists across days.</div>
   </div>
 
   <div class="divider"></div>
   <div class="ptitle">Study rules</div>
   <div class="ref-card">
+    <div class="ref-row"><span class="ref-k">Cadence</span><span class="ref-v">6 days/week, one floating day off. Not pinned to a specific weekday.</span></div>
+    <div class="ref-row"><span class="ref-k">Priority order</span><span class="ref-v">1) Finish unused first-pass. 2) Redo incorrect + marked. 3) Redo questions missed again during redo. 4) Final mixed weakness blocks.</span></div>
     <div class="ref-row"><span class="ref-k">Missed a day</span><span class="ref-v">Never double up. Spread the deficit over the next 3 days.</span></div>
     <div class="ref-row"><span class="ref-k">Main block</span><span class="ref-v">40 timed mixed questions, review same day.</span></div>
     <div class="ref-row"><span class="ref-k">Add-on</span><span class="ref-v">10 targeted or mixed.</span></div>
     <div class="ref-row"><span class="ref-k">Stamina</span><span class="ref-v">60-question timed blocks 2–3×/week in Phase 2–3.</span></div>
     <div class="ref-row"><span class="ref-k">Taper (Aug 24)</span><span class="ref-v">0–20 questions max. Sleep and logistics.</span></div>
+    <div class="ref-row"><span class="ref-k">New QBank</span><span class="ref-v">Don't add one unless UWorld is fully exhausted and review is high quality.</span></div>
   </div>
 </div>
 
@@ -620,10 +633,12 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 const EXAM = '2026-08-25';
 const TRACKER_START = '2026-07-06';
 const STUDY_END = '2026-08-23';   // last full study day before taper
+const STUDY_DAYS_PER_WEEK = 6;    // one floating day off per week — not pinned to a weekday
 
 // ── UWORLD BASELINE (editable via Study page pool inputs, persisted) ────────
-// From QBank screenshot: 1248 total, 568 used, 680 unused, 262 incorrect (redo pool).
-const UW_DEFAULT = {unused:680, redo:262, total:1248, histDone:568};
+// From QBank: 1248 total, 568 used, 680 unused, 262 incorrect, 80 marked.
+// Redo pool = incorrect + marked (safe upper-bound; exact overlap not exposed by UWorld's basic filter view).
+const UW_DEFAULT = {unused:680, redo:342, total:1248, histDone:568};
 
 const PHASES = [
   {num:1,end:'2026-08-03',label:'Phase 1',desc:'First pass'},
@@ -643,6 +658,14 @@ const CYCLE = [
 ];
 
 const W_TARGETS = {training:5, rest:3.5, cardio:4};
+
+// A cardio day (D4/D7, or manual) can be downgraded to a true rest day —
+// same cycle position, but no cardio actually happening. This resolves
+// which checklist and water target actually apply.
+function effectiveDayType(day){
+  if(!day) return 'training';
+  return (day.dayType==='cardio' && day.realRest) ? 'rest' : (day.dayType||'training');
+}
 
 // ── PROGRAM (gym-verified, from Master Handoff) ─────────────────────────────
 const PROGRAM = {
@@ -793,7 +816,7 @@ const isMonday = () => new Date().getDay() === 1;
 
 function blankDay() {
   return {
-    date:todayKey(), dayType:'training', cycleDay:'', checked:{},
+    date:todayKey(), dayType:'training', cycleDay:'', checked:{}, realRest:false,
     water:0, waterOz:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
     uworld:{done:'',goal:''}, anki:{done:'',due:''}, syncTime:null, readiness:'',
   };
@@ -847,7 +870,7 @@ function readHashParams() {
   if(params.water) {
     const rawBottles = parseFloat(params.water);
     state.waterOz = Math.round(rawBottles * 32); // precise, uncapped — for the oz-of-total display
-    const bottles = Math.min(Math.floor(rawBottles * 2) / 2, W_TARGETS[state.dayType]);
+    const bottles = Math.min(Math.floor(rawBottles * 2) / 2, W_TARGETS[effectiveDayType(state)]);
     state.water = bottles; // capped/floored to half-bottle — for the tappable icon row
     imported = true;
   }
@@ -870,11 +893,14 @@ function getDaysLeft() {
   return Math.max(0, Math.ceil((e-now)/864e5));
 }
 function getStudyDaysLeft() {
-  // All days count as study days (Sundays included), today through STUDY_END inclusive
+  // 6 study days/week, one floating day off — not pinned to a specific weekday,
+  // so this uses a ratio over remaining calendar days rather than tracking
+  // which exact day gets skipped each week.
   const now = new Date(); now.setHours(0,0,0,0);
   const end = new Date(STUDY_END+'T00:00:00');
   if(now > end) return 0;
-  return Math.max(1, Math.round((end-now)/864e5) + 1);
+  const calendarDays = Math.round((end-now)/864e5) + 1;
+  return Math.max(1, Math.round(calendarDays * STUDY_DAYS_PER_WEEK/7));
 }
 
 // ── UWORLD CUMULATIVE (from logged daily done values) ──────────────────────
@@ -914,7 +940,11 @@ function computeStudy() {
   const redoLeft   = Math.max(0, settings.redo - Math.max(0, cum - settings.unused));
   const remaining  = unusedLeft + redoLeft;
   const daysLeft   = getStudyDaysLeft();
-  const evenPace   = daysLeft>0 ? Math.ceil(remaining/daysLeft) : remaining;
+  const bareMin    = daysLeft>0 ? remaining/daysLeft : remaining;
+  // Deliberate buffer: round the bare-minimum pace up to the nearest 10.
+  // This mirrors the original plan's own cushion (44 bare minimum -> 50
+  // recommended), rather than shipping the tightest number that technically works.
+  const evenPace   = Math.max(10, Math.ceil(bareMin/10)*10);
 
   // Deficit is only meaningful once you've actually started logging. It is
   // measured from your FIRST logged study day, so a fresh start never reads
@@ -931,21 +961,21 @@ function computeStudy() {
     deficit = Math.round(expectedByNow - cum); // + = behind
   }
 
-  // Suggested = even pace to finish, nudged by 1/3 of any live deficit
+  // Suggested = buffered even pace, nudged by 1/3 of any live deficit
   // (spread rule: never dump a full miss onto one day).
   let target = evenPace + (deficit>0 ? Math.round(deficit/3) : Math.round(deficit/3));
   const clamped = Math.max(20, Math.min(70, Math.max(evenPace, target)>0?target:evenPace));
 
   let status='ontrack', txt='';
   if(daysLeft<=0){ status='ontrack'; txt='Study window closed. Taper: light review, sleep, logistics.'; }
-  else if(!first){ status='ontrack'; txt=`Not started yet. Even pace to clear the pool is ${evenPace}/day. Log today's questions to begin tracking.`; }
+  else if(!first){ status='ontrack'; txt=`Not started yet. Buffered pace to clear the pool is ${evenPace}/day. Log today's questions to begin tracking.`; }
   else if(deficit > 40){ status='crit'; txt=`Behind by ~${deficit}. ${clamped}/day closes the gap over the next few days without a cram.`; }
   else if(deficit > 10){ status='behind'; txt=`Slightly behind (~${deficit}). Nudged to ${clamped}/day, spread not dumped.`; }
   else if(deficit < -30){ status='ahead'; txt=`Ahead by ~${Math.abs(deficit)}. Hold ${clamped}/day or bank the buffer.`; }
   else { status='ontrack'; txt=`On pace. ${clamped}/day keeps you on schedule.`; }
 
   return {cum, unusedLeft, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
-          evenPace, deficit, first,
+          evenPace, bareMin, deficit, first,
           totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
 }
 function firstLoggedDate(){
@@ -957,9 +987,13 @@ function firstLoggedDate(){
   return null;
 }
 function studyDaysBetween(a,b){
+  // Same floating-day-off ratio applied retrospectively: this represents
+  // *expected* study days over a span, not literal calendar days, since we
+  // don't track which specific day was the off day each week.
   const d=new Date(a+'T00:00:00'); const end=new Date(b+'T00:00:00');
   if(d>end) return 1;
-  return Math.max(1, Math.round((end-d)/864e5) + 1);
+  const calendarDays = Math.round((end-d)/864e5) + 1;
+  return Math.max(1, Math.round(calendarDays * STUDY_DAYS_PER_WEEK/7));
 }
 
 // ── CYCLE AUTO-SUGGEST ─────────────────────────────────────────────────────
@@ -1102,7 +1136,7 @@ function openDayDetail(dateStr, isToday){
     modal.classList.add('show');
     return;
   }
-  const dt = day.dayType || 'training';
+  const dt = effectiveDayType(day);
   const secs = SECTIONS[dt] || SECTIONS.training;
   const cycLabel = day.cycleDay ? (CYCLE.find(c=>c.id===day.cycleDay)?.label || day.cycleDay) : 'Not set';
   const m = day.metrics || {};
@@ -1110,7 +1144,8 @@ function openDayDetail(dateStr, isToday){
   const niceDate = new Date(y,mo-1,da).toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
   document.getElementById('dayDetailTitle').textContent = niceDate + (isToday?' (today)':'');
 
-  let html = `<div class="dd-row"><span class="dd-k">Day type</span><span class="dd-v">${dt} · ${cycLabel}</span></div>
+  const typeLabel = (day.dayType==='cardio' && day.realRest) ? 'cardio (true rest taken)' : (day.dayType||'training');
+  let html = `<div class="dd-row"><span class="dd-k">Day type</span><span class="dd-v">${typeLabel} · ${cycLabel}</span></div>
     <div class="dd-row"><span class="dd-k">Sleep</span><span class="dd-v">${m.sleep?m.sleep+'h':'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Resting HR</span><span class="dd-v">${m.hr?m.hr+' bpm':'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Steps</span><span class="dd-v">${m.steps?Math.round(m.steps).toLocaleString():'—'}</span></div>
@@ -1154,6 +1189,7 @@ function renderCycle() {
       // auto-align day type to the cycle day
       if(state.cycleDay){ const c=CYCLE.find(x=>x.id===state.cycleDay); if(c) applyDayType(c.type); }
       saveState(); renderCycle(); renderWeekly(); renderWorkoutPage(); renderCoach();
+      setDayTypeButtons(); renderRealRestUI(); renderWater(); renderChecklist(); renderSync();
     };
     wrap.appendChild(btn);
   });
@@ -1170,7 +1206,7 @@ function acceptSuggestedCycle(){
   state.cycleDay = s;
   const c=CYCLE.find(x=>x.id===s); if(c) applyDayType(c.type);
   saveState(); renderCycle(); renderWeekly(); renderWorkoutPage(); renderCoach();
-  setDayTypeButtons();
+  setDayTypeButtons(); renderRealRestUI(); renderWater(); renderChecklist(); renderSync();
 }
 
 function renderSync() {
@@ -1183,7 +1219,7 @@ function renderSync() {
   document.getElementById('syncSteps').textContent = state.metrics.steps ? Math.round(state.metrics.steps/100)/10+'k' : '—';
   document.getElementById('syncWeight').textContent = state.metrics.weight || (isMonday()?'—':'Mon');
 
-  const wTargetOz = (W_TARGETS[state.dayType]||5) * 32;
+  const wTargetOz = W_TARGETS[effectiveDayType(state)] * 32;
   const wOz = state.waterOz!=null ? state.waterOz : Math.round((state.water||0)*32);
   document.getElementById('syncWaterOz').textContent = wOz + '/' + wTargetOz;
 
@@ -1228,7 +1264,8 @@ function renderMetrics() {
 }
 
 function renderWater() {
-  const tgt = W_TARGETS[state.dayType];
+  const edt = effectiveDayType(state);
+  const tgt = W_TARGETS[edt];
   const full = Math.floor(tgt), hasHalf = tgt%1!==0;
   const total = hasHalf?full+1:full;
   const wrap = document.getElementById('waterBtns');
@@ -1247,7 +1284,7 @@ function renderWater() {
     training:'Training + steam: 5 bottles, auto-filled from sync',
     rest:'Rest day: 3.5 bottles, auto-filled from sync',
     cardio:'Cardio day: 4 bottles, auto-filled from sync',
-  })[state.dayType];
+  })[edt];
 }
 
 function renderUWorld() {
@@ -1286,11 +1323,12 @@ function renderUWorld() {
 function renderStudyExplain(c){
   const parts = [];
   parts.push(`<b style="color:var(--t1)">Remaining pool:</b> ${c.unusedLeft} first-pass + ${c.redoLeft} redo = <b style="color:var(--t1)">${c.remaining}</b> questions.`);
-  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, counting every day (including Sundays) through Aug 23. Taper starts Aug 24.`);
-  parts.push(`<b style="color:var(--t1)">Even pace to finish on time:</b> ${c.remaining} ÷ ${c.daysLeft} = <b style="color:var(--t1)">${c.evenPace}/day</b>.`);
+  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, at 6 days/week with one floating day off (not pinned to a specific weekday), through Aug 23. Taper starts Aug 24.`);
+  parts.push(`<b style="color:var(--t1)">Bare minimum pace:</b> ${c.remaining} ÷ ${c.daysLeft} = ${c.bareMin.toFixed(1)}/day.`);
+  parts.push(`<b style="color:var(--t1)">Buffered target:</b> rounded up to the nearest 10 for a real cushion, not the tightest number that technically works → <b style="color:var(--t1)">${c.evenPace}/day</b>.`);
 
   if(!c.first){
-    parts.push(`You haven't logged a study day yet, so there's no actual pace to compare against — today's goal is just the even pace above, ${c.evenPace}/day.`);
+    parts.push(`You haven't logged a study day yet, so there's no actual pace to compare against — today's goal is just the buffered pace above, ${c.evenPace}/day.`);
   } else {
     const dir = c.deficit>0 ? 'behind' : c.deficit<0 ? 'ahead' : 'exactly on pace';
     const amt = Math.abs(c.deficit);
@@ -1377,7 +1415,7 @@ function renderWorkoutPage() {
 function renderChecklist() {
   const container = document.getElementById('checklistContainer');
   container.innerHTML = '';
-  SECTIONS[state.dayType].forEach(sec => {
+  SECTIONS[effectiveDayType(state)].forEach(sec => {
     const isCol = state.collapsed[sec.id];
     const doneCnt = sec.items.filter(it=>state.checked[it.id]).length;
     const div = document.createElement('div');
@@ -1408,7 +1446,7 @@ function renderChecklist() {
   updateBanner();
 }
 function toggleItem(id) {
-  const secs = SECTIONS[state.dayType];
+  const secs = SECTIONS[effectiveDayType(state)];
   let item = null;
   for(const sec of secs){ for(const it of sec.items){ if(it.id===id){item=it;break;} } if(item)break; }
   if(!item) return;
@@ -1423,7 +1461,7 @@ function toggleSection(id) {
   document.getElementById('chev_'+id)?.classList.toggle('cl', !!state.collapsed[id]);
 }
 function updateProgress() {
-  const all = SECTIONS[state.dayType].flatMap(s=>s.items);
+  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>s.items);
   const done = all.filter(it=>state.checked[it.id]).length;
   const pct = all.length>0 ? Math.round(done/all.length*100) : 0;
   document.getElementById('progBar').style.width = pct+'%';
@@ -1431,7 +1469,7 @@ function updateProgress() {
   document.getElementById('progPct').textContent = pct+'%';
 }
 function updateBanner() {
-  const all = SECTIONS[state.dayType].flatMap(s=>s.items);
+  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>s.items);
   const done = all.filter(it=>state.checked[it.id]).length;
   document.getElementById('doneBanner').classList.toggle('show', done===all.length && all.length>0);
 }
@@ -1449,12 +1487,13 @@ function generateExport(){
     const ds = d.toISOString().split('T')[0];
     const day = loadDay(ds);
     if(!day){ lines.push(`${ds} | no data logged`); continue; }
-    const dt = day.dayType || 'training';
+    const dt = effectiveDayType(day);
     const secs = SECTIONS[dt] || SECTIONS.training;
     const all = secs.flatMap(s=>s.items);
     const doneCnt = all.filter(it=>day.checked && day.checked[it.id]).length;
     const pct = all.length ? Math.round(doneCnt/all.length*100) : 0;
     const cyc = day.cycleDay ? (CYCLE.find(c=>c.id===day.cycleDay)?.label || day.cycleDay) : '—';
+    const dtLabel = (day.dayType==='cardio' && day.realRest) ? 'cardio(rest)' : (day.dayType||'training');
     const m = day.metrics || {};
     const sleep = m.sleep ? parseFloat(m.sleep).toFixed(1)+'h' : '—';
     const hr = m.hr ? Math.round(m.hr)+'bpm' : '—';
@@ -1462,7 +1501,7 @@ function generateExport(){
     const water = (day.water!=null?day.water:0) + '/' + (W_TARGETS[dt]||5);
     const uw = (day.uworld && day.uworld.done) ? day.uworld.done : '0';
     const ak = (day.anki && day.anki.done) ? day.anki.done : '0';
-    lines.push(`${ds} | ${dt} | ${cyc} | checklist ${pct}% (${doneCnt}/${all.length}) | sleep ${sleep} | rHR ${hr} | steps ${steps} | water ${water} | uworld ${uw} | anki ${ak}`);
+    lines.push(`${ds} | ${dtLabel} | ${cyc} | checklist ${pct}% (${doneCnt}/${all.length}) | sleep ${sleep} | rHR ${hr} | steps ${steps} | water ${water} | uworld ${uw} | anki ${ak}`);
   }
   const r = computeReadiness();
   const trigLines = r.triggers.map(t=>`  - ${t.hot?'[ACTIVE] ':'[clear]  '}${t.label}`).join('\n');
@@ -1513,17 +1552,38 @@ function lastLoggedFor(name){ return PPLUA_LIFTS[name] || null; }
 // ── DAY TYPE ────────────────────────────────────────────────────────────────
 function applyDayType(t){
   if(state.dayType!==t){ state.dayType=t; state.checked={}; }
+  if(t!=='cardio') state.realRest=false;
 }
 function setDayType(t) {
   state.dayType = t;
   state.checked = {};
+  if(t!=='cardio') state.realRest=false;
   // if the chosen cycle day conflicts with manual type, clear cycle alignment note only
   saveState();
   setDayTypeButtons();
-  renderWater(); renderChecklist(); renderCoach();
+  renderRealRestUI();
+  renderWater(); renderChecklist(); renderCoach(); renderSync();
 }
 function setDayTypeButtons(){
   ['Training','Rest','Cardio'].forEach(n => document.getElementById('btn'+n).classList.toggle('active',state.dayType===n.toLowerCase()));
+}
+function toggleRealRest(){
+  state.realRest = !state.realRest;
+  state.checked = {}; // section set changes (cardio checklist vs rest checklist), stale checkmarks would be confusing
+  saveState();
+  renderRealRestUI();
+  renderChecklist(); renderWater(); renderSync(); renderCoach();
+}
+function renderRealRestUI(){
+  const wrap = document.getElementById('realRestWrap');
+  const btn = document.getElementById('realRestBtn');
+  if(state.dayType==='cardio'){
+    wrap.style.display='block';
+    btn.classList.toggle('on', !!state.realRest);
+    btn.textContent = (state.realRest ? '☑ ' : '☐ ') + (state.realRest ? 'True rest day — cardio checklist hidden' : 'Skipping cardio today? Tap for true rest');
+  } else {
+    wrap.style.display='none';
+  }
 }
 
 // ── TABS ────────────────────────────────────────────────────────────────────
@@ -1579,6 +1639,7 @@ function init(){
   renderUWorld();
   renderAnki();
   setDayTypeButtons();
+  renderRealRestUI();
   renderChecklist();
   renderWorkoutPage();
 }
