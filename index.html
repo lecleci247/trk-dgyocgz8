@@ -508,12 +508,12 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <div class="guide-title">Build the shortcut</div>
     <div id="guideSteps">
       <div class="guide-step">Open <strong>Shortcuts</strong> → tap <strong>+</strong> → rename the shortcut to exactly <strong>PPLUA Sync</strong> (must match exactly — this is how the app's sync button finds it).</div>
-      <div class="guide-step">Add <strong>Find Health Samples</strong> → Sample Type: Sleep Analysis → Sort: Start Date, Latest First → Limit 1.</div>
-      <div class="guide-step">Add <strong>Time Between Dates</strong> → Start: tap the Health Sample result → choose "Start Date". End: tap it again → choose "End Date". Unit: Hours. This is your sleep hours.</div>
-      <div class="guide-step">Add <strong>Find Health Samples</strong> → Resting Heart Rate → Latest → Limit 1. Tap the result → choose "Value" for the bpm number.</div>
-      <div class="guide-step">Add <strong>Find Health Samples</strong> → Step Count → filter Start Date is Today → Get All (no limit). Add <strong>Calculate Statistics</strong> → Operation: Sum. That's today's steps.</div>
-      <div class="guide-step">Add <strong>Find Health Samples</strong> → Dietary Water → filter Start Date is Today → Get All. Add <strong>Calculate Statistics</strong> → Sum. Divide by 950 for bottles (≈32oz). Check units the first time — if the number looks like ounces already, divide by 32 instead.</div>
-      <div class="guide-step">Add <strong>Find Health Samples</strong> → Body Mass (Weight) → Latest → Limit 1. Tap → "Value". No need to gate this by day — the app only applies it on Sundays automatically.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Sample Type: Sleep Analysis → Sort by: Start Date → Order: newest first → Limit: On, Get 1.</div>
+      <div class="guide-step">Add <strong>Get Details of Health Sample</strong> twice on that result — once set to Start Date, once to End Date. Then add <strong>Get Time Between Dates</strong> using those two outputs, Unit: Hours. That's your sleep hours.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Resting Heart Rate → newest first → Limit 1. Add <strong>Get Details of Health Sample</strong> → Value.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Step Count → Add Filter: Start Date is Today → no limit. Add <strong>Calculate Statistics</strong> → Sum. That's today's steps.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Dietary Water → Add Filter: Start Date is Today → no limit. Add <strong>Calculate Statistics</strong> → Sum. Add <strong>Calculate</strong> to divide by 950 for bottles (check units the first run — see full walkthrough in chat).</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Body Mass → newest first → Limit 1. Add <strong>Get Details of Health Sample</strong> → Value. No need to gate this by day — the app only applies it on Sundays automatically.</div>
       <div class="guide-step">Final action: <strong>Open URLs</strong>. Build the URL below directly in that field, inserting each variable chip where shown.</div>
     </div>
     <div class="guide-code" id="shortcutUrl"></div>
@@ -532,6 +532,16 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   <div class="ref-card">
     <div class="ref-h">Host it for full auto-fill</div>
     <p style="font-size:11.5px;color:var(--t2);line-height:1.6;">Right now this runs from a saved file. If you host it on GitHub Pages (free), the Shortcut can open a real URL and the values land without you pasting anything. Ask in the project chat and I'll walk you through the 10-minute setup.</p>
+  </div>
+
+  <div class="divider"></div>
+  <div class="ptitle">Weekly review export</div>
+  <div class="psub">One tap turns your last 7 logged days into plain text. Paste it to Claude for trend analysis, adherence review, and deload or program decisions the app's automatic triggers can't make on their own.</div>
+  <div class="ref-card">
+    <button class="sync-btn" style="margin-bottom:10px" onclick="generateExport()">📋 Generate Weekly Export</button>
+    <textarea id="exportText" readonly style="width:100%;min-height:180px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:9.5px;line-height:1.6;padding:10px;display:none;"></textarea>
+    <button class="sync-alt" id="copyBtn" style="display:none;margin-top:8px" onclick="copyExport()">Copy to clipboard</button>
+    <div class="anki-sub" id="copyStatus" style="margin-top:6px"></div>
   </div>
 
   <div class="divider"></div>
@@ -1302,6 +1312,74 @@ function updateBanner() {
   const all = SECTIONS[state.dayType].flatMap(s=>s.items);
   const done = all.filter(it=>state.checked[it.id]).length;
   document.getElementById('doneBanner').classList.toggle('show', done===all.length && all.length>0);
+}
+
+// ── WEEKLY EXPORT ────────────────────────────────────────────────────────
+// Turns the last 7 logged days into a plain-text packet for pasting into a
+// chat with Claude. Everything here is already sitting in localStorage —
+// no external export tool, no spreadsheet, no separate account required.
+function generateExport(){
+  const n = 7;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const lines = [];
+  for(let i=n-1;i>=0;i--){
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    const ds = d.toISOString().split('T')[0];
+    const day = loadDay(ds);
+    if(!day){ lines.push(`${ds} | no data logged`); continue; }
+    const dt = day.dayType || 'training';
+    const secs = SECTIONS[dt] || SECTIONS.training;
+    const all = secs.flatMap(s=>s.items);
+    const doneCnt = all.filter(it=>day.checked && day.checked[it.id]).length;
+    const pct = all.length ? Math.round(doneCnt/all.length*100) : 0;
+    const cyc = day.cycleDay ? (CYCLE.find(c=>c.id===day.cycleDay)?.label || day.cycleDay) : '—';
+    const m = day.metrics || {};
+    const sleep = m.sleep ? parseFloat(m.sleep).toFixed(1)+'h' : '—';
+    const hr = m.hr ? Math.round(m.hr)+'bpm' : '—';
+    const steps = m.steps ? Math.round(m.steps) : '—';
+    const water = (day.water!=null?day.water:0) + '/' + (W_TARGETS[dt]||5);
+    const uw = (day.uworld && day.uworld.done) ? day.uworld.done : '0';
+    const ak = (day.anki && day.anki.done) ? day.anki.done : '0';
+    lines.push(`${ds} | ${dt} | ${cyc} | checklist ${pct}% (${doneCnt}/${all.length}) | sleep ${sleep} | rHR ${hr} | steps ${steps} | water ${water} | uworld ${uw} | anki ${ak}`);
+  }
+  const r = computeReadiness();
+  const trigLines = r.triggers.map(t=>`  - ${t.hot?'[ACTIVE] ':'[clear]  '}${t.label}`).join('\n');
+  const s = computeStudy();
+  const out = `PPLUA WEEKLY EXPORT — generated ${todayKey()}
+
+DAILY LOG (last 7 days)
+${lines.join('\n')}
+
+READINESS (app-computed)
+Level: ${r.level} (${r.hotCount} active trigger${r.hotCount===1?'':'s'})
+${trigLines}
+HR baseline: ${settings.hrBaseline} bpm
+
+STUDY STATUS (app-computed)
+Pool remaining: ${s.unusedLeft} first-pass, ${s.redoLeft} redo
+Total done (incl. pre-tracker): ${s.totalDone}
+Days to exam: ${getDaysLeft()}
+Suggested pace: ${s.suggested}/day
+Status: ${s.status} — ${s.txt}
+
+Paste this to Claude along with any JEFIT export or notes on how sessions felt, and ask what to adjust.`;
+  const ta = document.getElementById('exportText');
+  ta.value = out; ta.style.display='block';
+  document.getElementById('copyBtn').style.display='block';
+  document.getElementById('copyStatus').textContent='';
+}
+function copyExport(){
+  const ta = document.getElementById('exportText');
+  ta.focus(); ta.select(); ta.setSelectionRange(0,999999);
+  const status = document.getElementById('copyStatus');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value)
+      .then(()=>{ status.textContent='Copied ✓'; })
+      .catch(()=>{ status.textContent='Copy failed — tap the text above, then copy manually.'; });
+  } else {
+    try{ document.execCommand('copy'); status.textContent='Copied ✓'; }
+    catch(e){ status.textContent='Tap the text above and copy manually.'; }
+  }
 }
 // ── JEFIT LAST-LOGGED (local, optional) ─────────────────────────────────────
 // The app can't read JEFIT live (no public API). If you later paste a JEFIT
