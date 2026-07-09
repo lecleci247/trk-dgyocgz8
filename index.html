@@ -89,10 +89,10 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .sync-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .sync-title{font-family:'DM Sans';font-size:14px;font-weight:600;color:var(--t1);}
 .sync-time{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
-.sync-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.sync-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;}
 .sync-val{text-align:center;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 4px;}
-.sv-n{font-size:17px;font-weight:600;color:var(--ac2);line-height:1.1;}
-.sv-l{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.05em;color:var(--t3);text-transform:uppercase;margin-top:3px;}
+.sv-n{font-size:14.5px;font-weight:600;color:var(--ac2);line-height:1.1;}
+.sv-l{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.03em;color:var(--t3);text-transform:uppercase;margin-top:3px;}
 .sv-flag{color:var(--re);}
 .sync-btn{width:100%;padding:10px;background:var(--ac);border:none;border-radius:8px;color:#1a1310;font-family:'DM Sans';font-size:13px;font-weight:600;cursor:pointer;}
 .sync-btn:active{background:var(--ac2);}
@@ -354,6 +354,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       <div class="sync-val"><div class="sv-n" id="syncSleep">—</div><div class="sv-l">Sleep h</div></div>
       <div class="sync-val"><div class="sv-n" id="syncHR">—</div><div class="sv-l" id="syncHRl">Rest HR</div></div>
       <div class="sync-val"><div class="sv-n" id="syncSteps">—</div><div class="sv-l">Steps</div></div>
+      <div class="sync-val"><div class="sv-n" id="syncWaterOz">—</div><div class="sv-l">Water oz</div></div>
       <div class="sync-val"><div class="sv-n" id="syncWeight">—</div><div class="sv-l">Weight</div></div>
     </div>
     <button class="sync-btn" onclick="openShortcut()">⚡ Run PPLUA Sync</button>
@@ -381,7 +382,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <div class="met" id="weightBox">
       <div class="met-lbl" id="weightLbl">Weight</div>
       <input type="number" id="metWeight" inputmode="decimal" placeholder="—">
-      <div class="met-unit" id="weightUnit">log Sundays</div>
+      <div class="met-unit" id="weightUnit">log Mondays</div>
     </div>
     <div class="met">
       <div class="met-lbl">Sleep</div>
@@ -467,6 +468,12 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     </div>
   </div>
 
+  <!-- WHY THIS NUMBER -->
+  <div class="ref-card" id="uwExplainCard">
+    <div class="ref-h">Why today's goal is what it is</div>
+    <div id="uwExplainBody" style="font-size:11.5px;color:var(--t2);line-height:1.75;"></div>
+  </div>
+
   <!-- ANKI -->
   <div class="anki-card">
     <div class="anki-top">
@@ -503,6 +510,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
         <input class="uw-in" type="number" id="poolRedo" inputmode="numeric" min="0" placeholder="400">
       </div>
     </div>
+    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Use UWorld's own <b style="color:var(--t2)">Total Incorrect</b> count from the Statistics screen — that's a clean, objective number UWorld already computed for you. Don't add <b style="color:var(--t2)">Marked</b> questions on top: many marked questions are also incorrect, and summing both risks double-counting the overlap. If you want marked-but-correct questions in the redo pool too, add only the ones NOT already incorrect.</p>
     <div class="anki-sub" style="margin-top:8px">Set once when your UWorld stats change. Persists across days.</div>
   </div>
 
@@ -531,7 +539,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       <div class="guide-step">Add <strong>Find Health Samples</strong> → Resting Heart Rate → newest first → Limit 1. Add <strong>Get Details of Health Sample</strong> → Value.</div>
       <div class="guide-step">Add <strong>Find Health Samples</strong> → Step Count → Add Filter: Start Date is Today → no limit. Add <strong>Calculate Statistics</strong> → Sum. That's today's steps.</div>
       <div class="guide-step">Add <strong>Find Health Samples</strong> → Dietary Water → Add Filter: Start Date is Today → no limit. Add <strong>Calculate Statistics</strong> → Sum. Add <strong>Calculate</strong> to divide by 950 for bottles (check units the first run — see full walkthrough in chat).</div>
-      <div class="guide-step">Add <strong>Find Health Samples</strong> → Body Mass → newest first → Limit 1. Add <strong>Get Details of Health Sample</strong> → Value. No need to gate this by day — the app only applies it on Sundays automatically.</div>
+      <div class="guide-step">Add <strong>Find Health Samples</strong> → Body Mass → newest first → Limit 1. Add <strong>Get Details of Health Sample</strong> → Value. No need to gate this by day — the app only applies it on Mondays automatically.</div>
       <div class="guide-step">Final action: <strong>Open URLs</strong>. Build the URL below directly in that field, inserting each variable chip where shown.</div>
     </div>
     <div class="guide-code" id="shortcutUrl"></div>
@@ -781,12 +789,12 @@ let state = {};
 let settings = {};   // persistent across days (UWorld pool, HR baseline)
 
 const todayKey = () => new Date().toISOString().split('T')[0];
-const isSunday = () => new Date().getDay() === 0;
+const isMonday = () => new Date().getDay() === 1;
 
 function blankDay() {
   return {
     date:todayKey(), dayType:'training', cycleDay:'', checked:{},
-    water:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
+    water:0, waterOz:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
     uworld:{done:'',goal:''}, anki:{done:'',due:''}, syncTime:null, readiness:'',
   };
 }
@@ -835,10 +843,12 @@ function readHashParams() {
   if(params.sleep) { state.metrics.sleep = parseFloat(params.sleep).toFixed(1); imported = true; }
   if(params.hr) { state.metrics.hr = Math.round(parseFloat(params.hr)); imported = true; }
   if(params.steps) { state.metrics.steps = Math.round(parseFloat(params.steps)); imported = true; }
-  if(params.weight && isSunday()) { state.metrics.weight = parseFloat(params.weight).toFixed(1); imported = true; }
+  if(params.weight && isMonday()) { state.metrics.weight = parseFloat(params.weight).toFixed(1); imported = true; }
   if(params.water) {
-    const bottles = Math.min(Math.floor(parseFloat(params.water) * 2) / 2, W_TARGETS[state.dayType]);
-    state.water = bottles;
+    const rawBottles = parseFloat(params.water);
+    state.waterOz = Math.round(rawBottles * 32); // precise, uncapped — for the oz-of-total display
+    const bottles = Math.min(Math.floor(rawBottles * 2) / 2, W_TARGETS[state.dayType]);
+    state.water = bottles; // capped/floored to half-bottle — for the tappable icon row
     imported = true;
   }
   if(imported) {
@@ -935,6 +945,7 @@ function computeStudy() {
   else { status='ontrack'; txt=`On pace. ${clamped}/day keeps you on schedule.`; }
 
   return {cum, unusedLeft, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
+          evenPace, deficit, first,
           totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
 }
 function firstLoggedDate(){
@@ -1170,10 +1181,14 @@ function renderSync() {
   const base=settings.hrBaseline||79;
   hrEl.classList.toggle('sv-flag', state.metrics.hr && parseFloat(state.metrics.hr)>base+7);
   document.getElementById('syncSteps').textContent = state.metrics.steps ? Math.round(state.metrics.steps/100)/10+'k' : '—';
-  document.getElementById('syncWeight').textContent = state.metrics.weight || (isSunday()?'—':'Sun');
+  document.getElementById('syncWeight').textContent = state.metrics.weight || (isMonday()?'—':'Mon');
+
+  const wTargetOz = (W_TARGETS[state.dayType]||5) * 32;
+  const wOz = state.waterOz!=null ? state.waterOz : Math.round((state.water||0)*32);
+  document.getElementById('syncWaterOz').textContent = wOz + '/' + wTargetOz;
 
   const url = window.location.href.split('#')[0];
-  document.getElementById('shortcutUrl').textContent = url + '#sleep=[sleep_hrs]&hr=[heart_rate]&steps=[steps]&water=[water_bottles]' + (isSunday()?'&weight=[weight_lbs]':'');
+  document.getElementById('shortcutUrl').textContent = url + '#sleep=[sleep_hrs]&hr=[heart_rate]&steps=[steps]&water=[water_bottles]' + (isMonday()?'&weight=[weight_lbs]':'');
 }
 
 function renderReadiness() {
@@ -1201,12 +1216,12 @@ function renderCoach() {
 }
 
 function renderMetrics() {
-  const sun = isSunday();
+  const mon = isMonday();
   const wb = document.getElementById('weightBox');
-  wb.classList.toggle('sunday', sun);
-  document.getElementById('weightLbl').textContent = sun ? 'Weight (Sun)' : 'Weight';
-  document.getElementById('metWeight').disabled = !sun;
-  document.getElementById('weightUnit').textContent = sun ? 'lbs — log today' : 'log Sundays';
+  wb.classList.toggle('sunday', mon);
+  document.getElementById('weightLbl').textContent = mon ? 'Weight (Mon)' : 'Weight';
+  document.getElementById('metWeight').disabled = !mon;
+  document.getElementById('weightUnit').textContent = mon ? 'lbs — log today' : 'log Mondays';
   if(document.activeElement !== document.getElementById('metWeight')) document.getElementById('metWeight').value = state.metrics.weight||'';
   if(document.activeElement !== document.getElementById('metSleep')) document.getElementById('metSleep').value = state.metrics.sleep||'';
   if(document.activeElement !== document.getElementById('metHR')) document.getElementById('metHR').value = state.metrics.hr||'';
@@ -1223,15 +1238,15 @@ function renderWater() {
     const btn = document.createElement('button');
     btn.className='wb'+(filled?(isHalf?' half':' on'):'');
     btn.innerHTML = filled ? '💧' : '🫙';
-    btn.onclick = () => { state.water = (state.water===i+1)?i:i+1; saveState(); renderWater(); renderSync(); };
+    btn.onclick = () => { state.water = (state.water===i+1)?i:i+1; state.waterOz = Math.round(state.water*32); saveState(); renderWater(); renderSync(); };
     wrap.appendChild(btn);
   }
   const oz = (state.water*32).toFixed(0), tgtOz = (tgt*32).toFixed(0);
   document.getElementById('waterCount').textContent = `${state.water}/${tgt} (${oz}/${tgtOz}oz)`;
   document.getElementById('waterSub').textContent = ({
-    training:'Training + steam: 5 bottles · Tap as you finish each',
-    rest:'Rest day: 3.5 bottles · Steady throughout the day',
-    cardio:'Cardio day: 4 bottles · Include session water',
+    training:'Training + steam: 5 bottles, auto-filled from sync',
+    rest:'Rest day: 3.5 bottles, auto-filled from sync',
+    cardio:'Cardio day: 4 bottles, auto-filled from sync',
   })[state.dayType];
 }
 
@@ -1260,6 +1275,35 @@ function renderUWorld() {
 
   if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
   if(document.activeElement !== document.getElementById('poolRedo')) document.getElementById('poolRedo').value = settings.redo;
+
+  renderStudyExplain(c);
+}
+
+// Builds a plain-language, numbers-shown breakdown of exactly how today's
+// suggested question count was derived — regenerated live from the same
+// values computeStudy() just used, so it can never drift out of sync with
+// the number actually shown above.
+function renderStudyExplain(c){
+  const parts = [];
+  parts.push(`<b style="color:var(--t1)">Remaining pool:</b> ${c.unusedLeft} first-pass + ${c.redoLeft} redo = <b style="color:var(--t1)">${c.remaining}</b> questions.`);
+  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, counting every day (including Sundays) through Aug 23. Taper starts Aug 24.`);
+  parts.push(`<b style="color:var(--t1)">Even pace to finish on time:</b> ${c.remaining} ÷ ${c.daysLeft} = <b style="color:var(--t1)">${c.evenPace}/day</b>.`);
+
+  if(!c.first){
+    parts.push(`You haven't logged a study day yet, so there's no actual pace to compare against — today's goal is just the even pace above, ${c.evenPace}/day.`);
+  } else {
+    const dir = c.deficit>0 ? 'behind' : c.deficit<0 ? 'ahead' : 'exactly on pace';
+    const amt = Math.abs(c.deficit);
+    if(c.deficit===0){
+      parts.push(`Since you started logging on ${c.first}, you're exactly on the pace you committed to. No adjustment needed.`);
+    } else {
+      parts.push(`Since you started logging on ${c.first}, you're <b style="color:var(--t1)">${amt} questions ${dir}</b> your committed pace.`);
+      parts.push(`The miss-day rule spreads any gap over 3 days rather than dumping it on one: ${c.evenPace} ${c.deficit>0?'+':'−'} (${amt} ÷ 3) = <b style="color:var(--t1)">${c.suggested}/day</b>, today's actual goal.`);
+    }
+  }
+  parts.push(`Range is clamped to 20–70/day regardless of the math, so no single day asks for an unreasonable block or drops to near-zero.`);
+
+  document.getElementById('uwExplainBody').innerHTML = parts.map(p=>`<div style="margin-bottom:6px">${p}</div>`).join('');
 }
 
 function renderAnki() {
@@ -1506,7 +1550,7 @@ function resetDay(){
 // ── INPUT HANDLERS ──────────────────────────────────────────────────────────
 function bind(id, fn){ const el=document.getElementById(id); if(el) el.addEventListener('input',fn); }
 
-bind('metWeight',function(){ if(!isSunday())return; state.metrics.weight=this.value; saveState(); renderSync(); });
+bind('metWeight',function(){ if(!isMonday())return; state.metrics.weight=this.value; saveState(); renderSync(); });
 bind('metSleep', function(){ state.metrics.sleep=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 bind('metHR',    function(){ state.metrics.hr=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 
