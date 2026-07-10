@@ -199,9 +199,10 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .sec-chev.cl{transform:rotate(-90deg);}
 .sec-items{max-height:1000px;overflow:hidden;transition:max-height .3s;}
 .sec-items.hi{max-height:0;}
-.ci{display:flex;gap:11px;padding:10px 13px;border-top:1px solid var(--bd);cursor:pointer;align-items:flex-start;}
+.ci{border-top:1px solid var(--bd);}
 .ci.done .cl2{color:var(--t3);text-decoration:line-through;}
 .ci.dis{opacity:.4;pointer-events:none;}
+.cb-row{display:flex;gap:11px;padding:10px 13px;cursor:pointer;align-items:flex-start;}
 .cb{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--bd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s;}
 .cb.ch{background:var(--gr);border-color:var(--gr);}
 .ck{color:#0e1a0e;font-size:12px;font-weight:700;opacity:0;}
@@ -210,6 +211,9 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .cl2{font-size:13px;color:var(--t1);line-height:1.4;}
 .cs{font-size:11px;color:var(--t3);margin-top:1px;}
 .excl-note{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--am);margin-top:3px;}
+.ci-time{flex-shrink:0;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--ac2);font-family:'DM Mono',monospace;font-size:11px;padding:3px 5px;width:74px;margin-top:0;-webkit-appearance:none;appearance:none;color-scheme:dark;}
+.crash-sev{display:flex;gap:6px;padding:0 13px 12px 44px;}
+.crash-sev .cbtn{flex:1;text-transform:capitalize;text-align:center;}
 
 /* ── SECTION ACCENTS ── */
 .s-am .sec-ic{filter:none;} 
@@ -303,7 +307,8 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .dd-sec{margin-bottom:12px;}
 .dd-sec-hd{font-size:12.5px;font-weight:600;color:var(--t1);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
 .dd-sec-cnt{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);font-weight:400;}
-.dd-item{font-size:11.5px;color:var(--gr);padding:3px 0 3px 4px;}
+.dd-item{font-size:11.5px;color:var(--gr);padding:3px 0 3px 4px;display:flex;justify-content:space-between;}
+.dd-item-time{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);}
 .dd-item-none{font-size:11.5px;color:var(--t3);font-style:italic;padding:3px 0 3px 4px;}
 .dd-empty{text-align:center;color:var(--t3);font-size:13px;padding:30px 0;}
 </style>
@@ -574,6 +579,14 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   </div>
 
   <div class="divider"></div>
+  <div class="ptitle">Full data export (backup / Excel)</div>
+  <div class="psub">Downloads every day you've ever logged as a CSV file — dates, checklist completion, sleep, HR, water, UWorld/Anki, and every timestamp. This is your durable backup: opens in Excel, Numbers, or Google Sheets, and it's the fastest way to hand months of history to Claude for deeper analysis.</div>
+  <div class="ref-card">
+    <button class="sync-btn" style="margin-bottom:8px" onclick="downloadFullCSV()">⬇️ Export All Data (CSV)</button>
+    <div class="anki-sub" id="csvStatus">Downloads to Files app or your browser's downloads.</div>
+  </div>
+
+  <div class="divider"></div>
   <div class="ptitle">Weekly review export</div>
   <div class="psub">One tap turns your last 7 logged days into plain text. Paste it to Claude for trend analysis, adherence review, and deload or program decisions the app's automatic triggers can't make on their own.</div>
   <div class="ref-card">
@@ -659,6 +672,21 @@ const CYCLE = [
 
 const W_TARGETS = {training:5, rest:3.5, cardio:4};
 
+// Items worth surfacing with clock time in the weekly export — the ones
+// actually useful for spotting correlations (Vyvanse timing, meals, crash).
+// Deliberately NOT every checklist item, to keep the export readable.
+const CORRELATION_ITEMS = [
+  {id:'vyv', label:'Vyvanse'},
+  {id:'bfpre', label:'Breakfast'},
+  {id:'bfrest', label:'Breakfast'},
+  {id:'bfpost', label:'Breakfast'},
+  {id:'session', label:'Workout start'},
+  {id:'shake', label:'Shake'},
+  {id:'lunch', label:'Lunch'},
+  {id:'crash', label:'Crash'},
+  {id:'dinner', label:'Dinner'},
+];
+
 // A cardio day (D4/D7, or manual) can be downgraded to a true rest day —
 // same cycle position, but no cardio actually happening. This resolves
 // which checklist and water target actually apply.
@@ -734,6 +762,7 @@ training:[
     {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
     {id:'bfpre',label:'Breakfast before workout',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-workout breakfast'},
+    {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast, before gym'},
   ]},
   {id:'pre',label:'Pre-Workout',icon:'⚡',cls:'s-pre',items:[
     {id:'wpre',label:'500ml water before gym',sub:'60–90 min window before lifting'},
@@ -748,8 +777,12 @@ training:[
   ]},
   {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
     {id:'bfpost',label:'Breakfast post-workout (if skipped)',sub:'30–40g protein + carbs',excl:'bfpre',exclNote:'Exclusive with morning breakfast'},
-    {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Within 2 hours of finishing'},
+    {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
     {id:'meal',label:'Post-workout meal — 40–50g protein',sub:'Good Chop protein + carbs'},
+  ]},
+  {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
+    {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
+    {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -768,6 +801,11 @@ rest:[
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
     {id:'creat',label:'5g creatine',sub:'Take daily — with water'},
     {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
+    {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast'},
+  ]},
+  {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
+    {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
+    {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -784,6 +822,7 @@ cardio:[
     {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
     {id:'bfpre',label:'Breakfast before cardio',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-cardio breakfast'},
+    {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast'},
   ]},
   {id:'wo',label:'Cardio Session',icon:'🚴',cls:'s-wo',items:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Let HR rise gradually'},
@@ -795,6 +834,10 @@ cardio:[
   {id:'po',label:'Post-Cardio',icon:'✓',cls:'s-po',items:[
     {id:'bfpost',label:'Breakfast post-cardio (if skipped)',sub:'30–40g protein + carbs',excl:'bfpre',exclNote:'Exclusive with morning breakfast'},
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:''},
+  ]},
+  {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
+    {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
+    {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -819,7 +862,32 @@ function blankDay() {
     date:todayKey(), dayType:'training', cycleDay:'', checked:{}, realRest:false,
     water:0, waterOz:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
     uworld:{done:'',goal:''}, anki:{done:'',due:''}, syncTime:null, readiness:'',
+    crashSeverity:'',
   };
+}
+
+// ── ITEM TIMESTAMPS ──────────────────────────────────────────────────────
+// state.checked[id] is either legacy `true` (old data, no timestamp — never
+// migrated, so nothing already logged ever breaks or needs re-saving) or the
+// new {done:true, at:"HH:MM"} shape used going forward.
+function nowTimeString(){
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function isChecked(checkedObj, id){
+  const v = checkedObj && checkedObj[id];
+  return v===true || (v && typeof v==='object' && v.done===true);
+}
+function getCheckedTime(checkedObj, id){
+  const v = checkedObj && checkedObj[id];
+  return (v && typeof v==='object' && v.at) ? v.at : '';
+}
+function fmtTime12(hhmm){
+  if(!hhmm) return '';
+  const [h,m] = hhmm.split(':').map(Number);
+  const ap = h>=12?'pm':'am';
+  const h12 = h%12===0?12:h%12;
+  return h12+':'+String(m).padStart(2,'0')+ap;
 }
 
 function loadSettings() {
@@ -1153,16 +1221,20 @@ function openDayDetail(dateStr, isToday){
     <div class="dd-row"><span class="dd-k">Water</span><span class="dd-v">${day.water||0}/${W_TARGETS[dt]||5} bottles</span></div>
     <div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>
     <div class="dd-row"><span class="dd-k">Anki</span><span class="dd-v">${(day.anki&&day.anki.done)||0} done</span></div>
+    ${day.crashSeverity?`<div class="dd-row"><span class="dd-k">Crash severity</span><span class="dd-v">${day.crashSeverity}</span></div>`:''}
     <div class="dd-divider"></div>`;
 
   secs.forEach(sec=>{
-    const doneItems = sec.items.filter(it=>day.checked && day.checked[it.id]);
+    const doneItems = sec.items.filter(it=>isChecked(day.checked, it.id));
     const total = sec.items.length;
     html += `<div class="dd-sec"><div class="dd-sec-hd">${sec.icon} ${sec.label} <span class="dd-sec-cnt">${doneItems.length}/${total}</span></div>`;
     if(doneItems.length===0){
       html += `<div class="dd-item-none">Nothing checked</div>`;
     } else {
-      doneItems.forEach(it=>{ html += `<div class="dd-item">✓ ${it.label}</div>`; });
+      doneItems.forEach(it=>{
+        const t = getCheckedTime(day.checked, it.id);
+        html += `<div class="dd-item">✓ ${it.label}${t?` <span class="dd-item-time">${fmtTime12(t)}</span>`:''}</div>`;
+      });
     }
     html += `</div>`;
   });
@@ -1417,19 +1489,29 @@ function renderChecklist() {
   container.innerHTML = '';
   SECTIONS[effectiveDayType(state)].forEach(sec => {
     const isCol = state.collapsed[sec.id];
-    const doneCnt = sec.items.filter(it=>state.checked[it.id]).length;
+    const doneCnt = sec.items.filter(it=>isChecked(state.checked,it.id)).length;
     const div = document.createElement('div');
     div.className = 'sec '+sec.cls;
     const items = sec.items.map(item => {
-      const ch = !!state.checked[item.id];
-      const partnerChecked = item.excl && !!state.checked[item.excl];
-      return `<div class="ci${ch?' done':''}${partnerChecked?' dis':''}" data-id="${item.id}" onclick="toggleItem('${item.id}')">
-        <div class="cb${ch?' ch':''}"><span class="ck">✓</span></div>
-        <div class="cc">
-          <div class="cl2">${item.label}</div>
-          ${item.sub?`<div class="cs">${item.sub}</div>`:''}
-          ${item.exclNote&&!ch&&!partnerChecked?`<div class="excl-note">${item.exclNote}</div>`:''}
+      const ch = isChecked(state.checked, item.id);
+      const partnerChecked = item.excl && isChecked(state.checked, item.excl);
+      const t = getCheckedTime(state.checked, item.id);
+      const timeHtml = ch ? `<input type="time" class="ci-time" value="${t}" onclick="event.stopPropagation()" onchange="editItemTime('${item.id}', this.value)">` : '';
+      const crashSev = (item.id==='crash' && ch) ? `
+        <div class="crash-sev" onclick="event.stopPropagation()">
+          ${['mild','moderate','severe'].map(s=>`<button class="cbtn${state.crashSeverity===s?' active':''}" onclick="setCrashSeverity('${s}')">${s}</button>`).join('')}
+        </div>` : '';
+      return `<div class="ci${ch?' done':''}${partnerChecked?' dis':''}" data-id="${item.id}">
+        <div class="cb-row" onclick="toggleItem('${item.id}')">
+          <div class="cb${ch?' ch':''}"><span class="ck">✓</span></div>
+          <div class="cc">
+            <div class="cl2">${item.label}</div>
+            ${item.sub?`<div class="cs">${item.sub}</div>`:''}
+            ${item.exclNote&&!ch&&!partnerChecked?`<div class="excl-note">${item.exclNote}</div>`:''}
+          </div>
+          ${timeHtml}
         </div>
+        ${crashSev}
       </div>`;
     }).join('');
     div.innerHTML = `
@@ -1450,8 +1532,23 @@ function toggleItem(id) {
   let item = null;
   for(const sec of secs){ for(const it of sec.items){ if(it.id===id){item=it;break;} } if(item)break; }
   if(!item) return;
-  if(item.excl && state.checked[item.excl]) return;
-  state.checked[id] = !state.checked[id];
+  if(item.excl && isChecked(state.checked, item.excl)) return;
+  if(isChecked(state.checked, id)){
+    delete state.checked[id];
+    if(id==='crash') state.crashSeverity='';
+  } else {
+    state.checked[id] = {done:true, at:nowTimeString()};
+  }
+  saveState(); renderChecklist();
+}
+function editItemTime(id, val){
+  if(!isChecked(state.checked, id)) return;
+  if(typeof state.checked[id] !== 'object') state.checked[id] = {done:true};
+  state.checked[id].at = val;
+  saveState();
+}
+function setCrashSeverity(s){
+  state.crashSeverity = state.crashSeverity===s ? '' : s;
   saveState(); renderChecklist();
 }
 function toggleSection(id) {
@@ -1462,7 +1559,7 @@ function toggleSection(id) {
 }
 function updateProgress() {
   const all = SECTIONS[effectiveDayType(state)].flatMap(s=>s.items);
-  const done = all.filter(it=>state.checked[it.id]).length;
+  const done = all.filter(it=>isChecked(state.checked,it.id)).length;
   const pct = all.length>0 ? Math.round(done/all.length*100) : 0;
   document.getElementById('progBar').style.width = pct+'%';
   document.getElementById('progTxt').textContent = done+'/'+all.length+' done';
@@ -1470,8 +1567,56 @@ function updateProgress() {
 }
 function updateBanner() {
   const all = SECTIONS[effectiveDayType(state)].flatMap(s=>s.items);
-  const done = all.filter(it=>state.checked[it.id]).length;
+  const done = all.filter(it=>isChecked(state.checked,it.id)).length;
   document.getElementById('doneBanner').classList.toggle('show', done===all.length && all.length>0);
+}
+
+// ── FULL DATA EXPORT (CSV backup) ───────────────────────────────────────────
+// Every day ever logged, one row each, including every timestamp. This is the
+// durable backup: a real file the person owns, openable in Excel/Sheets/Numbers,
+// independent of this browser's localStorage ever being cleared.
+function generateFullCSV(){
+  const keys = Object.keys(localStorage).filter(k=>k.startsWith('pplua_') && k!=='pplua_settings').sort();
+  const header = ['date','dayType','cycleDay','realRest','checklist_done','checklist_total','checklist_pct',
+    'sleep_h','resting_hr','steps','weight_lbs','water_bottles','water_oz','uworld_done','anki_done','crash_severity',
+    ...CORRELATION_ITEMS.map(ci=>ci.id+'_time')];
+  const rows = [header.join(',')];
+  keys.forEach(k=>{
+    let day; try{ day = JSON.parse(localStorage.getItem(k)); }catch(e){ return; }
+    if(!day) return;
+    const dt = effectiveDayType(day);
+    const secs = SECTIONS[dt] || SECTIONS.training;
+    const all = secs.flatMap(s=>s.items);
+    const doneCnt = all.filter(it=>isChecked(day.checked,it.id)).length;
+    const pct = all.length ? Math.round(doneCnt/all.length*100) : 0;
+    const m = day.metrics || {};
+    const row = [
+      day.date || k.replace('pplua_',''),
+      day.dayType||'', day.cycleDay||'', day.realRest?'1':'0',
+      doneCnt, all.length, pct,
+      m.sleep||'', m.hr||'', m.steps||'', m.weight||'',
+      day.water!=null?day.water:'', day.waterOz!=null?day.waterOz:'',
+      (day.uworld&&day.uworld.done)||'', (day.anki&&day.anki.done)||'',
+      day.crashSeverity||'',
+      ...CORRELATION_ITEMS.map(ci=>getCheckedTime(day.checked, ci.id)||'')
+    ];
+    rows.push(row.map(v=>{
+      const s = String(v);
+      return /[,"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+    }).join(','));
+  });
+  return rows.join('\n');
+}
+function downloadFullCSV(){
+  const csv = generateFullCSV();
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'pplua_full_export_'+todayKey()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  const status = document.getElementById('csvStatus');
+  if(status) status.textContent = 'Downloaded — check Files app or your downloads.';
 }
 
 // ── WEEKLY EXPORT ────────────────────────────────────────────────────────
@@ -1502,6 +1647,14 @@ function generateExport(){
     const uw = (day.uworld && day.uworld.done) ? day.uworld.done : '0';
     const ak = (day.anki && day.anki.done) ? day.anki.done : '0';
     lines.push(`${ds} | ${dtLabel} | ${cyc} | checklist ${pct}% (${doneCnt}/${all.length}) | sleep ${sleep} | rHR ${hr} | steps ${steps} | water ${water} | uworld ${uw} | anki ${ak}`);
+    const times = CORRELATION_ITEMS
+      .filter(ci=>isChecked(day.checked, ci.id))
+      .map(ci=>{
+        const t = getCheckedTime(day.checked, ci.id);
+        const extra = (ci.id==='crash' && day.crashSeverity) ? ` (${day.crashSeverity})` : '';
+        return t ? `${ci.label} ${fmtTime12(t)}${extra}` : `${ci.label}${extra}`;
+      });
+    if(times.length) lines.push(`  times: ${times.join(', ')}`);
   }
   const r = computeReadiness();
   const trigLines = r.triggers.map(t=>`  - ${t.hot?'[ACTIVE] ':'[clear]  '}${t.label}`).join('\n');
