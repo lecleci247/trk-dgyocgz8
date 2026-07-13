@@ -514,31 +514,45 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   <!-- UPDATE POOL -->
   <div class="ref-card">
     <div class="ref-h">Update your UWorld pool</div>
-    <p style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:10px;">When your used/incorrect counts change, update them here. The daily target recalculates from these.</p>
+    <p style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:10px;">Update these whenever you check UWorld's stats. The daily target projects forward from your current miss rate — as you clear the unused pool, some of it becomes new redo backlog, and that's priced in automatically.</p>
     <div class="uw-inputs">
       <div class="uw-ig">
-        <div class="uw-il">First-pass remaining</div>
-        <input class="uw-in" type="number" id="poolUnused" inputmode="numeric" min="0" placeholder="720">
+        <div class="uw-il">Unused remaining</div>
+        <input class="uw-in" type="number" id="poolUnused" inputmode="numeric" min="0" placeholder="610">
       </div>
       <div class="uw-ig">
-        <div class="uw-il">Redo pool</div>
-        <input class="uw-in" type="number" id="poolRedo" inputmode="numeric" min="0" placeholder="400">
+        <div class="uw-il">Incorrect remaining</div>
+        <input class="uw-in" type="number" id="poolIncorrect" inputmode="numeric" min="0" placeholder="292">
       </div>
     </div>
-    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Redo pool = <b style="color:var(--t2)">Incorrect</b> + <b style="color:var(--t2)">Marked</b> questions that aren't already counted as incorrect (marked-but-correct — mostly guessed-right or right-answer-wrong-reasoning items). UWorld's basic filter view doesn't expose the exact overlap between Incorrect and Marked, so Incorrect + Marked is used as a safe upper-bound. Update both numbers here whenever your QBank stats change.</p>
-    <div class="anki-sub" style="margin-top:8px">Set once when your UWorld stats change. Persists across days.</div>
+    <div class="uw-inputs" style="margin-top:8px">
+      <div class="uw-ig">
+        <div class="uw-il">Marked remaining</div>
+        <input class="uw-in" type="number" id="poolMarked" inputmode="numeric" min="0" placeholder="90">
+      </div>
+      <div class="uw-ig">
+        <div class="uw-il">Current miss rate %</div>
+        <input class="uw-in" type="number" id="poolMissRate" inputmode="decimal" min="0" max="100" step="0.1" placeholder="45.8">
+      </div>
+    </div>
+    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Miss rate = incorrect ÷ used, from UWorld's Statistics screen. This projects how many of your remaining unused questions will likely need a redo pass too — not just what's already known-incorrect today.</p>
+    <div class="anki-sub" style="margin-top:8px">Update weekly, or whenever your QBank stats change. Persists across days.</div>
   </div>
 
   <div class="divider"></div>
   <div class="ptitle">Study rules</div>
   <div class="ref-card">
     <div class="ref-row"><span class="ref-k">Cadence</span><span class="ref-v">6 days/week, one floating day off. Not pinned to a specific weekday.</span></div>
-    <div class="ref-row"><span class="ref-k">Priority order</span><span class="ref-v">1) Finish unused first-pass. 2) Redo incorrect + marked. 3) Redo questions missed again during redo. 4) Final mixed weakness blocks.</span></div>
+    <div class="ref-row"><span class="ref-k">Priority order</span><span class="ref-v">1) Incorrect questions. 2) Marked, correct-but-guessed or right-answer-wrong-diagnosis. 3) Questions missed again during redo. 4) Marked questions still shaky after review.</span></div>
     <div class="ref-row"><span class="ref-k">Missed a day</span><span class="ref-v">Never double up. Spread the deficit over the next 3 days.</span></div>
-    <div class="ref-row"><span class="ref-k">Main block</span><span class="ref-v">40 timed mixed questions, review same day.</span></div>
-    <div class="ref-row"><span class="ref-k">Add-on</span><span class="ref-v">10 targeted or mixed.</span></div>
-    <div class="ref-row"><span class="ref-k">Stamina</span><span class="ref-v">60-question timed blocks 2–3×/week in Phase 2–3.</span></div>
-    <div class="ref-row"><span class="ref-k">Taper (Aug 24)</span><span class="ref-v">0–20 questions max. Sleep and logistics.</span></div>
+    <div class="ref-row"><span class="ref-k">Main block</span><span class="ref-v">40 timed mixed questions, review same day. +10 more if energy allows.</span></div>
+    <div class="ref-row"><span class="ref-k">Phase 1 (Jul 13–31)</span><span class="ref-v">Finish unused. 50/day standard, 40 floor, 60–65 catch-up ceiling.</span></div>
+    <div class="ref-row"><span class="ref-k">Phase 2 (Aug 1–14)</span><span class="ref-v">Redo incorrect + marked. 50/day, up to 55–60 if pool runs large and quality holds.</span></div>
+    <div class="ref-row"><span class="ref-k">Phase 3 (Aug 15–21)</span><span class="ref-v">Final mixed weakness pass. 40–50/day, cap at 40 if review quality drops.</span></div>
+    <div class="ref-row"><span class="ref-k">Phase 4 (Aug 22–23)</span><span class="ref-v">Final consolidation. 30–50/day. No new resources.</span></div>
+    <div class="ref-row"><span class="ref-k">Taper (Aug 24)</span><span class="ref-v">0–20 questions max, only if it reduces anxiety. Protect sleep.</span></div>
+    <div class="ref-row"><span class="ref-k">Hard limit</span><span class="ref-v">Avoid 80–100 question days even when behind — review quality collapses first.</span></div>
+    <div class="ref-row"><span class="ref-k">Anki</span><span class="ref-v">UWorld first. Cap 5–10 new/edited cards per day — targeted traps and differentiators only, not a second curriculum.</span></div>
     <div class="ref-row"><span class="ref-k">New QBank</span><span class="ref-v">Don't add one unless UWorld is fully exhausted and review is high quality.</span></div>
   </div>
 </div>
@@ -643,21 +657,33 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 //  Source of truth: Master_Handoff (corrected gym-verified program)
 // ══════════════════════════════════════════════════════════════════════════
 
-const EXAM = '2026-08-25';
+const EXAM = '2026-08-25';        // per the latest framework — CONFLICTS with a prior message that said Aug 24, flagged for confirmation
 const TRACKER_START = '2026-07-06';
-const STUDY_END = '2026-08-23';   // last full study day before taper
+const STUDY_END = '2026-08-23';   // last day of Phase 4 — "serious study days through Aug 23" per the framework
+const TAPER_START = '2026-08-24'; // single taper day, 0-20 questions max, before the exam itself
 const STUDY_DAYS_PER_WEEK = 6;    // one floating day off per week — not pinned to a weekday
+const STANDARD_DAILY_TARGET = 50; // the framework's fixed policy floor — not just a computed nearest-10 rounding
+
+function fmtMonthDay(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[m-1]+' '+d;
+}
 
 // ── UWORLD BASELINE (editable via Study page pool inputs, persisted) ────────
-// From QBank: 1248 total, 568 used, 680 unused, 262 incorrect, 80 marked.
-// Redo pool = incorrect + marked (safe upper-bound; exact overlap not exposed by UWorld's basic filter view).
-const UW_DEFAULT = {unused:680, redo:342, total:1248, histDone:568};
+// From latest QBank check (Jul 13): 1248 total, 638 used, 610 unused,
+// 346 correct, 292 incorrect, 90 marked, miss rate 45.8%.
+const UW_DEFAULT = {unused:610, incorrect:292, marked:90, missRate:45.8, total:1248, histDone:638};
 
+// Phase 1: finish unused first-pass (Jul 13-31). Phase 2: redo incorrect+marked
+// (Aug 1-14). Phase 3: final mixed weakness pass (Aug 15-21). Phase 4: final
+// consolidation, lighter volume (Aug 22-23). Taper Aug 24. Exam Aug 25.
 const PHASES = [
-  {num:1,end:'2026-08-03',label:'Phase 1',desc:'First pass'},
-  {num:2,end:'2026-08-17',label:'Phase 2',desc:'Redo incorrect + marked'},
-  {num:3,end:'2026-08-23',label:'Phase 3',desc:'Final mixed pass'},
-  {num:4,end:'2026-08-24',label:'Taper',desc:'Light review only'},
+  {num:1,end:'2026-07-31',label:'Phase 1',desc:'Finish unused first-pass'},
+  {num:2,end:'2026-08-14',label:'Phase 2',desc:'Redo incorrect + marked'},
+  {num:3,end:'2026-08-21',label:'Phase 3',desc:'Final mixed weakness pass'},
+  {num:4,end:STUDY_END,label:'Phase 4',desc:'Final consolidation'},
+  {num:5,end:TAPER_START,label:'Taper',desc:'Light review only'},
 ];
 
 const CYCLE = [
@@ -903,7 +929,12 @@ function loadSettings() {
     settings = s ? JSON.parse(s) : {};
   } catch(e) { settings = {}; }
   if(settings.unused == null) settings.unused = UW_DEFAULT.unused;
-  if(settings.redo == null) settings.redo = UW_DEFAULT.redo;
+  // incorrect/marked replace the old combined "redo" field — these are brand
+  // new fields, so anyone's existing settings will correctly pick up the
+  // fresh defaults below the first time this runs, no migration needed.
+  if(settings.incorrect == null) settings.incorrect = UW_DEFAULT.incorrect;
+  if(settings.marked == null) settings.marked = UW_DEFAULT.marked;
+  if(settings.missRate == null) settings.missRate = UW_DEFAULT.missRate; // percent, e.g. 45.8
   if(settings.baselineUsed == null) settings.baselineUsed = UW_DEFAULT.histDone;
   if(settings.hrBaseline == null) settings.hrBaseline = 79;  // Master Handoff baseline
   // Everything logged since this cum snapshot decrements the pool going forward.
@@ -964,7 +995,7 @@ function readHashParams() {
 function getPhase() {
   const now = new Date();
   for(const p of PHASES) { if(now <= new Date(p.end + 'T23:59:59')) return p; }
-  return {num:5,label:'Exam Day',desc:'Aug 25'};
+  return {num:5,label:'Exam Day',desc:fmtMonthDay(EXAM)};
 }
 function getDaysLeft() {
   const now = new Date(); now.setHours(0,0,0,0);
@@ -1010,9 +1041,12 @@ function getWeekDone() {
 }
 
 // ── ADAPTIVE STUDY TARGET ──────────────────────────────────────────────────
-// Recomputes from remaining pool ÷ study days left, then layers the
-// miss-day spread rule: any deficit vs an even daily pace is spread over 3 days,
-// never dumped onto one.
+// Implements the framework's exact adjustment formula: expected future
+// incorrects = unused remaining × current miss rate; redo pool = current
+// incorrect + marked + that projection; total exposure = unused + redo pool;
+// daily target = total / days left, then floored at the 50/day standard
+// (not just rounded up from the bare minimum — 50 is the stated policy
+// floor, only exceeded when genuinely falling behind calls for more).
 function computeStudy() {
   const cum = getCumDone();
   // Only questions logged SINCE the pool was last manually re-anchored count
@@ -1021,47 +1055,52 @@ function computeStudy() {
   // everything logged since the tracker started.
   const cumSinceBaseline = Math.max(0, cum - (settings.poolBaselineCum||0));
   const unusedLeft = Math.max(0, settings.unused - cumSinceBaseline);
-  const redoLeft   = Math.max(0, settings.redo - Math.max(0, cumSinceBaseline - settings.unused));
-  const remaining  = unusedLeft + redoLeft;
-  const daysLeft   = getStudyDaysLeft();
-  const bareMin    = daysLeft>0 ? remaining/daysLeft : remaining;
-  // Deliberate buffer: round the bare-minimum pace up to the nearest 10.
-  // This mirrors the original plan's own cushion (44 bare minimum -> 50
-  // recommended), rather than shipping the tightest number that technically works.
-  const evenPace   = Math.max(10, Math.ceil(bareMin/10)*10);
+  // Once unused is exhausted, further logged progress counts against the
+  // known incorrect+marked backlog specifically.
+  const redoProgress = Math.max(0, cumSinceBaseline - settings.unused);
+  const missRate = Math.max(0, Math.min(100, settings.missRate!=null?settings.missRate:45.8)) / 100;
+  const expectedFutureIncorrect = Math.round(unusedLeft * missRate);
+  const knownRedoLeft = Math.max(0, (settings.incorrect||0) + (settings.marked||0) - redoProgress);
+  const redoLeft = knownRedoLeft + expectedFutureIncorrect;
+  const remaining = unusedLeft + redoLeft;
 
-  // Deficit tracks genuine schedule adherence from your FIRST-EVER logged
-  // day, independent of any later pool re-anchoring — correcting the pool
-  // number shouldn't erase whether you've actually kept pace.
+  const daysLeft = getStudyDaysLeft();
+  const bareMin = daysLeft>0 ? remaining/daysLeft : remaining;
+  // Standard is 50/day, a fixed policy floor — only scale above it when the
+  // bare-minimum math genuinely calls for more (nearest-10 rounded).
+  const evenPace = Math.max(STANDARD_DAILY_TARGET, Math.ceil(bareMin/10)*10);
+
+  // Deficit compares actual progress against the framework's own STANDARD
+  // commitment (50/day), not a reconstructed original pool size — the old
+  // reconstruction approach breaks under the miss-rate-weighted formula,
+  // since each real question done now shrinks the pool by more than 1
+  // (it also shrinks the projected-redo component). Tying deficit directly
+  // to the stated standard is both simpler and more faithful to the framework.
   const first = firstLoggedDate();
   let deficit = 0, expectedByNow = 0;
   if(first){
     const studyDaysSinceStart = studyDaysBetween(first, todayKey()); // inclusive of today
-    const daysFirstToEnd = studyDaysBetween(first, STUDY_END);
-    // reconstruct the TRUE original pool: current real remaining + everything
-    // done since day one (cum, not cumSinceBaseline — this must reflect all
-    // real progress regardless of how many times the pool got corrected).
-    const poolAtStart = remaining + cum;
-    const startPace = daysFirstToEnd>0 ? poolAtStart/daysFirstToEnd : 0;
-    expectedByNow = Math.round(startPace * (studyDaysSinceStart - 1)); // through yesterday
+    expectedByNow = STANDARD_DAILY_TARGET * (studyDaysSinceStart - 1); // through yesterday, at standard pace
     deficit = Math.round(expectedByNow - cum); // + = behind
   }
 
   // Suggested = buffered even pace, nudged by 1/3 of any live deficit
   // (spread rule: never dump a full miss onto one day).
   let target = evenPace + (deficit>0 ? Math.round(deficit/3) : Math.round(deficit/3));
-  const clamped = Math.max(20, Math.min(70, Math.max(evenPace, target)>0?target:evenPace));
+  // Clamp matches the framework's own stated bounds: 40 minimum-acceptable
+  // floor on hard days, 65 catch-up ceiling — explicitly avoid 80-100.
+  const clamped = Math.max(40, Math.min(65, Math.max(evenPace, target)>0?target:evenPace));
 
   let status='ontrack', txt='';
   if(daysLeft<=0){ status='ontrack'; txt='Study window closed. Taper: light review, sleep, logistics.'; }
-  else if(!first){ status='ontrack'; txt=`Not started yet. Buffered pace to clear the pool is ${evenPace}/day. Log today's questions to begin tracking.`; }
+  else if(!first){ status='ontrack'; txt=`Not started yet. Standard is ${evenPace}/day. Log today's questions to begin tracking.`; }
   else if(deficit > 40){ status='crit'; txt=`Behind by ~${deficit}. ${clamped}/day closes the gap over the next few days without a cram.`; }
   else if(deficit > 10){ status='behind'; txt=`Slightly behind (~${deficit}). Nudged to ${clamped}/day, spread not dumped.`; }
   else if(deficit < -30){ status='ahead'; txt=`Ahead by ~${Math.abs(deficit)}. Hold ${clamped}/day or bank the buffer.`; }
   else { status='ontrack'; txt=`On pace. ${clamped}/day keeps you on schedule.`; }
 
   return {cum, unusedLeft, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
-          evenPace, bareMin, deficit, first,
+          evenPace, bareMin, deficit, first, knownRedoLeft, expectedFutureIncorrect, missRatePct: missRate*100,
           totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
 }
 function firstLoggedDate(){
@@ -1404,7 +1443,9 @@ function renderUWorld() {
   if(document.activeElement !== document.getElementById('uwGoal')) document.getElementById('uwGoal').value = (goalRaw!=='' && goalRaw!=null) ? goalRaw : c.suggested;
 
   if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
-  if(document.activeElement !== document.getElementById('poolRedo')) document.getElementById('poolRedo').value = settings.redo;
+  if(document.activeElement !== document.getElementById('poolIncorrect')) document.getElementById('poolIncorrect').value = settings.incorrect;
+  if(document.activeElement !== document.getElementById('poolMarked')) document.getElementById('poolMarked').value = settings.marked;
+  if(document.activeElement !== document.getElementById('poolMissRate')) document.getElementById('poolMissRate').value = settings.missRate;
 
   renderStudyExplain(c);
 }
@@ -1415,13 +1456,16 @@ function renderUWorld() {
 // the number actually shown above.
 function renderStudyExplain(c){
   const parts = [];
-  parts.push(`<b style="color:var(--t1)">Remaining pool:</b> ${c.unusedLeft} first-pass + ${c.redoLeft} redo = <b style="color:var(--t1)">${c.remaining}</b> questions.`);
-  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, at 6 days/week with one floating day off (not pinned to a specific weekday), through Aug 23. Taper starts Aug 24.`);
+  parts.push(`<b style="color:var(--t1)">Unused remaining:</b> ${c.unusedLeft} first-pass questions.`);
+  parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (current incorrect + marked).`);
+  parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.unusedLeft} unused × ${c.missRatePct.toFixed(1)}% current miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> more questions you'll likely need to redo as you clear the first-pass pool.`);
+  parts.push(`<b style="color:var(--t1)">Total remaining exposure:</b> ${c.unusedLeft} unused + (${c.knownRedoLeft} known + ${c.expectedFutureIncorrect} projected) redo = <b style="color:var(--t1)">${c.remaining}</b> question exposures.`);
+  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, at 6 days/week with one floating day off (not pinned to a specific weekday), through ${fmtMonthDay(STUDY_END)}. Taper is ${fmtMonthDay(TAPER_START)} (0–20 questions only), exam ${fmtMonthDay(EXAM)}.`);
   parts.push(`<b style="color:var(--t1)">Bare minimum pace:</b> ${c.remaining} ÷ ${c.daysLeft} = ${c.bareMin.toFixed(1)}/day.`);
-  parts.push(`<b style="color:var(--t1)">Buffered target:</b> rounded up to the nearest 10 for a real cushion, not the tightest number that technically works → <b style="color:var(--t1)">${c.evenPace}/day</b>.`);
+  parts.push(`<b style="color:var(--t1)">Standard target:</b> ${STANDARD_DAILY_TARGET}/day is the fixed floor regardless of how low the bare minimum runs — only scales higher when actually needed → <b style="color:var(--t1)">${c.evenPace}/day</b>.`);
 
   if(!c.first){
-    parts.push(`You haven't logged a study day yet, so there's no actual pace to compare against — today's goal is just the buffered pace above, ${c.evenPace}/day.`);
+    parts.push(`You haven't logged a study day yet, so there's no actual pace to compare against — today's goal is just the standard, ${c.evenPace}/day.`);
   } else {
     const dir = c.deficit>0 ? 'behind' : c.deficit<0 ? 'ahead' : 'exactly on pace';
     const amt = Math.abs(c.deficit);
@@ -1432,7 +1476,7 @@ function renderStudyExplain(c){
       parts.push(`The miss-day rule spreads any gap over 3 days rather than dumping it on one: ${c.evenPace} ${c.deficit>0?'+':'−'} (${amt} ÷ 3) = <b style="color:var(--t1)">${c.suggested}/day</b>, today's actual goal.`);
     }
   }
-  parts.push(`Range is clamped to 20–70/day regardless of the math, so no single day asks for an unreasonable block or drops to near-zero.`);
+  parts.push(`Range is clamped to 40–65/day — the framework's own floor and catch-up ceiling. 80–100 question days are explicitly to be avoided, even when behind.`);
 
   document.getElementById('uwExplainBody').innerHTML = parts.map(p=>`<div style="margin-bottom:6px">${p}</div>`).join('');
 }
@@ -1795,8 +1839,10 @@ bind('uwGoal', function(){ state.uworld.goal=this.value; saveState(); renderUWor
 bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
 bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
 
-bind('poolUnused',function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
-bind('poolRedo',  function(){ settings.redo=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
+bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
+bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
+bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
+bind('poolMissRate', function(){ settings.missRate=Math.max(0,Math.min(100,parseFloat(this.value||0))); saveSettings(); renderUWorld(); });
 
 // ── INIT ────────────────────────────────────────────────────────────────────
 function init(){
