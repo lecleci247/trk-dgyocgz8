@@ -690,6 +690,16 @@ const CORRELATION_ITEMS = [
 // A cardio day (D4/D7, or manual) can be downgraded to a true rest day —
 // same cycle position, but no cardio actually happening. This resolves
 // which checklist and water target actually apply.
+// A sleep duration under 1h is never a real night's sleep in this context —
+// it's the signature of the watch not being worn overnight, where a duration
+// calculation over missing/near-identical timestamps resolves to ~0 instead
+// of failing outright. Treated as "no data," not "measured zero."
+const MIN_PLAUSIBLE_SLEEP = 1;
+function validSleepHours(metrics){
+  const v = parseFloat(metrics && metrics.sleep);
+  return (!isNaN(v) && v >= MIN_PLAUSIBLE_SLEEP) ? v : null;
+}
+
 function effectiveDayType(day){
   if(!day) return 'training';
   return (day.dayType==='cardio' && day.realRest) ? 'rest' : (day.dayType||'training');
@@ -758,8 +768,7 @@ const PROGRAM = {
 const SECTIONS = {
 training:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
-    {id:'meds',label:'Morning meds',sub:''},
-    {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
+    {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
     {id:'bfpre',label:'Breakfast before workout',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-workout breakfast'},
     {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast, before gym'},
@@ -796,8 +805,7 @@ training:[
 ],
 rest:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
-    {id:'meds',label:'Morning meds',sub:''},
-    {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
+    {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
     {id:'creat',label:'5g creatine',sub:'Take daily — with water'},
     {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
@@ -818,8 +826,7 @@ rest:[
 ],
 cardio:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
-    {id:'meds',label:'Morning meds',sub:''},
-    {id:'d3',label:'Vitamin D3 (2,000–4,000 IU)',sub:'With breakfast'},
+    {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
     {id:'bfpre',label:'Breakfast before cardio',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-cardio breakfast'},
     {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast'},
@@ -899,6 +906,10 @@ function loadSettings() {
   if(settings.redo == null) settings.redo = UW_DEFAULT.redo;
   if(settings.baselineUsed == null) settings.baselineUsed = UW_DEFAULT.histDone;
   if(settings.hrBaseline == null) settings.hrBaseline = 79;  // Master Handoff baseline
+  // Everything logged since this cum snapshot decrements the pool going forward.
+  // Defaults to 0 (full historical cum applies) for anyone who hasn't yet
+  // re-anchored under this logic — preserves prior behavior exactly.
+  if(settings.poolBaselineCum == null) settings.poolBaselineCum = 0;
 }
 function saveSettings() {
   try { localStorage.setItem('pplua_settings', JSON.stringify(settings)); } catch(e){}
@@ -1004,8 +1015,13 @@ function getWeekDone() {
 // never dumped onto one.
 function computeStudy() {
   const cum = getCumDone();
-  const unusedLeft = Math.max(0, settings.unused - cum);
-  const redoLeft   = Math.max(0, settings.redo - Math.max(0, cum - settings.unused));
+  // Only questions logged SINCE the pool was last manually re-anchored count
+  // against it. This is what makes typing a fresh "current truth" into the
+  // pool fields take effect immediately instead of being silently offset by
+  // everything logged since the tracker started.
+  const cumSinceBaseline = Math.max(0, cum - (settings.poolBaselineCum||0));
+  const unusedLeft = Math.max(0, settings.unused - cumSinceBaseline);
+  const redoLeft   = Math.max(0, settings.redo - Math.max(0, cumSinceBaseline - settings.unused));
   const remaining  = unusedLeft + redoLeft;
   const daysLeft   = getStudyDaysLeft();
   const bareMin    = daysLeft>0 ? remaining/daysLeft : remaining;
@@ -1014,16 +1030,18 @@ function computeStudy() {
   // recommended), rather than shipping the tightest number that technically works.
   const evenPace   = Math.max(10, Math.ceil(bareMin/10)*10);
 
-  // Deficit is only meaningful once you've actually started logging. It is
-  // measured from your FIRST logged study day, so a fresh start never reads
-  // as "behind," and a lapse only counts days since you began.
+  // Deficit tracks genuine schedule adherence from your FIRST-EVER logged
+  // day, independent of any later pool re-anchoring — correcting the pool
+  // number shouldn't erase whether you've actually kept pace.
   const first = firstLoggedDate();
   let deficit = 0, expectedByNow = 0;
   if(first){
     const studyDaysSinceStart = studyDaysBetween(first, todayKey()); // inclusive of today
-    // pace you committed to on your first day = pool at that point / study days from then to end
     const daysFirstToEnd = studyDaysBetween(first, STUDY_END);
-    const poolAtStart = settings.unused + settings.redo + cum; // reconstruct original pool
+    // reconstruct the TRUE original pool: current real remaining + everything
+    // done since day one (cum, not cumSinceBaseline — this must reflect all
+    // real progress regardless of how many times the pool got corrected).
+    const poolAtStart = remaining + cum;
     const startPace = daysFirstToEnd>0 ? poolAtStart/daysFirstToEnd : 0;
     expectedByNow = Math.round(startPace * (studyDaysSinceStart - 1)); // through yesterday
     deficit = Math.round(expectedByNow - cum); // + = behind
@@ -1096,8 +1114,10 @@ function computeReadiness() {
     else hrStreak=0;
   }
 
-  // Trigger: average sleep <6.5h over last 5 days (need ≥3 readings)
-  const sleeps = days.slice(-5).map(d=>parseFloat(d?.metrics?.sleep)).filter(v=>!isNaN(v));
+  // Trigger: average sleep <6.5h over last 5 days (need ≥3 real readings).
+  // Nights with no watch worn (near-zero duration artifact) are excluded
+  // entirely rather than averaged in as genuinely bad sleep.
+  const sleeps = days.slice(-5).map(d=>validSleepHours(d && d.metrics)).filter(v=>v!=null);
   const sleepAvg = sleeps.length? sleeps.reduce((a,b)=>a+b,0)/sleeps.length : null;
   const sleepHot = sleeps.length>=3 && sleepAvg < 6.5;
 
@@ -1133,15 +1153,15 @@ function computeCoach() {
   const bits=[];
   const cd = state.cycleDay;
   const hr = parseFloat(state.metrics.hr);
-  const sleep = parseFloat(state.metrics.sleep);
   const steps = parseFloat(state.metrics.steps);
 
   if(cd==='d5') bits.push('Day 5 lateral raises stay <b>submaximal (RIR 2–3)</b> — protect tomorrow\'s Day 6.');
   if(cd==='d3') bits.push('Legs today: <b>no stairmaster</b> before or after, and Day 4 cardio should skip lower-body-heavy work.');
   if(cd==='d6') bits.push('Day 6 is your <b>primary lateral delt</b> session — final cable raise set to failure.');
 
-  if(!isNaN(sleep) && sleep<7 && state.dayType==='training')
-    bits.push(`Sleep was <b>${sleep.toFixed(1)}h</b>, under the 7h training-day floor. Expect lower output; keep 1 extra RIR on top sets.`);
+  const validSleep = validSleepHours(state.metrics);
+  if(validSleep!=null && validSleep<7 && state.dayType==='training')
+    bits.push(`Sleep was <b>${validSleep.toFixed(1)}h</b>, under the 7h training-day floor. Expect lower output; keep 1 extra RIR on top sets.`);
   if(!isNaN(hr)){
     const base=settings.hrBaseline||79;
     if(hr>base+7) bits.push(`Resting HR <b>${Math.round(hr)}</b> is ${Math.round(hr-base)} over baseline — a recovery flag if it holds.`);
@@ -1214,7 +1234,7 @@ function openDayDetail(dateStr, isToday){
 
   const typeLabel = (day.dayType==='cardio' && day.realRest) ? 'cardio (true rest taken)' : (day.dayType||'training');
   let html = `<div class="dd-row"><span class="dd-k">Day type</span><span class="dd-v">${typeLabel} · ${cycLabel}</span></div>
-    <div class="dd-row"><span class="dd-k">Sleep</span><span class="dd-v">${m.sleep?m.sleep+'h':'—'}</span></div>
+    <div class="dd-row"><span class="dd-k">Sleep</span><span class="dd-v">${(()=>{const vs=validSleepHours(m); if(vs!=null) return vs.toFixed(1)+'h'; return m.sleep?'no watch worn':'—';})()}</span></div>
     <div class="dd-row"><span class="dd-k">Resting HR</span><span class="dd-v">${m.hr?m.hr+' bpm':'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Steps</span><span class="dd-v">${m.steps?Math.round(m.steps).toLocaleString():'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Weight</span><span class="dd-v">${m.weight?m.weight+' lbs':'—'}</span></div>
@@ -1283,7 +1303,8 @@ function acceptSuggestedCycle(){
 
 function renderSync() {
   document.getElementById('syncTime').textContent = state.syncTime ? 'Synced '+state.syncTime : 'Not synced';
-  document.getElementById('syncSleep').textContent = state.metrics.sleep || '—';
+  const vs = validSleepHours(state.metrics);
+  document.getElementById('syncSleep').textContent = vs!=null ? vs.toFixed(1) : '—';
   const hrEl=document.getElementById('syncHR');
   hrEl.textContent = state.metrics.hr || '—';
   const base=settings.hrBaseline||79;
@@ -1640,7 +1661,8 @@ function generateExport(){
     const cyc = day.cycleDay ? (CYCLE.find(c=>c.id===day.cycleDay)?.label || day.cycleDay) : '—';
     const dtLabel = (day.dayType==='cardio' && day.realRest) ? 'cardio(rest)' : (day.dayType||'training');
     const m = day.metrics || {};
-    const sleep = m.sleep ? parseFloat(m.sleep).toFixed(1)+'h' : '—';
+    const vsExp = validSleepHours(m);
+    const sleep = vsExp!=null ? vsExp.toFixed(1)+'h' : (m.sleep ? 'no-watch' : '—');
     const hr = m.hr ? Math.round(m.hr)+'bpm' : '—';
     const steps = m.steps ? Math.round(m.steps) : '—';
     const water = (day.water!=null?day.water:0) + '/' + (W_TARGETS[dt]||5);
@@ -1773,8 +1795,8 @@ bind('uwGoal', function(){ state.uworld.goal=this.value; saveState(); renderUWor
 bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
 bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
 
-bind('poolUnused',function(){ settings.unused=Math.max(0,parseInt(this.value||0)); saveSettings(); renderUWorld(); });
-bind('poolRedo',  function(){ settings.redo=Math.max(0,parseInt(this.value||0)); saveSettings(); renderUWorld(); });
+bind('poolUnused',function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
+bind('poolRedo',  function(){ settings.redo=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 
 // ── INIT ────────────────────────────────────────────────────────────────────
 function init(){
