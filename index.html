@@ -887,7 +887,18 @@ cardio:[
 let state = {};
 let settings = {};   // persistent across days (UWorld pool, HR baseline)
 
-const todayKey = () => new Date().toISOString().split('T')[0];
+// Date -> 'YYYY-MM-DD' using LOCAL calendar components, not toISOString's
+// UTC conversion. toISOString() shifts the date at UTC midnight, which in
+// US Eastern time (UTC-4/-5) is 7-8pm local — meaning "today" would silently
+// flip a day early every evening. getFullYear/getMonth/getDate are always
+// local-timezone, so this is the correct way to get a local date key.
+function localDateStr(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+const todayKey = () => localDateStr(new Date());
 const isMonday = () => new Date().getDay() === 1;
 
 function blankDay() {
@@ -1020,7 +1031,7 @@ function getCumDone() {
   const today = new Date(); today.setHours(0,0,0,0);
   let d = new Date(start);
   while(d <= today) {
-    const day = loadDay(d.toISOString().split('T')[0]);
+    const day = loadDay(localDateStr(d));
     total += parseInt(day?.uworld?.done||0);
     d.setDate(d.getDate()+1);
   }
@@ -1034,7 +1045,7 @@ function getWeekDone() {
   for(let i=0;i<7;i++){
     const d = new Date(mon); d.setDate(mon.getDate()+i);
     if(d>today) break;
-    const day = loadDay(d.toISOString().split('T')[0]);
+    const day = loadDay(localDateStr(d));
     total += parseInt(day?.uworld?.done||0);
   }
   return total;
@@ -1106,8 +1117,8 @@ function computeStudy() {
 function firstLoggedDate(){
   const start=new Date(TRACKER_START+'T00:00:00'); const today=new Date(); today.setHours(0,0,0,0);
   let d=new Date(start);
-  while(d<=today){ const day=loadDay(d.toISOString().split('T')[0]);
-    if(day && parseInt(day.uworld?.done||0)>0) return d.toISOString().split('T')[0];
+  while(d<=today){ const day=loadDay(localDateStr(d));
+    if(day && parseInt(day.uworld?.done||0)>0) return localDateStr(d);
     d.setDate(d.getDate()+1); }
   return null;
 }
@@ -1129,7 +1140,7 @@ function suggestCycleDay() {
   const today = new Date(); today.setHours(0,0,0,0);
   for(let back=1; back<=21; back++){
     const d = new Date(today); d.setDate(today.getDate()-back);
-    const day = loadDay(d.toISOString().split('T')[0]);
+    const day = loadDay(localDateStr(d));
     if(day && day.cycleDay){
       const idx = CYCLE.findIndex(c=>c.id===day.cycleDay);
       if(idx>=0) return CYCLE[(idx+1)%CYCLE.length].id;
@@ -1183,7 +1194,7 @@ function computeReadiness() {
 function lastNDays(n){
   const arr=[]; const today=new Date(); today.setHours(0,0,0,0);
   for(let i=n-1;i>=0;i--){ const d=new Date(today); d.setDate(today.getDate()-i);
-    arr.push(loadDay(d.toISOString().split('T')[0])); }
+    arr.push(loadDay(localDateStr(d))); }
   return arr;
 }
 
@@ -1235,7 +1246,7 @@ function renderWeekly() {
   for(let i=0;i<7;i++){
     const d = new Date(mon); d.setDate(mon.getDate()+i);
     const isFut = d > today, isToday = d.getTime()===today.getTime();
-    const data = loadDay(d.toISOString().split('T')[0]);
+    const data = loadDay(localDateStr(d));
     let pct=0, uwDone=0, tag='';
     if(data && SECTIONS[data.dayType||'training']){
       const all = SECTIONS[data.dayType].flatMap(s=>s.items);
@@ -1247,7 +1258,7 @@ function renderWeekly() {
     const div = document.createElement('div');
     div.className='wd'+(isToday?' today':'')+((!isFut&&pct===100)?' done':'');
     div.innerHTML=`<div class="wd-dow">${dl[i]}</div><div class="wd-date">${d.getDate()}</div><span class="wd-tag" style="${tag?'':'opacity:.2'}">${tag||'·'}</span><div class="wd-pct">${isFut?'—':pct+'%'}</div><div class="wd-uw">${(!isFut&&uwDone)?uwDone+'q':''}</div>`;
-    if(!isFut){ div.style.cursor='pointer'; div.onclick=()=>openDayDetail(d.toISOString().split('T')[0], isToday); }
+    if(!isFut){ div.style.cursor='pointer'; div.onclick=()=>openDayDetail(localDateStr(d), isToday); }
     strip.appendChild(div);
   }
 }
@@ -1694,7 +1705,7 @@ function generateExport(){
   const lines = [];
   for(let i=n-1;i>=0;i--){
     const d = new Date(today); d.setDate(today.getDate()-i);
-    const ds = d.toISOString().split('T')[0];
+    const ds = localDateStr(d);
     const day = loadDay(ds);
     if(!day){ lines.push(`${ds} | no data logged`); continue; }
     const dt = effectiveDayType(day);
