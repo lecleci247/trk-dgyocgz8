@@ -214,6 +214,19 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .ci-time{flex-shrink:0;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--ac2);font-family:'DM Mono',monospace;font-size:11px;padding:3px 5px;width:74px;margin-top:0;-webkit-appearance:none;appearance:none;color-scheme:dark;}
 .crash-sev{display:flex;gap:6px;padding:0 13px 12px 44px;}
 .crash-sev .cbtn{flex:1;text-transform:capitalize;text-align:center;}
+.opt-tag{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);background:var(--s3);padding:1px 5px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;}
+
+/* ── STREAKS ── */
+.streak-card{margin:6px 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;display:flex;align-items:center;}
+.streak-item{flex:1;text-align:center;}
+.streak-n{font-size:20px;font-weight:700;color:var(--ac2);}
+.streak-l{display:block;font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.streak-div{width:1px;height:28px;background:var(--bd);}
+
+/* ── MISS RATE DISPLAY ── */
+.miss-rate-display{display:flex;justify-content:space-between;align-items:center;background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:9px 12px;margin-top:8px;}
+.mrd-lbl{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;}
+.mrd-val{font-size:16px;font-weight:700;color:var(--ac2);}
 
 /* ── SECTION ACCENTS ── */
 .s-am .sec-ic{filter:none;} 
@@ -386,6 +399,13 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <div class="rd-triggers" id="rdTriggers"></div>
   </div>
 
+  <!-- STREAKS -->
+  <div class="streak-card">
+    <div class="streak-item"><span class="streak-n" id="streakProtein">0</span><span class="streak-l">protein streak</span></div>
+    <div class="streak-div"></div>
+    <div class="streak-item"><span class="streak-n" id="streakUworld">0</span><span class="streak-l">UWorld streak</span></div>
+  </div>
+
   <!-- COACH LINE -->
   <div class="coach" id="coachCard" style="display:none">
     <div class="coach-lbl">Today</div>
@@ -514,7 +534,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   <!-- UPDATE POOL -->
   <div class="ref-card">
     <div class="ref-h">Update your UWorld pool</div>
-    <p style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:10px;">Update these whenever you check UWorld's stats. The daily target projects forward from your current miss rate — as you clear the unused pool, some of it becomes new redo backlog, and that's priced in automatically.</p>
+    <p style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:10px;">Update these whenever you check UWorld's stats. Miss rate is calculated automatically from Unused and Incorrect below — nothing to type or keep in sync.</p>
     <div class="uw-inputs">
       <div class="uw-ig">
         <div class="uw-il">Unused remaining</div>
@@ -531,11 +551,15 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
         <input class="uw-in" type="number" id="poolMarked" inputmode="numeric" min="0" placeholder="90">
       </div>
       <div class="uw-ig">
-        <div class="uw-il">Current miss rate %</div>
-        <input class="uw-in" type="number" id="poolMissRate" inputmode="decimal" min="0" max="100" step="0.1" placeholder="45.8">
+        <div class="uw-il">Total questions in bank</div>
+        <input class="uw-in" type="number" id="poolTotal" inputmode="numeric" min="1" placeholder="1248">
       </div>
     </div>
-    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Miss rate = incorrect ÷ used, from UWorld's Statistics screen. This projects how many of your remaining unused questions will likely need a redo pass too — not just what's already known-incorrect today.</p>
+    <div class="miss-rate-display">
+      <span class="mrd-lbl">Current miss rate (auto)</span>
+      <span class="mrd-val" id="missRateDisplay">—</span>
+    </div>
+    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Miss rate = incorrect ÷ used, where used = total questions − unused remaining. This projects how many of your remaining unused questions will likely need a redo pass too — not just what's already known-incorrect today. Only change "Total questions" if UWorld adds content to the bank.</p>
     <div class="anki-sub" style="margin-top:8px">Update weekly, or whenever your QBank stats change. Persists across days.</div>
   </div>
 
@@ -622,9 +646,14 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <div class="ref-row"><span class="ref-k">Creatine</span><span class="ref-v">5 grams daily, every day.</span></div>
   </div>
   <div class="ref-card">
-    <div class="ref-h">Zone 2 target</div>
-    <div class="ref-row"><span class="ref-k">Heart rate</span><span class="ref-v">115–134 bpm, conversational pace.</span></div>
-    <div class="ref-row"><span class="ref-k">Day 4 / Day 7</span><span class="ref-v">20–30 min cycling or rower. No stairmaster around leg day.</span></div>
+    <div class="ref-h">Cardio (Zone 2)</div>
+    <div class="ref-row"><span class="ref-k">Heart rate</span><span class="ref-v">115–134 bpm — the number that matters most.</span></div>
+    <div class="ref-row"><span class="ref-k">Effort</span><span class="ref-v">Conversational. Full sentences, not gasping. Roughly RPE 3–4/10.</span></div>
+    <div class="ref-row"><span class="ref-k">Bike/Peloton cadence</span><span class="ref-v">~80–95 RPM, moderate resistance. Adjust resistance before cadence to hit the HR target.</span></div>
+    <div class="ref-row"><span class="ref-k">Rower cadence</span><span class="ref-v">~18–24 strokes/min. Stroke length over speed.</span></div>
+    <div class="ref-row"><span class="ref-k">Warm-up</span><span class="ref-v">3–5 min easy ramp before settling into the target zone.</span></div>
+    <div class="ref-row"><span class="ref-k">Duration</span><span class="ref-v">20–30 min, Day 4 / Day 7.</span></div>
+    <div class="ref-row"><span class="ref-k">Avoid</span><span class="ref-v">No stairmaster around leg day. Skip lower-body-heavy cardio same day as Day 3.</span></div>
   </div>
   <div class="hint">PPLUA Command · single source of truth is the Master Handoff · v3 consolidated</div>
 </div>
@@ -702,13 +731,13 @@ const W_TARGETS = {training:5, rest:3.5, cardio:4};
 // actually useful for spotting correlations (Vyvanse timing, meals, crash).
 // Deliberately NOT every checklist item, to keep the export readable.
 const CORRELATION_ITEMS = [
+  {id:'ensure', label:'Ensure'},
   {id:'vyv', label:'Vyvanse'},
-  {id:'bfpre', label:'Breakfast'},
-  {id:'bfrest', label:'Breakfast'},
-  {id:'bfpost', label:'Breakfast'},
+  {id:'adderall', label:'Adderall'},
+  {id:'bfrest', label:'Breakfast'},   // rest days only — training/cardio folded this into "lunch"
   {id:'session', label:'Workout start'},
   {id:'shake', label:'Shake'},
-  {id:'lunch', label:'Lunch'},
+  {id:'lunch', label:'Main meal'},
   {id:'crash', label:'Crash'},
   {id:'dinner', label:'Dinner'},
 ];
@@ -730,6 +759,17 @@ function effectiveDayType(day){
   if(!day) return 'training';
   return (day.dayType==='cardio' && day.realRest) ? 'rest' : (day.dayType||'training');
 }
+
+// Optional items (Ensure, Adderall) are loggable and timestamped like any
+// other item, but never count toward completion — a day with neither taken
+// can still hit 100%, and taking them never inflates the denominator either.
+function requiredItems(sec){
+  return sec.items.filter(it=>!it.optional);
+}
+
+// Consistent with the 32oz-bottle / 950mL conversion already baked into the
+// Shortcut sync instructions, rather than the textbook 29.5735 factor.
+function ozToMl(oz){ return Math.round(oz * (950/32)); }
 
 // ── PROGRAM (gym-verified, from Master Handoff) ─────────────────────────────
 const PROGRAM = {
@@ -796,8 +836,8 @@ training:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
     {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
-    {id:'bfpre',label:'Breakfast before workout',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-workout breakfast'},
-    {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast, before gym'},
+    {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
+    {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
   ]},
   {id:'pre',label:'Pre-Workout',icon:'⚡',cls:'s-pre',items:[
     {id:'wpre',label:'500ml water before gym',sub:'60–90 min window before lifting'},
@@ -811,13 +851,12 @@ training:[
     {id:'wposte',label:'500ml water AFTER steam',sub:'Immediately after exiting'},
   ]},
   {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
-    {id:'bfpost',label:'Breakfast post-workout (if skipped)',sub:'30–40g protein + carbs',excl:'bfpre',exclNote:'Exclusive with morning breakfast'},
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
-    {id:'meal',label:'Post-workout meal — 40–50g protein',sub:'Good Chop protein + carbs'},
   ]},
   {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
-    {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
+    {id:'lunch',label:'Main meal — 40–50g protein',sub:'Hard target 12:30–1:00pm. Covers breakfast, post-workout, and lunch in one.'},
     {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
+    {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -835,11 +874,13 @@ rest:[
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
     {id:'creat',label:'5g creatine',sub:'Take daily — with water'},
     {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
+    {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
     {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast'},
   ]},
   {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
     {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
     {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
+    {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -854,8 +895,8 @@ cardio:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
     {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
     {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
-    {id:'bfpre',label:'Breakfast before cardio',sub:'30–40g protein + carbs',excl:'bfpost',exclNote:'Exclusive with post-cardio breakfast'},
-    {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast'},
+    {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
+    {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
   ]},
   {id:'wo',label:'Cardio Session',icon:'🚴',cls:'s-wo',items:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Let HR rise gradually'},
@@ -865,12 +906,12 @@ cardio:[
     {id:'logah',label:'Log workout in Apple Health',sub:'Select cycling · check HR zones after'},
   ]},
   {id:'po',label:'Post-Cardio',icon:'✓',cls:'s-po',items:[
-    {id:'bfpost',label:'Breakfast post-cardio (if skipped)',sub:'30–40g protein + carbs',excl:'bfpre',exclNote:'Exclusive with morning breakfast'},
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:''},
   ]},
   {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
-    {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
+    {id:'lunch',label:'Main meal — 40–50g protein',sub:'Hard target 12:30–1:00pm. Covers breakfast, post-cardio, and lunch in one.'},
     {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
+    {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -945,7 +986,10 @@ function loadSettings() {
   // fresh defaults below the first time this runs, no migration needed.
   if(settings.incorrect == null) settings.incorrect = UW_DEFAULT.incorrect;
   if(settings.marked == null) settings.marked = UW_DEFAULT.marked;
-  if(settings.missRate == null) settings.missRate = UW_DEFAULT.missRate; // percent, e.g. 45.8
+  // Miss rate is no longer stored — it's derived live from unused/incorrect/
+  // totalQuestions in computeStudy(), so it can never go stale relative to
+  // whatever's actually typed into those fields.
+  if(settings.totalQuestions == null) settings.totalQuestions = UW_DEFAULT.total;
   if(settings.baselineUsed == null) settings.baselineUsed = UW_DEFAULT.histDone;
   if(settings.hrBaseline == null) settings.hrBaseline = 79;  // Master Handoff baseline
   // Everything logged since this cum snapshot decrements the pool going forward.
@@ -1069,7 +1113,13 @@ function computeStudy() {
   // Once unused is exhausted, further logged progress counts against the
   // known incorrect+marked backlog specifically.
   const redoProgress = Math.max(0, cumSinceBaseline - settings.unused);
-  const missRate = Math.max(0, Math.min(100, settings.missRate!=null?settings.missRate:45.8)) / 100;
+  // Miss rate derives automatically from what's actually typed in — no
+  // separate field to keep in sync. used = total bank size - unused
+  // remaining (both from the snapshot you last entered, not the app's
+  // internally-decremented tracking, so it reflects real QBank truth).
+  const totalQ = settings.totalQuestions || UW_DEFAULT.total;
+  const usedSnapshot = Math.max(1, totalQ - settings.unused);
+  const missRate = Math.max(0, Math.min(1, (settings.incorrect||0) / usedSnapshot));
   const expectedFutureIncorrect = Math.round(unusedLeft * missRate);
   const knownRedoLeft = Math.max(0, (settings.incorrect||0) + (settings.marked||0) - redoProgress);
   const redoLeft = knownRedoLeft + expectedFutureIncorrect;
@@ -1176,10 +1226,15 @@ function computeReadiness() {
   let rdStreak=0, readinessHot=false;
   for(const r of reads){ if(r.v<6){rdStreak++; if(rdStreak>=3)readinessHot=true;} else rdStreak=0; }
 
+  // Trigger: 2+ severe crashes in the last 5 days
+  const severeCrashes = days.slice(-5).filter(d=>d && d.crashSeverity==='severe').length;
+  const crashHot = severeCrashes >= 2;
+
   const triggers = [
     {id:'hr',   label:'AM heart rate elevated >7 bpm for 4+ days', hot:hrHot},
     {id:'sleep',label:'Sleep averaging under 6.5h over 5 days',     hot:sleepHot},
     {id:'read', label:'Readiness under 6/10 for 3 training days',   hot:readinessHot},
+    {id:'crash',label:'2+ severe crashes in the last 5 days',       hot:crashHot},
     {id:'stall',label:'Two stalled sessions (log in JEFIT)',        hot:false, manual:true},
     {id:'elbow',label:'Elbow ache between sessions 3+ days',        hot:false, manual:true},
   ];
@@ -1198,6 +1253,28 @@ function lastNDays(n){
   return arr;
 }
 
+// Consecutive-day streaks. Past days are immutable and counted first; today
+// (live in-memory state, which may not be saved to storage yet) only adds
+// to the streak if it already qualifies — it never breaks a streak just
+// because the day isn't over yet.
+function computeStreaks(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  function streakFor(predicate){
+    let streak = 0;
+    for(let i=1;i<60;i++){
+      const d = new Date(today); d.setDate(today.getDate()-i);
+      const day = loadDay(localDateStr(d));
+      if(!day || !predicate(day)) break;
+      streak++;
+    }
+    if(predicate(state)) streak++;
+    return streak;
+  }
+  const proteinStreak = streakFor(day => isChecked(day.checked, 'prot'));
+  const uworldStreak = streakFor(day => parseInt((day.uworld && day.uworld.done)||0) >= 40);
+  return {proteinStreak, uworldStreak};
+}
+
 // ── COACH LINE (single adaptive nudge for today) ───────────────────────────
 function computeCoach() {
   const bits=[];
@@ -1209,6 +1286,19 @@ function computeCoach() {
   if(cd==='d3') bits.push('Legs today: <b>no stairmaster</b> before or after, and Day 4 cardio should skip lower-body-heavy work.');
   if(cd==='d6') bits.push('Day 6 is your <b>primary lateral delt</b> session — final cable raise set to failure.');
 
+  // Yesterday's signals — a bad crash or short night carries into today.
+  const yesterdayObj = (() => {
+    const y = new Date(); y.setHours(0,0,0,0); y.setDate(y.getDate()-1);
+    return loadDay(localDateStr(y));
+  })();
+  if(yesterdayObj){
+    if(yesterdayObj.crashSeverity==='severe')
+      bits.push(`Yesterday's crash was <b>severe</b> — eat earlier today and watch whether the same pattern repeats.`);
+    const ySleep = validSleepHours(yesterdayObj.metrics);
+    if(ySleep!=null && ySleep<6)
+      bits.push(`Yesterday's sleep was only <b>${ySleep.toFixed(1)}h</b> — bank rest tonight, and don't chase every extra rep if today's heavy.`);
+  }
+
   const validSleep = validSleepHours(state.metrics);
   if(validSleep!=null && validSleep<7 && state.dayType==='training')
     bits.push(`Sleep was <b>${validSleep.toFixed(1)}h</b>, under the 7h training-day floor. Expect lower output; keep 1 extra RIR on top sets.`);
@@ -1218,6 +1308,10 @@ function computeCoach() {
   }
   if(!isNaN(steps) && steps>0 && steps<8000)
     bits.push(`Steps at <b>${steps.toLocaleString()}</b> — a short Zone 2 walk closes the gap toward 8–10k, the biggest recomp lever outside the gym.`);
+
+  // Observational only — no claim about effect, just makes the comparison day easy to spot.
+  if(isChecked(state.checked,'vyv') && isChecked(state.checked,'adderall'))
+    bits.push(`Both <b>Vyvanse and Adderall</b> logged today — worth flagging for the comparison you're tracking.`);
 
   if(state.dayType==='training'){
     bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
@@ -1288,22 +1382,28 @@ function openDayDetail(dateStr, isToday){
     <div class="dd-row"><span class="dd-k">Resting HR</span><span class="dd-v">${m.hr?m.hr+' bpm':'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Steps</span><span class="dd-v">${m.steps?Math.round(m.steps).toLocaleString():'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Weight</span><span class="dd-v">${m.weight?m.weight+' lbs':'—'}</span></div>
-    <div class="dd-row"><span class="dd-k">Water</span><span class="dd-v">${day.water||0}/${W_TARGETS[dt]||5} bottles</span></div>
+    <div class="dd-row"><span class="dd-k">Water</span><span class="dd-v">${day.water||0}/${W_TARGETS[dt]||5} bottles (${ozToMl((day.water||0)*32)}/${ozToMl((W_TARGETS[dt]||5)*32)}mL)</span></div>
     <div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>
     <div class="dd-row"><span class="dd-k">Anki</span><span class="dd-v">${(day.anki&&day.anki.done)||0} done</span></div>
     ${day.crashSeverity?`<div class="dd-row"><span class="dd-k">Crash severity</span><span class="dd-v">${day.crashSeverity}</span></div>`:''}
     <div class="dd-divider"></div>`;
 
   secs.forEach(sec=>{
-    const doneItems = sec.items.filter(it=>isChecked(day.checked, it.id));
-    const total = sec.items.length;
-    html += `<div class="dd-sec"><div class="dd-sec-hd">${sec.icon} ${sec.label} <span class="dd-sec-cnt">${doneItems.length}/${total}</span></div>`;
-    if(doneItems.length===0){
+    const reqItems = requiredItems(sec);
+    const doneReq = reqItems.filter(it=>isChecked(day.checked, it.id));
+    const doneOptional = sec.items.filter(it=>it.optional && isChecked(day.checked, it.id));
+    const total = reqItems.length;
+    html += `<div class="dd-sec"><div class="dd-sec-hd">${sec.icon} ${sec.label} <span class="dd-sec-cnt">${doneReq.length}/${total}</span></div>`;
+    if(doneReq.length===0 && doneOptional.length===0){
       html += `<div class="dd-item-none">Nothing checked</div>`;
     } else {
-      doneItems.forEach(it=>{
+      doneReq.forEach(it=>{
         const t = getCheckedTime(day.checked, it.id);
         html += `<div class="dd-item">✓ ${it.label}${t?` <span class="dd-item-time">${fmtTime12(t)}</span>`:''}</div>`;
+      });
+      doneOptional.forEach(it=>{
+        const t = getCheckedTime(day.checked, it.id);
+        html += `<div class="dd-item">✓ ${it.label} <span class="opt-tag">optional</span>${t?` <span class="dd-item-time">${fmtTime12(t)}</span>`:''}</div>`;
       });
     }
     html += `</div>`;
@@ -1394,6 +1494,12 @@ function renderCoach() {
   else card.style.display='none';
 }
 
+function renderStreaks() {
+  const s = computeStreaks();
+  document.getElementById('streakProtein').textContent = s.proteinStreak;
+  document.getElementById('streakUworld').textContent = s.uworldStreak;
+}
+
 function renderMetrics() {
   const mon = isMonday();
   const wb = document.getElementById('weightBox');
@@ -1423,11 +1529,13 @@ function renderWater() {
   }
   const oz = (state.water*32).toFixed(0), tgtOz = (tgt*32).toFixed(0);
   document.getElementById('waterCount').textContent = `${state.water}/${tgt} (${oz}/${tgtOz}oz)`;
-  document.getElementById('waterSub').textContent = ({
-    training:'Training + steam: 5 bottles, auto-filled from sync',
-    rest:'Rest day: 3.5 bottles, auto-filled from sync',
-    cardio:'Cardio day: 4 bottles, auto-filled from sync',
+  const mlNow = ozToMl(oz), mlTgt = ozToMl(tgtOz);
+  const dayDesc = ({
+    training:'Training + steam: 5 bottles',
+    rest:'Rest day: 3.5 bottles',
+    cardio:'Cardio day: 4 bottles',
   })[edt];
+  document.getElementById('waterSub').textContent = `${dayDesc} (${mlNow}/${mlTgt}mL) — auto-filled from sync`;
 }
 
 function renderUWorld() {
@@ -1456,7 +1564,8 @@ function renderUWorld() {
   if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
   if(document.activeElement !== document.getElementById('poolIncorrect')) document.getElementById('poolIncorrect').value = settings.incorrect;
   if(document.activeElement !== document.getElementById('poolMarked')) document.getElementById('poolMarked').value = settings.marked;
-  if(document.activeElement !== document.getElementById('poolMissRate')) document.getElementById('poolMissRate').value = settings.missRate;
+  if(document.activeElement !== document.getElementById('poolTotal')) document.getElementById('poolTotal').value = settings.totalQuestions;
+  document.getElementById('missRateDisplay').textContent = c.missRatePct.toFixed(1)+'%';
 
   renderStudyExplain(c);
 }
@@ -1565,7 +1674,7 @@ function renderChecklist() {
   container.innerHTML = '';
   SECTIONS[effectiveDayType(state)].forEach(sec => {
     const isCol = state.collapsed[sec.id];
-    const doneCnt = sec.items.filter(it=>isChecked(state.checked,it.id)).length;
+    const doneCnt = requiredItems(sec).filter(it=>isChecked(state.checked,it.id)).length;
     const div = document.createElement('div');
     div.className = 'sec '+sec.cls;
     const items = sec.items.map(item => {
@@ -1581,7 +1690,7 @@ function renderChecklist() {
         <div class="cb-row" onclick="toggleItem('${item.id}')">
           <div class="cb${ch?' ch':''}"><span class="ck">✓</span></div>
           <div class="cc">
-            <div class="cl2">${item.label}</div>
+            <div class="cl2">${item.label}${item.optional?' <span class="opt-tag">optional</span>':''}</div>
             ${item.sub?`<div class="cs">${item.sub}</div>`:''}
             ${item.exclNote&&!ch&&!partnerChecked?`<div class="excl-note">${item.exclNote}</div>`:''}
           </div>
@@ -1594,7 +1703,7 @@ function renderChecklist() {
       <div class="sec-hdr" onclick="toggleSection('${sec.id}')">
         <div class="sec-ic">${sec.icon}</div>
         <span class="sec-ttl">${sec.label}</span>
-        <span class="sec-cnt">${doneCnt}/${sec.items.length}</span>
+        <span class="sec-cnt">${doneCnt}/${requiredItems(sec).length}</span>
         <span class="sec-chev${isCol?' cl':''}" id="chev_${sec.id}">▾</span>
       </div>
       <div class="sec-items${isCol?' hi':''}" id="items_${sec.id}">${items}</div>`;
@@ -1615,7 +1724,7 @@ function toggleItem(id) {
   } else {
     state.checked[id] = {done:true, at:nowTimeString()};
   }
-  saveState(); renderChecklist();
+  saveState(); renderChecklist(); renderStreaks(); renderCoach();
 }
 function editItemTime(id, val){
   if(!isChecked(state.checked, id)) return;
@@ -1625,7 +1734,7 @@ function editItemTime(id, val){
 }
 function setCrashSeverity(s){
   state.crashSeverity = state.crashSeverity===s ? '' : s;
-  saveState(); renderChecklist();
+  saveState(); renderChecklist(); renderReadiness();
 }
 function toggleSection(id) {
   state.collapsed[id] = !state.collapsed[id];
@@ -1634,7 +1743,7 @@ function toggleSection(id) {
   document.getElementById('chev_'+id)?.classList.toggle('cl', !!state.collapsed[id]);
 }
 function updateProgress() {
-  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>s.items);
+  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>requiredItems(s));
   const done = all.filter(it=>isChecked(state.checked,it.id)).length;
   const pct = all.length>0 ? Math.round(done/all.length*100) : 0;
   document.getElementById('progBar').style.width = pct+'%';
@@ -1642,7 +1751,7 @@ function updateProgress() {
   document.getElementById('progPct').textContent = pct+'%';
 }
 function updateBanner() {
-  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>s.items);
+  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>requiredItems(s));
   const done = all.filter(it=>isChecked(state.checked,it.id)).length;
   document.getElementById('doneBanner').classList.toggle('show', done===all.length && all.length>0);
 }
@@ -1654,7 +1763,7 @@ function updateBanner() {
 function generateFullCSV(){
   const keys = Object.keys(localStorage).filter(k=>k.startsWith('pplua_') && k!=='pplua_settings').sort();
   const header = ['date','dayType','cycleDay','realRest','checklist_done','checklist_total','checklist_pct',
-    'sleep_h','resting_hr','steps','weight_lbs','water_bottles','water_oz','uworld_done','anki_done','crash_severity',
+    'sleep_h','resting_hr','steps','weight_lbs','water_bottles','water_oz','water_ml','uworld_done','anki_done','crash_severity',
     ...CORRELATION_ITEMS.map(ci=>ci.id+'_time')];
   const rows = [header.join(',')];
   keys.forEach(k=>{
@@ -1662,7 +1771,7 @@ function generateFullCSV(){
     if(!day) return;
     const dt = effectiveDayType(day);
     const secs = SECTIONS[dt] || SECTIONS.training;
-    const all = secs.flatMap(s=>s.items);
+    const all = secs.flatMap(s=>requiredItems(s));
     const doneCnt = all.filter(it=>isChecked(day.checked,it.id)).length;
     const pct = all.length ? Math.round(doneCnt/all.length*100) : 0;
     const m = day.metrics || {};
@@ -1671,7 +1780,7 @@ function generateFullCSV(){
       day.dayType||'', day.cycleDay||'', day.realRest?'1':'0',
       doneCnt, all.length, pct,
       m.sleep||'', m.hr||'', m.steps||'', m.weight||'',
-      day.water!=null?day.water:'', day.waterOz!=null?day.waterOz:'',
+      day.water!=null?day.water:'', day.waterOz!=null?day.waterOz:'', day.waterOz!=null?ozToMl(day.waterOz):'',
       (day.uworld&&day.uworld.done)||'', (day.anki&&day.anki.done)||'',
       day.crashSeverity||'',
       ...CORRELATION_ITEMS.map(ci=>getCheckedTime(day.checked, ci.id)||'')
@@ -1710,8 +1819,8 @@ function generateExport(){
     if(!day){ lines.push(`${ds} | no data logged`); continue; }
     const dt = effectiveDayType(day);
     const secs = SECTIONS[dt] || SECTIONS.training;
-    const all = secs.flatMap(s=>s.items);
-    const doneCnt = all.filter(it=>day.checked && day.checked[it.id]).length;
+    const all = secs.flatMap(s=>requiredItems(s));
+    const doneCnt = all.filter(it=>isChecked(day.checked,it.id)).length;
     const pct = all.length ? Math.round(doneCnt/all.length*100) : 0;
     const cyc = day.cycleDay ? (CYCLE.find(c=>c.id===day.cycleDay)?.label || day.cycleDay) : '—';
     const dtLabel = (day.dayType==='cardio' && day.realRest) ? 'cardio(rest)' : (day.dayType||'training');
@@ -1720,7 +1829,8 @@ function generateExport(){
     const sleep = vsExp!=null ? vsExp.toFixed(1)+'h' : (m.sleep ? 'no-watch' : '—');
     const hr = m.hr ? Math.round(m.hr)+'bpm' : '—';
     const steps = m.steps ? Math.round(m.steps) : '—';
-    const water = (day.water!=null?day.water:0) + '/' + (W_TARGETS[dt]||5);
+    const waterBottlesVal = day.water!=null?day.water:0;
+    const water = waterBottlesVal + '/' + (W_TARGETS[dt]||5) + ' (' + ozToMl(waterBottlesVal*32) + 'mL)';
     const uw = (day.uworld && day.uworld.done) ? day.uworld.done : '0';
     const ak = (day.anki && day.anki.done) ? day.anki.done : '0';
     lines.push(`${ds} | ${dtLabel} | ${cyc} | checklist ${pct}% (${doneCnt}/${all.length}) | sleep ${sleep} | rHR ${hr} | steps ${steps} | water ${water} | uworld ${uw} | anki ${ak}`);
@@ -1844,7 +1954,7 @@ bind('metWeight',function(){ if(!isMonday())return; state.metrics.weight=this.va
 bind('metSleep', function(){ state.metrics.sleep=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 bind('metHR',    function(){ state.metrics.hr=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 
-bind('uwDone', function(){ state.uworld.done=this.value; saveState(); renderUWorld(); renderWeekly(); });
+bind('uwDone', function(){ state.uworld.done=this.value; saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
 bind('uwGoal', function(){ state.uworld.goal=this.value; saveState(); renderUWorld(); });
 
 bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
@@ -1853,7 +1963,7 @@ bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki()
 bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
-bind('poolMissRate', function(){ settings.missRate=Math.max(0,Math.min(100,parseFloat(this.value||0))); saveSettings(); renderUWorld(); });
+bind('poolTotal',    function(){ settings.totalQuestions=Math.max(1,parseInt(this.value||UW_DEFAULT.total)); saveSettings(); renderUWorld(); });
 
 // ── INIT ────────────────────────────────────────────────────────────────────
 function init(){
@@ -1866,6 +1976,7 @@ function init(){
   renderSync();
   renderReadiness();
   renderCoach();
+  renderStreaks();
   renderMetrics();
   renderWater();
   renderUWorld();
