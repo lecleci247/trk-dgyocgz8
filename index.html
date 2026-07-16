@@ -228,6 +228,13 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .mrd-lbl{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;}
 .mrd-val{font-size:16px;font-weight:700;color:var(--ac2);}
 
+/* ── DAILY NOTES ── */
+.notes-card{margin:0 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;}
+.notes-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:8px;}
+.notes-input{width:100%;background:var(--bg);border:1px solid var(--bd2);border-radius:8px;color:var(--t1);font-family:'DM Sans';font-size:12.5px;line-height:1.5;padding:10px;resize:vertical;min-height:60px;-webkit-appearance:none;appearance:none;}
+.notes-input:focus{border-color:var(--ac);outline:none;}
+.notes-input::placeholder{color:var(--t3);}
+
 /* ── SECTION ACCENTS ── */
 .s-am .sec-ic{filter:none;} 
 .sec.s-am{border-left:2px solid var(--am);}
@@ -324,6 +331,9 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .dd-item-time{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);}
 .dd-item-none{font-size:11.5px;color:var(--t3);font-style:italic;padding:3px 0 3px 4px;}
 .dd-empty{text-align:center;color:var(--t3);font-size:13px;padding:30px 0;}
+.dd-notes{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px 11px;margin-top:8px;}
+.dd-notes-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:4px;}
+.dd-notes-txt{font-size:12px;color:var(--t2);line-height:1.5;white-space:pre-wrap;}
 </style>
 </head>
 <body>
@@ -443,6 +453,12 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 
   <!-- CHECKLIST -->
   <div id="checklistContainer"></div>
+
+  <!-- DAILY NOTES -->
+  <div class="notes-card">
+    <div class="notes-lbl">📝 Notes — today</div>
+    <textarea id="dayNotes" class="notes-input" rows="3" placeholder="e.g. Didn't log a crash — was out and didn't feel it until I got home. Had a few drinks tonight."></textarea>
+  </div>
 
   <!-- DONE BANNER -->
   <div class="done-banner" id="doneBanner">
@@ -806,7 +822,7 @@ const PROGRAM = {
   d4:{name:'REST / ZONE 2', target:'Optional 20–30 min Zone 2', mins:0, rest:true, ex:[
     {n:'Zone 2 cardio (optional)',s:'20–30 min',rest:'—',tag:'',notes:'Peloton, recumbent bike, or Concept2 rower. 115–134 bpm, conversational. Follows leg day: avoid stairmaster and lower-body-heavy cardio.'},
   ]},
-  d5:{name:'UPPER', target:'Chest #2 · Back #2 · Lateral Delt #2 · Abs', mins:54, ex:[
+  d5:{name:'UPPER', target:'Chest #2 · Back #2 · Lateral Delt #2 · Obliques', mins:54, ex:[
     {n:'Dumbbell Bench Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Flat bench. RIR 1. Press slightly inward at top.'},
     {n:'Machine Fly',s:'2 × 12–15',rest:'45s',tag:'',notes:'Slight elbow bend. Squeeze at peak.'},
     {n:'Cable Front Lat Pulldown (Close Grip)',s:'3 × 8–12',rest:'90s',tag:'',notes:'Different angle from Day 2. Pull to upper chest.'},
@@ -814,17 +830,18 @@ const PROGRAM = {
     {n:'Cable Lateral Raise — SUBMAXIMAL',s:'2 × 12–15',rest:'45s',tag:'CAP',notes:'RIR 2–3 ONLY. Day 6 tomorrow. Never push these hard.'},
     {n:'Leg Extension',s:'2 × 12–15',rest:'0s',tag:'SS1',notes:'Maintenance only. Superset with leg curl.'},
     {n:'Seated Leg Curl',s:'2 × 12–15',rest:'45s',tag:'SS2',notes:'Rest 45s then repeat SS.'},
-    {n:'Machine Ab Crunch',s:'2 × 12–15',rest:'45s',tag:'',notes:'Weighted. Controlled tempo.'},
+    {n:'Cable Woodchop (High-to-Low)',s:'2 × 12–15',rest:'45s',tag:'',notes:'Each side. Rotate from the torso, not just the arms. Replaced the crunch here — Day 1 and Day 3 already cover flexion, this is the week\'s only rotational oblique work.'},
   ]},
-  d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Calves', mins:50, ex:[
+  d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Forearms · Calves', mins:52, ex:[
     {n:'Machine Shoulder Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'RIR 1–2. No elbow lockout at top.'},
     {n:'Cable Lateral Raise',s:'3 × 12–20 + FS',rest:'45s',tag:'FS',notes:'Final set to failure. PRIMARY lateral delt session.'},
     {n:'Machine Reverse Fly OR Cable Rear Lateral Raise',s:'2 × 12–20',rest:'45s',tag:'',notes:'Cable single-arm version here (constant tension). Deliberately different from Day 2.'},
     {n:'EZ Bar Curl',s:'3 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. RIR 1.'},
     {n:'Dumbbell Hammer Curl',s:'2 × 10–15',rest:'45s',tag:'',notes:'Thumbs-up grip. Brachialis focus.'},
     {n:'Cable Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Standing, rope. Long-head bias. Full stretch at bottom.'},
-    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'0s',tag:'SS1',notes:'Superset with calf raise.'},
-    {n:'Barbell Seated Calf Raise',s:'3 × 12–20',rest:'45s',tag:'SS2',notes:'Sit on flat bench, bar across padded thighs, 25lb plate under feet. Knee bent = soleus. (No machine calf raise at gym.)'},
+    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'0s',tag:'SS1',notes:'Superset into wrist curl.'},
+    {n:'Dumbbell Wrist Curl (Palms Up)',s:'2 × 15–20',rest:'0s',tag:'SS2',notes:'Forearms on thighs or bench edge, palms facing up, full stretch at bottom. Flexor-focused — complements the Reverse Curl\'s extensor bias from Day 2. Superset into calf raise.'},
+    {n:'Barbell Seated Calf Raise',s:'3 × 12–20',rest:'60s',tag:'SS3',notes:'Sit on flat bench, bar across padded thighs, 25lb plate under feet. Knee bent = soleus. Rest 60s then repeat the 3-exercise circuit — bumped from 45s since the third exercise adds real cumulative work. (No machine calf raise at gym.)'},
   ]},
   d7:{name:'REST / ZONE 2', target:'Optional 20–30 min Zone 2', mins:0, rest:true, ex:[
     {n:'Zone 2 cardio (optional)',s:'20–30 min',rest:'—',tag:'',notes:'Rower, Peloton, or Concept2. 115–134 bpm. Arms recovered, legs fresh. Bag work in Phase 2+.'},
@@ -835,20 +852,20 @@ const SECTIONS = {
 training:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
     {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
-    {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
+    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
     {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
     {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
   ]},
   {id:'pre',label:'Pre-Workout',icon:'⚡',cls:'s-pre',items:[
-    {id:'wpre',label:'500ml water before gym',sub:'60–90 min window before lifting'},
+    {id:'wpre',label:'500ml (~17oz) water before gym',sub:'60–90 min window before lifting'},
   ]},
   {id:'wo',label:'Workout',icon:'🏋️',cls:'s-wo',items:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Bike or walk · not a workout'},
     {id:'session',label:'Complete all sets — log in JEFIT',sub:'Compounds 1–3 RIR · isolations 0–2 RIR'},
-    {id:'wgym',label:'500ml water during session',sub:'Sip between sets'},
-    {id:'wpreste',label:'500ml water BEFORE steam',sub:'Non-negotiable · before walking in'},
+    {id:'wgym',label:'500ml (~17oz) water during session',sub:'Sip between sets'},
+    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in'},
     {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out'},
-    {id:'wposte',label:'500ml water AFTER steam',sub:'Immediately after exiting'},
+    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting'},
   ]},
   {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
@@ -871,7 +888,7 @@ training:[
 rest:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
     {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
-    {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
+    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
     {id:'creat',label:'5g creatine',sub:'Take daily — with water'},
     {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
     {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
@@ -894,14 +911,14 @@ rest:[
 cardio:[
   {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
     {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
-    {id:'wam',label:'250ml water before coffee',sub:'Before anything else'},
+    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
     {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
     {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
   ]},
   {id:'wo',label:'Cardio Session',icon:'🚴',cls:'s-wo',items:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Let HR rise gradually'},
     {id:'zone2',label:'20–30 min Zone 2 (115–134 BPM)',sub:'Peloton/recumbent · fully conversational'},
-    {id:'wcard',label:'500ml water during session',sub:'Log in WaterMinder'},
+    {id:'wcard',label:'500ml (~17oz) water during session',sub:'Log in WaterMinder'},
     {id:'cool',label:'5 min cool-down',sub:'Let HR drop to ~100 BPM'},
     {id:'logah',label:'Log workout in Apple Health',sub:'Select cycling · check HR zones after'},
   ]},
@@ -947,7 +964,7 @@ function blankDay() {
     date:todayKey(), dayType:'training', cycleDay:'', checked:{}, realRest:false,
     water:0, waterOz:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
     uworld:{done:'',goal:''}, anki:{done:'',due:''}, syncTime:null, readiness:'',
-    crashSeverity:'',
+    crashSeverity:'', notes:'',
   };
 }
 
@@ -1386,6 +1403,7 @@ function openDayDetail(dateStr, isToday){
     <div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>
     <div class="dd-row"><span class="dd-k">Anki</span><span class="dd-v">${(day.anki&&day.anki.done)||0} done</span></div>
     ${day.crashSeverity?`<div class="dd-row"><span class="dd-k">Crash severity</span><span class="dd-v">${day.crashSeverity}</span></div>`:''}
+    ${day.notes?`<div class="dd-notes"><div class="dd-notes-lbl">Notes</div><div class="dd-notes-txt">${day.notes.replace(/</g,'&lt;')}</div></div>`:''}
     <div class="dd-divider"></div>`;
 
   secs.forEach(sec=>{
@@ -1637,7 +1655,7 @@ function renderWorkoutPage() {
   wrap.innerHTML = '';
   prog.ex.forEach((e,i)=>{
     const last = lastLoggedFor(e.n);
-    const tagCls = e.tag==='' ? '' : (['SS1','SS2'].includes(e.tag)?'ss':(e.tag==='CAP'?'wk1':'int'));
+    const tagCls = e.tag==='' ? '' : (e.tag.startsWith('SS')?'ss':(e.tag==='CAP'?'wk1':'int'));
     const div = document.createElement('div');
     div.className='ex';
     div.innerHTML = `
@@ -1763,7 +1781,7 @@ function updateBanner() {
 function generateFullCSV(){
   const keys = Object.keys(localStorage).filter(k=>k.startsWith('pplua_') && k!=='pplua_settings').sort();
   const header = ['date','dayType','cycleDay','realRest','checklist_done','checklist_total','checklist_pct',
-    'sleep_h','resting_hr','steps','weight_lbs','water_bottles','water_oz','water_ml','uworld_done','anki_done','crash_severity',
+    'sleep_h','resting_hr','steps','weight_lbs','water_bottles','water_oz','water_ml','uworld_done','anki_done','crash_severity','notes',
     ...CORRELATION_ITEMS.map(ci=>ci.id+'_time')];
   const rows = [header.join(',')];
   keys.forEach(k=>{
@@ -1782,7 +1800,7 @@ function generateFullCSV(){
       m.sleep||'', m.hr||'', m.steps||'', m.weight||'',
       day.water!=null?day.water:'', day.waterOz!=null?day.waterOz:'', day.waterOz!=null?ozToMl(day.waterOz):'',
       (day.uworld&&day.uworld.done)||'', (day.anki&&day.anki.done)||'',
-      day.crashSeverity||'',
+      day.crashSeverity||'', day.notes||'',
       ...CORRELATION_ITEMS.map(ci=>getCheckedTime(day.checked, ci.id)||'')
     ];
     rows.push(row.map(v=>{
@@ -1842,6 +1860,7 @@ function generateExport(){
         return t ? `${ci.label} ${fmtTime12(t)}${extra}` : `${ci.label}${extra}`;
       });
     if(times.length) lines.push(`  times: ${times.join(', ')}`);
+    if(day.notes) lines.push(`  notes: ${day.notes.replace(/\n/g,' ')}`);
   }
   const r = computeReadiness();
   const trigLines = r.triggers.map(t=>`  - ${t.hot?'[ACTIVE] ':'[clear]  '}${t.label}`).join('\n');
@@ -1964,6 +1983,7 @@ bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value|
 bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 bind('poolTotal',    function(){ settings.totalQuestions=Math.max(1,parseInt(this.value||UW_DEFAULT.total)); saveSettings(); renderUWorld(); });
+bind('dayNotes',     function(){ state.notes = this.value; saveState(); });
 
 // ── INIT ────────────────────────────────────────────────────────────────────
 function init(){
@@ -1985,6 +2005,7 @@ function init(){
   renderRealRestUI();
   renderChecklist();
   renderWorkoutPage();
+  document.getElementById('dayNotes').value = state.notes || '';
 }
 init();
 </script>
