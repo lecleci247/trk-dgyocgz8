@@ -789,7 +789,7 @@ function ozToMl(oz){ return Math.round(oz * (950/32)); }
 
 // ── PROGRAM (gym-verified, from Master Handoff) ─────────────────────────────
 const PROGRAM = {
-  d1:{name:'PUSH', target:'Chest · Delts · Triceps · Abs', mins:55, ex:[
+  d1:{name:'PUSH', target:'Chest · Delts · Triceps · Abs', mins:57, ex:[
     {n:'Smith Machine Incline Bench Press',s:'3 × 6–10',rest:'120s',tag:'',notes:'35° bench. Bar to upper chest, 1–2" below clavicles. RIR 1–2. 2 ramp sets first.'},
     {n:'Machine Chest Press',s:'3 × 8–12',rest:'90s',tag:'DS',notes:'Final set only: drop 30%, AMRAP, rest 15s after drop.'},
     {n:'Cable One-Arm Lateral Raise',s:'4 × 10–15',rest:'45s',tag:'',notes:'Elbow leads, slight bend. RIR 0–1.'},
@@ -797,6 +797,7 @@ const PROGRAM = {
     {n:'Cable Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Standing, rope. Full stretch at bottom.'},
     {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'45s',tag:'',notes:'Spread rope at bottom. Elbows pinned.'},
     {n:'Machine Ab Crunch',s:'3 × 10–15',rest:'45s',tag:'',notes:'Add weight. Ribs to hips. Control the return.'},
+    {n:'Doorway Pec Stretch',s:'3 × 30s holds',rest:'15s',tag:'',notes:'Forearm on doorframe, step through until you feel a stretch across the chest. Pecs are warm right now — best time to stretch them. Addresses the "tight" side of the posture fix; the Day 2 face pull addresses the "weak" side.'},
   ]},
   d2:{name:'PULL', target:'Back · Biceps · Rear Delts · Forearms', mins:56, ex:[
     {n:'Cable Grip Lat Pulldown (Narrow Grip)',s:'3 × 6–10',rest:'105s',tag:'',notes:'Neutral/close grip. Pull to upper chest. RIR 1–2.'},
@@ -807,7 +808,7 @@ const PROGRAM = {
     {n:'EZ Bar Curl',s:'2 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. Controlled descent. RIR 1.'},
     {n:'Dumbbell Incline Curl',s:'3 × 10–15',rest:'0s',tag:'SS1',notes:'Arms hang back on incline bench. Superset directly into reverse curl.'},
     {n:'Reverse Curl',s:'3 × 12–15',rest:'60s',tag:'SS2',notes:'Pronated grip. Brachioradialis. Rest 60s then repeat SS.'},
-    {n:'Cable External Rotation (or Face Pull)',s:'1 × 15–20',rest:'45s',tag:'',notes:'Shoulder health only. Light. RIR 2. No intensifiers ever.'},
+    {n:'Cable Face Pull',s:'3 × 15–20',rest:'45s',tag:'',notes:'Pull elbows high, squeeze shoulder blades together at the top. Corrective volume for forward-head/rounded-shoulder posture — bumped from light maintenance since this is the main strengthening piece of that fix.'},
   ]},
   d3:{name:'LOWER', target:'Quads · Hams · Calves · Abs', mins:55, ex:[
     {n:'Smith Machine Squat',s:'3 × 6–10',rest:'120s',tag:'',notes:'Feet slightly forward, narrow stance, upright torso = quad-dominant. (CrossFit gym: barbell back squat preferred.)'},
@@ -822,7 +823,7 @@ const PROGRAM = {
   d4:{name:'REST / ZONE 2', target:'Optional 20–30 min Zone 2', mins:0, rest:true, ex:[
     {n:'Zone 2 cardio (optional)',s:'20–30 min',rest:'—',tag:'',notes:'Peloton, recumbent bike, or Concept2 rower. 115–134 bpm, conversational. Follows leg day: avoid stairmaster and lower-body-heavy cardio.'},
   ]},
-  d5:{name:'UPPER', target:'Chest #2 · Back #2 · Lateral Delt #2 · Obliques', mins:54, ex:[
+  d5:{name:'UPPER', target:'Chest #2 · Back #2 · Lateral Delt #2 · Obliques', mins:56, ex:[
     {n:'Dumbbell Bench Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Flat bench. RIR 1. Press slightly inward at top.'},
     {n:'Machine Fly',s:'2 × 12–15',rest:'45s',tag:'',notes:'Slight elbow bend. Squeeze at peak.'},
     {n:'Cable Front Lat Pulldown (Close Grip)',s:'3 × 8–12',rest:'90s',tag:'',notes:'Different angle from Day 2. Pull to upper chest.'},
@@ -831,6 +832,7 @@ const PROGRAM = {
     {n:'Leg Extension',s:'2 × 12–15',rest:'0s',tag:'SS1',notes:'Maintenance only. Superset with leg curl.'},
     {n:'Seated Leg Curl',s:'2 × 12–15',rest:'45s',tag:'SS2',notes:'Rest 45s then repeat SS.'},
     {n:'Cable Woodchop (High-to-Low)',s:'2 × 12–15',rest:'45s',tag:'',notes:'Each side. Rotate from the torso, not just the arms. Replaced the crunch here — Day 1 and Day 3 already cover flexion, this is the week\'s only rotational oblique work.'},
+    {n:'Doorway Pec Stretch',s:'3 × 30s holds',rest:'15s',tag:'',notes:'Forearm on doorframe, step through until you feel a stretch across the chest. Second chest day of the week — same reasoning as Day 1.'},
   ]},
   d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Forearms · Calves', mins:52, ex:[
     {n:'Machine Shoulder Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'RIR 1–2. No elbow lockout at top.'},
@@ -875,6 +877,12 @@ training:[
     {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
     {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
   ]},
+  {id:'desk',label:'Desk Breaks',icon:'🪑',cls:'s-nu',items:[
+    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every study break — the highest-leverage move for forward head',optional:true},
+    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume on rest/cardio days, half on Day 2 & 6',optional:true},
+    {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
+    {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
+  ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
     {id:'carbs',label:'Carbs around training',sub:'Rice/potatoes/oats pre and post'},
@@ -898,6 +906,12 @@ rest:[
     {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
     {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
     {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
+  ]},
+  {id:'desk',label:'Desk Breaks',icon:'🪑',cls:'s-nu',items:[
+    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every study break — the highest-leverage move for forward head',optional:true},
+    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume today, half on Day 2 & 6',optional:true},
+    {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
+    {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -929,6 +943,12 @@ cardio:[
     {id:'lunch',label:'Main meal — 40–50g protein',sub:'Hard target 12:30–1:00pm. Covers breakfast, post-cardio, and lunch in one.'},
     {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
     {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
+  ]},
+  {id:'desk',label:'Desk Breaks',icon:'🪑',cls:'s-nu',items:[
+    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every study break — the highest-leverage move for forward head',optional:true},
+    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume today, half on Day 2 & 6',optional:true},
+    {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
+    {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
   ]},
   {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
     {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
@@ -1403,7 +1423,14 @@ function openDayDetail(dateStr, isToday){
     <div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>
     <div class="dd-row"><span class="dd-k">Anki</span><span class="dd-v">${(day.anki&&day.anki.done)||0} done</span></div>
     ${day.crashSeverity?`<div class="dd-row"><span class="dd-k">Crash severity</span><span class="dd-v">${day.crashSeverity}</span></div>`:''}
-    ${day.notes?`<div class="dd-notes"><div class="dd-notes-lbl">Notes</div><div class="dd-notes-txt">${day.notes.replace(/</g,'&lt;')}</div></div>`:''}
+    ${isToday
+      ? (day.notes?`<div class="dd-notes"><div class="dd-notes-lbl">Notes</div><div class="dd-notes-txt">${day.notes.replace(/</g,'&lt;')}</div></div>`:'')
+      : `<div class="dd-notes">
+          <div class="dd-notes-lbl">Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">— editable</span></div>
+          <textarea class="notes-input" id="ddNotesEdit" rows="3" placeholder="Add a note about this day...">${(day.notes||'').replace(/</g,'&lt;')}</textarea>
+          <button class="sync-alt" style="margin-top:6px" onclick="saveDayNote('${dateStr}')">Save note</button>
+          <div class="anki-sub" id="ddNoteStatus" style="margin-top:4px"></div>
+        </div>`}
     <div class="dd-divider"></div>`;
 
   secs.forEach(sec=>{
@@ -1432,6 +1459,18 @@ function openDayDetail(dateStr, isToday){
 }
 function closeDayDetail(){
   document.getElementById('dayDetailModal').classList.remove('show');
+}
+// Notes-only editing for past days — deliberately doesn't touch checklist
+// items or timestamps, since those feed streaks and the deload engine and
+// retroactive edits there would get complicated fast. Notes are just text.
+function saveDayNote(dateStr){
+  const day = loadDay(dateStr);
+  if(!day) return;
+  const el = document.getElementById('ddNotesEdit');
+  day.notes = el ? el.value : '';
+  try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
+  const status = document.getElementById('ddNoteStatus');
+  if(status) status.textContent = 'Saved ✓';
 }
 
 function renderCycle() {
