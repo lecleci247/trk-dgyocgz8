@@ -571,6 +571,13 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
         <input class="uw-in" type="number" id="poolTotal" inputmode="numeric" min="1" placeholder="1248">
       </div>
     </div>
+    <div class="uw-inputs" style="margin-top:8px">
+      <div class="uw-ig">
+        <div class="uw-il">Marked-but-correct (false positives)</div>
+        <input class="uw-in" type="number" id="poolMarkedCorrect" inputmode="numeric" min="0" placeholder="25">
+      </div>
+    </div>
+    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:-2px;margin-bottom:8px;">UWorld's Marked and Incorrect filters overlap — a question can be both. To avoid double-counting the redo pool, get this number by selecting Correct + Marked together in UWorld (reads as a union), then: Correct + Marked − that union = marked-but-correct.</p>
     <div class="miss-rate-display">
       <span class="mrd-lbl">Current miss rate (auto)</span>
       <span class="mrd-val" id="missRateDisplay">—</span>
@@ -716,9 +723,10 @@ function fmtMonthDay(dateStr){
 }
 
 // ── UWORLD BASELINE (editable via Study page pool inputs, persisted) ────────
-// From latest QBank check (Jul 13): 1248 total, 638 used, 610 unused,
-// 346 correct, 292 incorrect, 90 marked, miss rate 45.8%.
-const UW_DEFAULT = {unused:610, incorrect:292, marked:90, missRate:45.8, total:1248, histDone:638};
+// From latest QBank check: 1248 total, 818 used, 430 unused, 436 correct,
+// 377 incorrect, 126 marked (of which 101 overlap with incorrect and 25 are
+// marked-but-correct, confirmed via Correct+Marked union = 537).
+const UW_DEFAULT = {unused:430, incorrect:377, marked:126, markedCorrect:25, missRate:46.1, total:1248, histDone:818};
 
 // Phase 1: finish unused first-pass (Jul 13-31). Phase 2: redo incorrect+marked
 // (Aug 1-14). Phase 3: final mixed weakness pass (Aug 15-21). Phase 4: final
@@ -1023,6 +1031,9 @@ function loadSettings() {
   // fresh defaults below the first time this runs, no migration needed.
   if(settings.incorrect == null) settings.incorrect = UW_DEFAULT.incorrect;
   if(settings.marked == null) settings.marked = UW_DEFAULT.marked;
+  // marked-but-correct: the only slice of "marked" that isn't already inside
+  // "incorrect" — see computeStudy() for why this replaces the old naive sum.
+  if(settings.markedCorrect == null) settings.markedCorrect = UW_DEFAULT.markedCorrect;
   // Miss rate is no longer stored — it's derived live from unused/incorrect/
   // totalQuestions in computeStudy(), so it can never go stale relative to
   // whatever's actually typed into those fields.
@@ -1158,8 +1169,15 @@ function computeStudy() {
   const usedSnapshot = Math.max(1, totalQ - settings.unused);
   const missRate = Math.max(0, Math.min(1, (settings.incorrect||0) / usedSnapshot));
   const expectedFutureIncorrect = Math.round(unusedLeft * missRate);
-  const knownRedoLeft = Math.max(0, (settings.incorrect||0) + (settings.marked||0) - redoProgress);
-  const redoLeft = knownRedoLeft + expectedFutureIncorrect;
+  // Marked and Incorrect overlap in UWorld (a question can be both), so
+  // incorrect + marked double-counts that overlap. The only slice of
+  // "marked" NOT already inside "incorrect" is marked-but-correct — so
+  // incorrect + markedCorrect gives the true union with no double-count,
+  // by construction. See "Update your UWorld pool" for how to get that number.
+  const markedCorrectRate = Math.max(0, Math.min(1, (settings.markedCorrect||0) / usedSnapshot));
+  const expectedFutureMarkedCorrect = Math.round(unusedLeft * markedCorrectRate);
+  const knownRedoLeft = Math.max(0, (settings.incorrect||0) + (settings.markedCorrect||0) - redoProgress);
+  const redoLeft = knownRedoLeft + expectedFutureIncorrect + expectedFutureMarkedCorrect;
   const remaining = unusedLeft + redoLeft;
 
   const daysLeft = getStudyDaysLeft();
@@ -1199,6 +1217,7 @@ function computeStudy() {
 
   return {cum, unusedLeft, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
           evenPace, bareMin, deficit, first, knownRedoLeft, expectedFutureIncorrect, missRatePct: missRate*100,
+          expectedFutureMarkedCorrect, markedCorrectPct: markedCorrectRate*100,
           totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
 }
 function firstLoggedDate(){
@@ -1621,6 +1640,7 @@ function renderUWorld() {
   if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
   if(document.activeElement !== document.getElementById('poolIncorrect')) document.getElementById('poolIncorrect').value = settings.incorrect;
   if(document.activeElement !== document.getElementById('poolMarked')) document.getElementById('poolMarked').value = settings.marked;
+  if(document.activeElement !== document.getElementById('poolMarkedCorrect')) document.getElementById('poolMarkedCorrect').value = settings.markedCorrect;
   if(document.activeElement !== document.getElementById('poolTotal')) document.getElementById('poolTotal').value = settings.totalQuestions;
   document.getElementById('missRateDisplay').textContent = c.missRatePct.toFixed(1)+'%';
 
@@ -1634,9 +1654,9 @@ function renderUWorld() {
 function renderStudyExplain(c){
   const parts = [];
   parts.push(`<b style="color:var(--t1)">Unused remaining:</b> ${c.unusedLeft} first-pass questions.`);
-  parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (current incorrect + marked).`);
-  parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.unusedLeft} unused × ${c.missRatePct.toFixed(1)}% current miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> more questions you'll likely need to redo as you clear the first-pass pool.`);
-  parts.push(`<b style="color:var(--t1)">Total remaining exposure:</b> ${c.unusedLeft} unused + (${c.knownRedoLeft} known + ${c.expectedFutureIncorrect} projected) redo = <b style="color:var(--t1)">${c.remaining}</b> question exposures.`);
+  parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (incorrect + marked-but-correct — this is the true union of incorrect ∪ marked, not a raw sum, since marked and incorrect overlap).`);
+  parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.unusedLeft} unused × ${c.missRatePct.toFixed(1)}% miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> future incorrect, plus ${c.unusedLeft} unused × ${c.markedCorrectPct.toFixed(1)}% marked-but-correct rate = <b style="color:var(--t1)">~${c.expectedFutureMarkedCorrect}</b> future marked-but-correct.`);
+  parts.push(`<b style="color:var(--t1)">Total remaining exposure:</b> ${c.unusedLeft} unused + (${c.knownRedoLeft} known + ${c.expectedFutureIncorrect + c.expectedFutureMarkedCorrect} projected) redo = <b style="color:var(--t1)">${c.remaining}</b> question exposures.`);
   parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, at 6 days/week with one floating day off (not pinned to a specific weekday), through ${fmtMonthDay(STUDY_END)}. Taper is ${fmtMonthDay(TAPER_START)} (0–20 questions only), exam ${fmtMonthDay(EXAM)}.`);
   parts.push(`<b style="color:var(--t1)">Bare minimum pace:</b> ${c.remaining} ÷ ${c.daysLeft} = ${c.bareMin.toFixed(1)}/day.`);
   parts.push(`<b style="color:var(--t1)">Standard target:</b> ${STANDARD_DAILY_TARGET}/day is the fixed floor regardless of how low the bare minimum runs — only scales higher when actually needed → <b style="color:var(--t1)">${c.evenPace}/day</b>.`);
@@ -2021,6 +2041,7 @@ bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki()
 bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
+bind('poolMarkedCorrect', function(){ settings.markedCorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
 bind('poolTotal',    function(){ settings.totalQuestions=Math.max(1,parseInt(this.value||UW_DEFAULT.total)); saveSettings(); renderUWorld(); });
 bind('dayNotes',     function(){ state.notes = this.value; saveState(); });
 
