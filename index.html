@@ -518,9 +518,17 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       <div class="uw-stat"><div class="uw-sn" id="uwDaysLeft">—</div><div class="uw-sl">Days to exam</div></div>
       <div class="uw-stat"><div class="uw-sn" id="uwSuggest">50</div><div class="uw-sl">Suggested/day</div></div>
     </div>
-    <div class="uw-pace ontrack" id="uwPace">
+    <div class="uw-pace" id="uwPaceUnused">
       <span class="dot"></span>
-      <span id="uwPaceTxt">On track.</span>
+      <span><b style="color:var(--t1)">Unused:</b> <span id="uwPaceUnusedTxt">—</span></span>
+    </div>
+    <div class="uw-pace" id="uwPaceFlow">
+      <span class="dot"></span>
+      <span><b style="color:var(--t1)">Redo flow:</b> <span id="uwPaceFlowTxt">—</span></span>
+    </div>
+    <div class="uw-pace" id="uwPaceOverall">
+      <span class="dot"></span>
+      <span><b style="color:var(--t1)">Overall:</b> <span id="uwPaceOverallTxt">—</span></span>
     </div>
   </div>
 
@@ -749,7 +757,7 @@ const PHASES = [
 // PHASES above, since first-pass may finish before/after the Jul 31 boundary.
 const DAILY_TARGET = {
   unusedPerDay: 50,
-  redoPerDayMin: 15, redoPerDayMax: 20,
+  redoPerDayMin: 20, redoPerDayMax: 25,
   postFirstPassMin: 50, postFirstPassMax: 60,
 };
 
@@ -1162,6 +1170,26 @@ function getWeekDone() {
   return total;
 }
 
+// ── TRAILING SPLIT AVERAGE (unused vs redo done/day, last N days) ──────────
+// Only averages over days with the split fields actually recorded — days
+// before the Jul21 rebuild only have a combined total, and treating those
+// as zero would wrongly drag the average down rather than just excluding them.
+function getTrailingSplitAvg(days) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let unusedSum=0, redoSum=0, n=0;
+  for(let i=0;i<days;i++){
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    const day = loadDay(localDateStr(d));
+    if(day && day.uworld && day.uworld.unusedDone!=='' && day.uworld.unusedDone!=null){
+      unusedSum += parseInt(day.uworld.unusedDone||0);
+      redoSum += parseInt(day.uworld.redoDone||0);
+      n++;
+    }
+  }
+  if(n===0) return null;
+  return {unusedAvg: unusedSum/n, redoAvg: redoSum/n, days:n};
+}
+
 // ── ADAPTIVE STUDY TARGET ──────────────────────────────────────────────────
 // Implements the framework's exact adjustment formula: expected future
 // incorrects = unused remaining × current miss rate; redo pool = current
@@ -1234,9 +1262,56 @@ function computeStudy() {
   else if(deficit < -30){ status='ahead'; txt=`Ahead by ~${Math.abs(deficit)}. Hold ${clamped}/day or bank the buffer.`; }
   else { status='ontrack'; txt=`On pace. ${clamped}/day keeps you on schedule.`; }
 
+  // ── UNUSED PACE: will first pass finish by the Jul 31 deadline? ──────────
+  // The deadline-driven signal — this is the one that should carry urgency.
+  const trailing = getTrailingSplitAvg(5);
+  const unusedAvg = trailing ? trailing.unusedAvg : null;
+  const redoAvg = trailing ? trailing.redoAvg : null;
+  const p1End = new Date(PHASES[0].end+'T00:00:00');
+  const nowMid = new Date(); nowMid.setHours(0,0,0,0);
+  let unusedStatus='ontrack', unusedTxt='';
+  if(unusedLeft<=0){ unusedStatus='ahead'; unusedTxt='First pass cleared.'; }
+  else if(unusedAvg===null){ unusedStatus='ontrack'; unusedTxt=`No trailing data yet — log today's unused count to start tracking pace.`; }
+  else if(unusedAvg<=0){ unusedStatus='crit'; unusedTxt=`0/day trailing over ${trailing.days}d — ${unusedLeft} unused won't move without logging.`; }
+  else {
+    const daysToFinish = unusedLeft/unusedAvg;
+    const projFinish = new Date(nowMid); projFinish.setDate(nowMid.getDate()+Math.ceil(daysToFinish));
+    const daysLate = Math.round((projFinish-p1End)/864e5);
+    const dateStr = projFinish.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    if(daysLate<=-2){ unusedStatus='ahead'; unusedTxt=`${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 finishes ~${dateStr}, ahead of the Jul 31 deadline.`; }
+    else if(daysLate<=0){ unusedStatus='ontrack'; unusedTxt=`${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 finishes ~${dateStr}, on pace for Jul 31.`; }
+    else {
+      const daysToP1 = Math.max(1, Math.round((p1End-nowMid)/864e5));
+      const neededPace = Math.ceil(unusedLeft / daysToP1);
+      unusedStatus = daysLate>5 ? 'crit' : 'behind';
+      unusedTxt = `${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 projects to ~${dateStr}, ${daysLate}d past deadline. Need ${neededPace}/day to close it.`;
+    }
+  }
+
+  // ── REDO FLOW: is the backlog growing faster than expected, or shrinking? ─
+  // Positive during first pass is normal (unused generates new redo material
+  // faster than 20-25/day clears it) — the signal here isn't "is it growing,"
+  // it's "is it growing faster than the math predicts."
+  const firstPassActive = unusedLeft > 0;
+  let flowStatus='ontrack', flowTxt='';
+  if(redoAvg===null){
+    flowStatus='ontrack'; flowTxt=`No trailing data yet — log today's redo count to start tracking flow.`;
+  } else if(firstPassActive){
+    const genRate = unusedAvg!==null ? unusedAvg : DAILY_TARGET.unusedPerDay;
+    const generated = genRate * (missRate + markedCorrectRate);
+    const netFlow = redoAvg - generated;
+    if(netFlow >= 0){ flowStatus='ahead'; flowTxt=`${redoAvg.toFixed(0)}/day trailing vs ~${generated.toFixed(0)}/day generated \u2014 holding flat or shrinking even while first pass is active.`; }
+    else if(netFlow >= -8){ flowStatus='ontrack'; flowTxt=`${redoAvg.toFixed(0)}/day trailing vs ~${generated.toFixed(0)}/day generated \u2014 backlog growing modestly (~${Math.abs(netFlow).toFixed(0)}/day), expected while first pass is still active.`; }
+    else { flowStatus='behind'; flowTxt=`${redoAvg.toFixed(0)}/day trailing vs ~${generated.toFixed(0)}/day generated \u2014 growing faster than expected (~${Math.abs(netFlow).toFixed(0)}/day). Push toward ${DAILY_TARGET.redoPerDayMax}/day if you can.`; }
+  } else {
+    if(redoAvg >= DAILY_TARGET.postFirstPassMin){ flowStatus='ahead'; flowTxt=`${redoAvg.toFixed(0)}/day trailing \u2014 first pass cleared, no new generation, backlog is actually shrinking.`; }
+    else { flowStatus='behind'; flowTxt=`${redoAvg.toFixed(0)}/day trailing \u2014 first pass cleared, but that's below the ${DAILY_TARGET.postFirstPassMin}\u2013${DAILY_TARGET.postFirstPassMax}/day post-first-pass target.`; }
+  }
+
   return {cum, unusedLeft, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
           evenPace, bareMin, deficit, first, knownRedoLeft, expectedFutureIncorrect, missRatePct: missRate*100,
           expectedFutureMarkedCorrect, markedCorrectPct: markedCorrectRate*100,
+          unusedStatus, unusedTxt, flowStatus, flowTxt, trailingDays: trailing?trailing.days:0,
           totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
 }
 function firstLoggedDate(){
@@ -1669,9 +1744,17 @@ function renderUWorld() {
     document.getElementById('uwProgRedo').style.width = Math.min(100, Math.round(redoDone/rMin*100))+'%';
   }
 
-  const pace = document.getElementById('uwPace');
-  pace.className = 'uw-pace '+c.status;
-  document.getElementById('uwPaceTxt').innerHTML = c.txt;
+  const paceU = document.getElementById('uwPaceUnused');
+  paceU.className = 'uw-pace '+c.unusedStatus;
+  document.getElementById('uwPaceUnusedTxt').textContent = c.unusedTxt;
+
+  const paceF = document.getElementById('uwPaceFlow');
+  paceF.className = 'uw-pace '+c.flowStatus;
+  document.getElementById('uwPaceFlowTxt').textContent = c.flowTxt;
+
+  const paceO = document.getElementById('uwPaceOverall');
+  paceO.className = 'uw-pace '+c.status;
+  document.getElementById('uwPaceOverallTxt').innerHTML = c.txt;
 
   if(document.activeElement !== document.getElementById('uwUnusedDone')) document.getElementById('uwUnusedDone').value = state.uworld.unusedDone||'';
   if(document.activeElement !== document.getElementById('uwRedoDone')) document.getElementById('uwRedoDone').value = state.uworld.redoDone||'';
@@ -1694,10 +1777,11 @@ function renderStudyExplain(c){
   const parts = [];
   const firstPassActive = c.unusedLeft > 0;
   if(firstPassActive){
-    parts.push(`<b style="color:var(--t1)">Daily structure (set Jul 21):</b> ${DAILY_TARGET.unusedPerDay} unused + ${DAILY_TARGET.redoPerDayMin}\u2013${DAILY_TARGET.redoPerDayMax} redo, both timed, no tutor mode. Redo runs daily now instead of waiting for Phase 2 — closes the spacing gap between missing a question and seeing it again.`);
+    parts.push(`<b style="color:var(--t1)">Daily structure (set Jul 21, redo bumped Jul 22):</b> ${DAILY_TARGET.unusedPerDay} unused + ${DAILY_TARGET.redoPerDayMin}\u2013${DAILY_TARGET.redoPerDayMax} redo, both timed, no tutor mode. Redo runs daily now instead of waiting for Phase 2 — closes the spacing gap between missing a question and seeing it again.`);
   } else {
     parts.push(`<b style="color:var(--t1)">Daily structure:</b> first pass is cleared, so the day is now ${DAILY_TARGET.postFirstPassMin}\u2013${DAILY_TARGET.postFirstPassMax} redo questions, timed, weighted toward the persistent weak subjects.`);
   }
+  parts.push(`<b style="color:var(--t1)">Why three separate trajectory lines (set Jul 22):</b> one blended "behind by X, do Y/day" number was hiding two different problems — unused has a hard deadline (Jul 31), while redo doesn't get "behind" the same way since finishing unused questions actively generates new redo material faster than 20\u201325/day can clear it. A growing redo backlog during first pass is expected, not a failure — so it gets judged against what the math predicts, not against zero growth.`);
   parts.push(`<b style="color:var(--t1)">Unused remaining:</b> ${c.unusedLeft} first-pass questions.`);
   parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (incorrect + marked-but-correct — this is the true union of incorrect ∪ marked, not a raw sum, since marked and incorrect overlap).`);
   parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.unusedLeft} unused × ${c.missRatePct.toFixed(1)}% miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> future incorrect, plus ${c.unusedLeft} unused × ${c.markedCorrectPct.toFixed(1)}% marked-but-correct rate = <b style="color:var(--t1)">~${c.expectedFutureMarkedCorrect}</b> future marked-but-correct.`);
