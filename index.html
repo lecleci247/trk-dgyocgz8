@@ -1533,7 +1533,17 @@ function openDayDetail(dateStr, isToday){
     <div class="dd-row"><span class="dd-k">Steps</span><span class="dd-v">${m.steps?Math.round(m.steps).toLocaleString():'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Weight</span><span class="dd-v">${m.weight?m.weight+' lbs':'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Water</span><span class="dd-v">${day.water||0}/${W_TARGETS[dt]||5} bottles (${ozToMl((day.water||0)*32)}/${ozToMl((W_TARGETS[dt]||5)*32)}mL)</span></div>
-    <div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>
+    ${isToday
+      ? `<div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>`
+      : `<div class="dd-notes">
+          <div class="dd-notes-lbl">UWorld <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">— editable</span></div>
+          <div class="uw-inputs" style="margin-top:4px">
+            <div class="uw-ig"><div class="uw-il">Unused done</div><input class="uw-in" type="number" id="ddUwUnused" min="0" placeholder="0" value="${(day.uworld&&day.uworld.unusedDone)||''}"></div>
+            <div class="uw-ig"><div class="uw-il">Redo done</div><input class="uw-in" type="number" id="ddUwRedo" min="0" placeholder="0" value="${(day.uworld&&day.uworld.redoDone)||''}"></div>
+          </div>
+          <button class="sync-alt" style="margin-top:6px" onclick="saveDayUworld('${dateStr}')">Save UWorld</button>
+          <div class="anki-sub" id="ddUwStatus" style="margin-top:4px"></div>
+        </div>`}
     <div class="dd-row"><span class="dd-k">Anki</span><span class="dd-v">${(day.anki&&day.anki.done)||0} done</span></div>
     ${day.crashSeverity?`<div class="dd-row"><span class="dd-k">Crash severity</span><span class="dd-v">${day.crashSeverity}</span></div>`:''}
     ${isToday
@@ -1584,6 +1594,22 @@ function saveDayNote(dateStr){
   try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
   const status = document.getElementById('ddNoteStatus');
   if(status) status.textContent = 'Saved ✓';
+}
+function saveDayUworld(dateStr){
+  const day = loadDay(dateStr);
+  if(!day) return;
+  if(!day.uworld) day.uworld = {};
+  const uEl = document.getElementById('ddUwUnused');
+  const rEl = document.getElementById('ddUwRedo');
+  const unusedDone = uEl ? uEl.value : '';
+  const redoDone = rEl ? rEl.value : '';
+  day.uworld.unusedDone = unusedDone;
+  day.uworld.redoDone = redoDone;
+  day.uworld.done = (parseInt(unusedDone||0)) + (parseInt(redoDone||0));
+  try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
+  const status = document.getElementById('ddUwStatus');
+  if(status) status.textContent = 'Saved ✓ — total now '+day.uworld.done;
+  renderUWorld(); renderWeekly(); renderStreaks();
 }
 
 function renderCycle() {
@@ -2161,8 +2187,13 @@ bind('metWeight',function(){ if(!isMonday())return; state.metrics.weight=this.va
 bind('metSleep', function(){ state.metrics.sleep=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 bind('metHR',    function(){ state.metrics.hr=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 
-bind('uwUnusedDone', function(){ state.uworld.unusedDone=this.value; saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
-bind('uwRedoDone',   function(){ state.uworld.redoDone=this.value; saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
+function syncUworldDone(){
+  const unusedDone = parseInt(state.uworld.unusedDone||0);
+  const redoDone = parseInt(state.uworld.redoDone||0);
+  state.uworld.done = unusedDone + redoDone;
+}
+bind('uwUnusedDone', function(){ state.uworld.unusedDone=this.value; syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
+bind('uwRedoDone',   function(){ state.uworld.redoDone=this.value; syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
 
 bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
 bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
