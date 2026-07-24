@@ -1607,6 +1607,11 @@ function saveDayUworld(dateStr){
   day.uworld.redoDone = redoDone;
   day.uworld.done = (parseInt(unusedDone||0)) + (parseInt(redoDone||0));
   try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
+  // Re-anchor the pool baseline to the corrected total — otherwise this
+  // correction gets silently double-subtracted from unusedLeft later,
+  // the same way a fresh pool-number entry re-anchors it today.
+  settings.poolBaselineCum = getCumDone();
+  saveSettings();
   const status = document.getElementById('ddUwStatus');
   if(status) status.textContent = 'Saved ✓ — total now '+day.uworld.done;
   renderUWorld(); renderWeekly(); renderStreaks();
