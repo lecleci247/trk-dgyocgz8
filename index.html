@@ -393,7 +393,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       <div class="sync-val"><div class="sv-n" id="syncHR">—</div><div class="sv-l" id="syncHRl">Rest HR</div></div>
       <div class="sync-val"><div class="sv-n" id="syncSteps">—</div><div class="sv-l">Steps</div></div>
       <div class="sync-val"><div class="sv-n" id="syncWaterOz">—</div><div class="sv-l">Water oz</div></div>
-      <div class="sync-val"><div class="sv-n" id="syncWeight">—</div><div class="sv-l">Weight</div></div>
+      <div class="sync-val"><div class="sv-n" id="syncWeight">—</div><div class="sv-l">Weight <span id="syncWeightDelta" style="color:var(--t3)"></span></div></div>
     </div>
     <button class="sync-btn" onclick="openShortcut()">⚡ Run PPLUA Sync</button>
     <button class="sync-alt" onclick="switchTab('setup')">Set up the Shortcut →</button>
@@ -407,6 +407,15 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     </div>
     <div class="rd-msg" id="rdMsg"></div>
     <div class="rd-triggers" id="rdTriggers"></div>
+    <div class="rd-soft" id="rdSoft" style="display:none;font-size:11px;color:var(--am);padding:8px 14px 2px;border-top:1px solid var(--bd);margin-top:4px;"></div>
+  </div>
+
+  <!-- WEEKLY TREND -->
+  <div class="rd-card ok" id="trendCard" style="display:none;">
+    <div class="rd-top">
+      <span class="rd-ttl">Since Last Week</span>
+    </div>
+    <div id="trendRows" style="padding:2px 14px 12px;font-size:12px;color:var(--t2);"></div>
   </div>
 
   <!-- STREAKS -->
@@ -694,6 +703,29 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   <div class="hint">PPLUA Command · single source of truth is the Master Handoff · v3 consolidated</div>
 </div>
 
+<div class="page" id="page-tasks">
+  <div class="ptitle" style="margin-top:16px;">Today's List</div>
+  <p style="font-size:11px;color:var(--t3);padding:0 14px 8px;">Freeform, resets every midnight. Separate storage — never touched by CSV export or any data tracking.</p>
+  <div class="ref-card" style="padding:12px 14px;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="text" id="taskTodayInput" placeholder="Add something..." style="flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--t1);font-size:13px;" onkeydown="if(event.key==='Enter')addTaskToday()">
+      <button onclick="addTaskToday()" style="background:var(--am);color:#000;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;">Add</button>
+    </div>
+    <div id="taskTodayList"></div>
+  </div>
+
+  <div class="ptitle">Ongoing</div>
+  <p style="font-size:11px;color:var(--t3);padding:0 14px 8px;">Carries forward day after day until you resolve it. Same separate storage as Today's List.</p>
+  <div class="ref-card" style="padding:12px 14px;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="text" id="taskOngoingInput" placeholder="Add something..." style="flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--t1);font-size:13px;" onkeydown="if(event.key==='Enter')addTaskOngoing()">
+      <button onclick="addTaskOngoing()" style="background:var(--am);color:#000;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;">Add</button>
+    </div>
+    <div id="taskOngoingList"></div>
+  </div>
+  <div class="hint">Tasks are miscellaneous, not metrics — kept out of every export on purpose.</div>
+</div>
+
 </div>
 
 <!-- DAY DETAIL MODAL -->
@@ -713,6 +745,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   <button class="tab" id="tab-train" onclick="switchTab('train')"><span class="tab-ic">🏋️</span><span class="tab-lbl">Train</span></button>
   <button class="tab" id="tab-study" onclick="switchTab('study')"><span class="tab-ic">📋</span><span class="tab-lbl">Study</span></button>
   <button class="tab" id="tab-setup" onclick="switchTab('setup')"><span class="tab-ic">⚙︎</span><span class="tab-lbl">Setup</span></button>
+  <button class="tab" id="tab-tasks" onclick="switchTab('tasks')"><span class="tab-ic">📝</span><span class="tab-lbl">Tasks</span></button>
 </div>
 
 <!-- JS -->
@@ -868,7 +901,7 @@ const PROGRAM = {
     {n:'Cable Lateral Raise — SUBMAXIMAL',s:'2 × 12–15',rest:'45s',tag:'CAP',notes:'Pulley set low, stand with the machine to your side. Keep the shoulder down — don\'t shrug to move the weight. RIR 2–3 ONLY. Day 6 tomorrow. Never push these hard.'},
     {n:'Machine Leg Extension',s:'2 × 12–15',rest:'0s',tag:'SS1',notes:'Maintenance only. Superset with leg curl.'},
     {n:'Machine Seated Leg Curl',s:'2 × 12–15',rest:'45s',tag:'SS2',notes:'Rest 45s then repeat SS.'},
-    {n:'Cable Woodchop (High-to-Low)',s:'2 × 12–15',rest:'45s',tag:'',notes:'Each side. Rotate from the torso, not just the arms. Replaced the crunch here — Day 1 and Day 3 already cover flexion, this is the week\'s only rotational oblique work.'},
+    {n:'Cable Woodchop (High-to-Low)',s:'2 × 12–15',rest:'45s',tag:'',notes:'Pulley set high, pull down and across the body. Each side. Rotate from the torso, not just the arms. Replaced the crunch here — Day 1 and Day 3 already cover flexion, this is the week\'s only rotational oblique work.'},
     {n:'Doorway Pec Stretch',s:'3 × 30s holds',rest:'15s',tag:'',notes:'Forearm on doorframe, step through until you feel a stretch across the chest. Second chest day of the week — same reasoning as Day 1.'},
   ]},
   d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Forearms · Calves', mins:52, ex:[
@@ -897,6 +930,7 @@ training:[
     {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
     {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
     {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
+    {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
   ]},
   {id:'pre',label:'Pre-Workout',icon:'⚡',cls:'s-pre',items:[
     {id:'wpre',label:'500ml (~17oz) water before gym',sub:'60–90 min window before lifting'},
@@ -941,6 +975,7 @@ rest:[
     {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
     {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
     {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast'},
+    {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
   ]},
   {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
     {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
@@ -968,6 +1003,7 @@ cardio:[
     {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
     {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
     {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
+    {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
   ]},
   {id:'wo',label:'Cardio Session',icon:'🚴',cls:'s-wo',items:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Let HR rise gradually'},
@@ -1173,6 +1209,51 @@ function getWeekDone() {
     total += parseInt(day?.uworld?.done||0);
   }
   return total;
+}
+
+// ── WEEKLY TREND (this week vs last week) ───────────────────────────────────
+// Same Monday-Sunday boundary as getWeekDone(). "This week" is partial
+// (Monday through today) until Sunday, so /day averages are the fair
+// comparison — not raw totals, which would always favor last week early on.
+function computeWeeklyTrend(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay();
+  const thisMon = new Date(today); thisMon.setDate(today.getDate()-(dow===0?6:dow-1));
+  const lastMon = new Date(thisMon); lastMon.setDate(thisMon.getDate()-7);
+  const lastSun = new Date(thisMon); lastSun.setDate(thisMon.getDate()-1);
+
+  function windowStats(startDate, endDate){
+    let uwSum=0, uwDays=0, sleepSum=0, sleepN=0, hrSum=0, hrN=0;
+    let d = new Date(startDate);
+    while(d <= endDate){
+      const day = loadDay(localDateStr(d));
+      if(day){
+        uwSum += parseInt((day.uworld&&day.uworld.done)||0);
+        uwDays++;
+        const sh = validSleepHours(day.metrics);
+        if(sh!=null){ sleepSum+=sh; sleepN++; }
+        const hr = parseFloat(day.metrics && day.metrics.hr);
+        if(!isNaN(hr)){ hrSum+=hr; hrN++; }
+      }
+      d.setDate(d.getDate()+1);
+    }
+    return {
+      uwPerDay: uwDays>0 ? uwSum/uwDays : null,
+      sleepAvg: sleepN>0 ? sleepSum/sleepN : null,
+      hrAvg: hrN>0 ? hrSum/hrN : null,
+    };
+  }
+
+  const thisWeek = windowStats(thisMon, today);
+  const lastWeek = windowStats(lastMon, lastSun);
+
+  const thisMonDay = loadDay(localDateStr(thisMon));
+  const lastMonDay = loadDay(localDateStr(lastMon));
+  const thisW = thisMonDay && parseFloat(thisMonDay.metrics && thisMonDay.metrics.weight);
+  const lastW = lastMonDay && parseFloat(lastMonDay.metrics && lastMonDay.metrics.weight);
+  const weightDelta = (!isNaN(thisW) && !isNaN(lastW)) ? thisW-lastW : null;
+
+  return {thisWeek, lastWeek, weightDelta, hasLastWeek: lastWeek.uwPerDay!=null || lastWeek.sleepAvg!=null};
 }
 
 // ── TRAILING SPLIT AVERAGE (unused vs redo done/day, last N days) ──────────
@@ -1408,6 +1489,38 @@ function lastNDays(n){
   return arr;
 }
 
+// Reusable for any day object, not just today — lets the soft fatigue
+// signal below check completion % on past days the same way the live
+// progress bar checks it for today.
+function dayCompletionPct(day){
+  if(!day) return null;
+  const all = SECTIONS[effectiveDayType(day)].flatMap(s=>requiredItems(s));
+  const done = all.filter(it=>isChecked(day.checked||{},it.id)).length;
+  return all.length>0 ? Math.round(done/all.length*100) : null;
+}
+
+// ── SOFT FATIGUE SIGNAL ─────────────────────────────────────────────────────
+// The hard triggers above are appropriately conservative — they need a
+// sustained multi-day pattern to fire, which is correct for recommending an
+// actual deload. But that means a real, shorter fatigue dip (like Jul 22-24,
+// which never tripped a single hard trigger) can pass through silently.
+// This checks the last 3 days for softer, earlier markers instead — not a
+// deload recommendation, just an earlier heads-up.
+function computeSoftFatigue(){
+  const days = lastNDays(3);
+  let count = 0;
+  days.forEach(d=>{
+    if(!d) return;
+    let hit = false;
+    if(d.crashSeverity==='moderate' || d.crashSeverity==='severe') hit = true;
+    if(isChecked(d.checked||{}, 'reduceddose')) hit = true;
+    const pct = dayCompletionPct(d);
+    if(pct!=null && pct<50) hit = true;
+    if(hit) count++;
+  });
+  return {count, hot: count>=2};
+}
+
 // Consecutive-day streaks. Past days are immutable and counted first; today
 // (live in-memory state, which may not be saved to storage yet) only adds
 // to the streak if it already qualifies — it never breaks a streak just
@@ -1441,6 +1554,17 @@ function computeCoach() {
   if(cd==='d3') bits.push('Legs today: <b>no stairmaster</b> before or after, and Day 4 cardio should skip lower-body-heavy work.');
   if(cd==='d6') bits.push('Day 6 is your <b>primary lateral delt</b> session — final cable raise set to failure.');
 
+  // UWorld trajectory — the coach line was training-only before Jul 27;
+  // this was the biggest gap, since study pace can be more time-critical
+  // than any single training cue most days.
+  const studyC = computeStudy();
+  if(studyC.unusedStatus==='crit')
+    bits.push(`UWorld unused pace is <b>critically behind</b> the Jul 31 deadline — this is the one to protect today.`);
+  else if(studyC.unusedStatus==='behind')
+    bits.push(`UWorld unused pace is <b>slightly behind</b> the Jul 31 deadline — worth closing today rather than letting it drift.`);
+  else if(studyC.flowStatus==='behind')
+    bits.push(`Redo backlog is <b>growing faster than expected</b> right now — a bit more redo volume today would help.`);
+
   // Yesterday's signals — a bad crash or short night carries into today.
   const yesterdayObj = (() => {
     const y = new Date(); y.setHours(0,0,0,0); y.setDate(y.getDate()-1);
@@ -1461,16 +1585,19 @@ function computeCoach() {
     const base=settings.hrBaseline||79;
     if(hr>base+7) bits.push(`Resting HR <b>${Math.round(hr)}</b> is ${Math.round(hr-base)} over baseline — a recovery flag if it holds.`);
   }
-  if(!isNaN(steps) && steps>0 && steps<8000)
-    bits.push(`Steps at <b>${steps.toLocaleString()}</b> — a short Zone 2 walk closes the gap toward 8–10k, the biggest recomp lever outside the gym.`);
+  if(!isNaN(steps) && steps>0 && steps<7000)
+    bits.push(`Steps at <b>${steps.toLocaleString()}</b>, under the 7,000 floor — a short Zone 2 walk closes the gap without needing a third dedicated cardio day.`);
 
   // Observational only — no claim about effect, just makes the comparison day easy to spot.
   if(isChecked(state.checked,'vyv') && isChecked(state.checked,'adderall'))
     bits.push(`Both <b>Vyvanse and Adderall</b> logged today — worth flagging for the comparison you're tracking.`);
 
-  if(state.dayType==='training'){
-    bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
-  }
+  // Steam-room line suppressed while it's broken (TEMP — matches the optional
+  // checklist flags and 4.5-bottle water target set Jul 27). Restore this
+  // when steam room is back in service.
+  // if(state.dayType==='training'){
+  //   bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
+  // }
   return bits.length ? bits[0] + (bits.length>1 ? '<br><br>'+bits[1] : '') : '';
 }
 // ══════════════════════════════════════════════════════════════════════════
@@ -1667,6 +1794,18 @@ function renderSync() {
   hrEl.classList.toggle('sv-flag', state.metrics.hr && parseFloat(state.metrics.hr)>base+7);
   document.getElementById('syncSteps').textContent = state.metrics.steps ? Math.round(state.metrics.steps/100)/10+'k' : '—';
   document.getElementById('syncWeight').textContent = state.metrics.weight || (isMonday()?'—':'Mon');
+  const wDeltaEl = document.getElementById('syncWeightDelta');
+  if(isMonday() && state.metrics.weight){
+    const lastMon = new Date(); lastMon.setHours(0,0,0,0); lastMon.setDate(lastMon.getDate()-7);
+    const lastMonDay = loadDay(localDateStr(lastMon));
+    const lastW = lastMonDay && parseFloat(lastMonDay.metrics && lastMonDay.metrics.weight);
+    const curW = parseFloat(state.metrics.weight);
+    if(!isNaN(lastW) && !isNaN(curW)){
+      const d = curW - lastW;
+      wDeltaEl.textContent = (d>=0?'+':'')+d.toFixed(1)+' vs last Mon';
+      wDeltaEl.style.color = Math.abs(d)>=3 ? 'var(--am)' : 'var(--t3)';
+    } else { wDeltaEl.textContent=''; }
+  } else { wDeltaEl.textContent=''; }
 
   const wTargetOz = W_TARGETS[effectiveDayType(state)] * 32;
   const wOz = state.waterOz!=null ? state.waterOz : Math.round((state.water||0)*32);
@@ -1691,6 +1830,17 @@ function renderReadiness() {
     div.innerHTML=`<span class="dot"></span><span>${t.label}${t.manual?' · manual':''}</span>`;
     tw.appendChild(div);
   });
+  // Soft signal only shown when it fires AND the hard triggers are still
+  // clear — once a hard trigger is active, that messaging already covers it,
+  // no need to stack a second warning.
+  const soft = computeSoftFatigue();
+  const softEl = document.getElementById('rdSoft');
+  if(soft.hot && r.hotCount===0){
+    softEl.style.display='block';
+    softEl.textContent = `Soft signal: ${soft.count} of the last 3 days show fatigue markers (moderate+ crash, reduced dose, or under 50% completion) — no hard trigger yet, but worth watching.`;
+  } else {
+    softEl.style.display='none';
+  }
 }
 
 function renderCoach() {
@@ -1698,6 +1848,41 @@ function renderCoach() {
   const card = document.getElementById('coachCard');
   if(txt){ card.style.display='block'; document.getElementById('coachTxt').innerHTML=txt; }
   else card.style.display='none';
+}
+
+function renderTrend(){
+  const t = computeWeeklyTrend();
+  const card = document.getElementById('trendCard');
+  if(!t.hasLastWeek){ card.style.display='none'; return; }
+  card.style.display='block';
+
+  function row(label, thisV, lastV, fmt, goodDir){
+    if(thisV==null || lastV==null) return `<div style="padding:4px 0;">${label}: not enough data yet</div>`;
+    const d = thisV - lastV;
+    const arrow = Math.abs(d) < 0.05 ? '→' : (d>0 ? '↑' : '↓');
+    const good = goodDir==='up' ? d>0 : goodDir==='down' ? d<0 : null;
+    const color = good===null ? 'var(--t2)' : (good ? 'var(--gr)' : 'var(--am)');
+    return `<div style="padding:4px 0;display:flex;justify-content:space-between;">
+      <span>${label}</span>
+      <span style="color:${color}">${fmt(thisV)} ${arrow} <span style="color:var(--t3)">(was ${fmt(lastV)})</span></span>
+    </div>`;
+  }
+
+  let html = '';
+  html += row('UWorld/day', t.thisWeek.uwPerDay, t.lastWeek.uwPerDay, v=>v.toFixed(0), 'up');
+  html += row('Sleep avg', t.thisWeek.sleepAvg, t.lastWeek.sleepAvg, v=>v.toFixed(1)+'h', 'up');
+  html += row('Resting HR avg', t.thisWeek.hrAvg, t.lastWeek.hrAvg, v=>v.toFixed(0)+'bpm', 'down');
+  if(t.weightDelta!=null){
+    const d=t.weightDelta;
+    const color = Math.abs(d)>=3 ? 'var(--am)' : 'var(--t2)';
+    html += `<div style="padding:4px 0;display:flex;justify-content:space-between;">
+      <span>Weight (Mon vs Mon)</span>
+      <span style="color:${color}">${d>=0?'+':''}${d.toFixed(1)}lb</span>
+    </div>`;
+  } else {
+    html += `<div style="padding:4px 0;">Weight (Mon vs Mon): not enough data yet</div>`;
+  }
+  document.getElementById('trendRows').innerHTML = html;
 }
 
 function renderStreaks() {
@@ -2171,12 +2356,13 @@ function renderRealRestUI(){
 
 // ── TABS ────────────────────────────────────────────────────────────────────
 function switchTab(name){
-  ['today','train','study','setup'].forEach(t=>{
+  ['today','train','study','setup','tasks'].forEach(t=>{
     document.getElementById('page-'+t).classList.toggle('active', t===name);
     document.getElementById('tab-'+t).classList.toggle('active', t===name);
   });
   if(name==='train'){ previewDay=null; renderWorkoutPage(); }
   if(name==='study'){ renderUWorld(); renderAnki(); }
+  if(name==='tasks'){ renderTasksToday(); renderTasksOngoing(); }
   window.scrollTo(0,0);
 }
 
@@ -2215,6 +2401,102 @@ bind('poolMarkedCorrect', function(){ settings.markedCorrect=Math.max(0,parseInt
 bind('poolTotal',    function(){ settings.totalQuestions=Math.max(1,parseInt(this.value||UW_DEFAULT.total)); saveSettings(); renderUWorld(); });
 bind('dayNotes',     function(){ state.notes = this.value; saveState(); });
 
+// ── TASKS (Today's List + Ongoing) ──────────────────────────────────────────
+// Deliberately separate storage, NOT under the pplua_ prefix the CSV export
+// filters on — this is a structural guarantee that tasks never leak into any
+// export, not a rule I have to remember to keep honoring elsewhere.
+//   Today's List: one key per day (ppluaTaskToday_YYYY-MM-DD) — a new day
+//     just doesn't have a key yet, which is the "reset" — nothing to clear.
+//   Ongoing: one persistent key (ppluaTaskOngoing), same pattern as settings.
+function taskId(){ return Date.now()+'_'+Math.random().toString(36).slice(2,7); }
+
+function loadTasksToday(){
+  try{ const s = localStorage.getItem('ppluaTaskToday_'+localDateStr(new Date())); return s?JSON.parse(s):[]; }
+  catch(e){ return []; }
+}
+function saveTasksToday(arr){
+  try{ localStorage.setItem('ppluaTaskToday_'+localDateStr(new Date()), JSON.stringify(arr)); }catch(e){}
+}
+function addTaskToday(){
+  const el = document.getElementById('taskTodayInput');
+  const text = el.value.trim();
+  if(!text) return;
+  const arr = loadTasksToday();
+  arr.push({id:taskId(), text, status:'open'});
+  saveTasksToday(arr);
+  el.value='';
+  renderTasksToday();
+}
+function setTaskTodayStatus(id, status){
+  const arr = loadTasksToday();
+  const item = arr.find(t=>t.id===id);
+  if(item) item.status = (item.status===status) ? 'open' : status; // tap again to undo
+  saveTasksToday(arr);
+  renderTasksToday();
+}
+function renderTasksToday(){
+  const listEl = document.getElementById('taskTodayList');
+  if(!listEl) return;
+  const arr = loadTasksToday();
+  if(arr.length===0){ listEl.innerHTML = `<div style="font-size:12px;color:var(--t3);padding:6px 0;">Nothing added yet today.</div>`; return; }
+  listEl.innerHTML = arr.map(t=>{
+    const struck = t.status!=='open';
+    const textColor = t.status==='done' ? 'var(--gr)' : t.status==='crossed' ? 'var(--t3)' : 'var(--t1)';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--bd);">
+      <span style="flex:1;font-size:13px;color:${textColor};${struck?'text-decoration:line-through;':''}">${escapeHtml(t.text)}</span>
+      <button onclick="setTaskTodayStatus('${t.id}','done')" style="background:none;border:1px solid ${t.status==='done'?'var(--gr)':'var(--bd2)'};color:${t.status==='done'?'var(--gr)':'var(--t3)'};border-radius:6px;width:26px;height:26px;font-size:13px;">✓</button>
+      <button onclick="setTaskTodayStatus('${t.id}','crossed')" style="background:none;border:1px solid ${t.status==='crossed'?'var(--re)':'var(--bd2)'};color:${t.status==='crossed'?'var(--re)':'var(--t3)'};border-radius:6px;width:26px;height:26px;font-size:13px;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function loadTasksOngoing(){
+  try{ const s = localStorage.getItem('ppluaTaskOngoing'); return s?JSON.parse(s):[]; }
+  catch(e){ return []; }
+}
+function saveTasksOngoing(arr){
+  try{ localStorage.setItem('ppluaTaskOngoing', JSON.stringify(arr)); }catch(e){}
+}
+function addTaskOngoing(){
+  const el = document.getElementById('taskOngoingInput');
+  const text = el.value.trim();
+  if(!text) return;
+  const arr = loadTasksOngoing();
+  arr.push({id:taskId(), text, dateAdded:localDateStr(new Date())});
+  saveTasksOngoing(arr);
+  el.value='';
+  renderTasksOngoing();
+}
+function resolveTaskOngoing(id){
+  // Ongoing items disappear immediately once resolved — check or cross,
+  // doesn't matter which, this list's job is showing what's still open.
+  const arr = loadTasksOngoing().filter(t=>t.id!==id);
+  saveTasksOngoing(arr);
+  renderTasksOngoing();
+}
+function ageLabel(dateAdded){
+  const then = new Date(dateAdded+'T00:00:00'); const now=new Date(); now.setHours(0,0,0,0);
+  const days = Math.round((now-then)/864e5);
+  return days<=0 ? 'today' : days+'d';
+}
+function renderTasksOngoing(){
+  const listEl = document.getElementById('taskOngoingList');
+  if(!listEl) return;
+  const arr = loadTasksOngoing();
+  if(arr.length===0){ listEl.innerHTML = `<div style="font-size:12px;color:var(--t3);padding:6px 0;">Nothing outstanding.</div>`; return; }
+  listEl.innerHTML = arr.map(t=>{
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--bd);">
+      <span style="flex:1;font-size:13px;color:var(--t1);">${escapeHtml(t.text)}</span>
+      <span style="font-size:10px;color:var(--t3);">${ageLabel(t.dateAdded)}</span>
+      <button onclick="resolveTaskOngoing('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✓</button>
+      <button onclick="resolveTaskOngoing('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✕</button>
+    </div>`;
+  }).join('');
+}
+function escapeHtml(s){
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+
 // ── INIT ────────────────────────────────────────────────────────────────────
 function init(){
   loadSettings();
@@ -2225,6 +2507,7 @@ function init(){
   renderCycle();
   renderSync();
   renderReadiness();
+  renderTrend();
   renderCoach();
   renderStreaks();
   renderMetrics();
