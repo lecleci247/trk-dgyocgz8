@@ -2422,7 +2422,7 @@ function addTaskToday(){
   const text = el.value.trim();
   if(!text) return;
   const arr = loadTasksToday();
-  arr.push({id:taskId(), text, status:'open'});
+  arr.push({id:taskId(), text, status:'open', priority:false});
   saveTasksToday(arr);
   el.value='';
   renderTasksToday();
@@ -2434,16 +2434,37 @@ function setTaskTodayStatus(id, status){
   saveTasksToday(arr);
   renderTasksToday();
 }
+function toggleTaskPriorityToday(id){
+  const arr = loadTasksToday();
+  const item = arr.find(t=>t.id===id);
+  if(item) item.priority = !item.priority;
+  saveTasksToday(arr);
+  renderTasksToday();
+}
+function moveTaskToday(id, dir){
+  const arr = loadTasksToday();
+  const i = arr.findIndex(t=>t.id===id);
+  const j = i+dir;
+  if(i<0 || j<0 || j>=arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  saveTasksToday(arr);
+  renderTasksToday();
+}
 function renderTasksToday(){
   const listEl = document.getElementById('taskTodayList');
   if(!listEl) return;
   const arr = loadTasksToday();
   if(arr.length===0){ listEl.innerHTML = `<div style="font-size:12px;color:var(--t3);padding:6px 0;">Nothing added yet today.</div>`; return; }
-  listEl.innerHTML = arr.map(t=>{
+  listEl.innerHTML = arr.map((t,i)=>{
     const struck = t.status!=='open';
-    const textColor = t.status==='done' ? 'var(--gr)' : t.status==='crossed' ? 'var(--t3)' : 'var(--t1)';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--bd);">
-      <span style="flex:1;font-size:13px;color:${textColor};${struck?'text-decoration:line-through;':''}">${escapeHtml(t.text)}</span>
+    const textColor = t.status==='done' ? 'var(--gr)' : t.status==='crossed' ? 'var(--t3)' : (t.priority ? 'var(--re)' : 'var(--t1)');
+    return `<div style="display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid var(--bd);">
+      <button onclick="toggleTaskPriorityToday('${t.id}')" style="background:none;border:none;color:${t.priority?'var(--re)':'var(--t3)'};font-size:15px;width:20px;padding:0;">${t.priority?'★':'☆'}</button>
+      <span style="flex:1;font-size:13px;color:${textColor};${t.priority&&!struck?'font-weight:600;':''}${struck?'text-decoration:line-through;':''}">${escapeHtml(t.text)}</span>
+      <div style="display:flex;flex-direction:column;">
+        <button onclick="moveTaskToday('${t.id}',-1)" ${i===0?'disabled':''} style="background:none;border:none;color:${i===0?'var(--bd2)':'var(--t3)'};font-size:11px;padding:0;height:13px;line-height:13px;">▲</button>
+        <button onclick="moveTaskToday('${t.id}',1)" ${i===arr.length-1?'disabled':''} style="background:none;border:none;color:${i===arr.length-1?'var(--bd2)':'var(--t3)'};font-size:11px;padding:0;height:13px;line-height:13px;">▼</button>
+      </div>
       <button onclick="setTaskTodayStatus('${t.id}','done')" style="background:none;border:1px solid ${t.status==='done'?'var(--gr)':'var(--bd2)'};color:${t.status==='done'?'var(--gr)':'var(--t3)'};border-radius:6px;width:26px;height:26px;font-size:13px;">✓</button>
       <button onclick="setTaskTodayStatus('${t.id}','crossed')" style="background:none;border:1px solid ${t.status==='crossed'?'var(--re)':'var(--bd2)'};color:${t.status==='crossed'?'var(--re)':'var(--t3)'};border-radius:6px;width:26px;height:26px;font-size:13px;">✕</button>
     </div>`;
@@ -2462,7 +2483,7 @@ function addTaskOngoing(){
   const text = el.value.trim();
   if(!text) return;
   const arr = loadTasksOngoing();
-  arr.push({id:taskId(), text, dateAdded:localDateStr(new Date())});
+  arr.push({id:taskId(), text, dateAdded:localDateStr(new Date()), priority:false});
   saveTasksOngoing(arr);
   el.value='';
   renderTasksOngoing();
@@ -2471,6 +2492,22 @@ function resolveTaskOngoing(id){
   // Ongoing items disappear immediately once resolved — check or cross,
   // doesn't matter which, this list's job is showing what's still open.
   const arr = loadTasksOngoing().filter(t=>t.id!==id);
+  saveTasksOngoing(arr);
+  renderTasksOngoing();
+}
+function toggleTaskPriorityOngoing(id){
+  const arr = loadTasksOngoing();
+  const item = arr.find(t=>t.id===id);
+  if(item) item.priority = !item.priority;
+  saveTasksOngoing(arr);
+  renderTasksOngoing();
+}
+function moveTaskOngoing(id, dir){
+  const arr = loadTasksOngoing();
+  const i = arr.findIndex(t=>t.id===id);
+  const j = i+dir;
+  if(i<0 || j<0 || j>=arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
   saveTasksOngoing(arr);
   renderTasksOngoing();
 }
@@ -2484,10 +2521,16 @@ function renderTasksOngoing(){
   if(!listEl) return;
   const arr = loadTasksOngoing();
   if(arr.length===0){ listEl.innerHTML = `<div style="font-size:12px;color:var(--t3);padding:6px 0;">Nothing outstanding.</div>`; return; }
-  listEl.innerHTML = arr.map(t=>{
-    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--bd);">
-      <span style="flex:1;font-size:13px;color:var(--t1);">${escapeHtml(t.text)}</span>
+  listEl.innerHTML = arr.map((t,i)=>{
+    const textColor = t.priority ? 'var(--re)' : 'var(--t1)';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid var(--bd);">
+      <button onclick="toggleTaskPriorityOngoing('${t.id}')" style="background:none;border:none;color:${t.priority?'var(--re)':'var(--t3)'};font-size:15px;width:20px;padding:0;">${t.priority?'★':'☆'}</button>
+      <span style="flex:1;font-size:13px;color:${textColor};${t.priority?'font-weight:600;':''}">${escapeHtml(t.text)}</span>
       <span style="font-size:10px;color:var(--t3);">${ageLabel(t.dateAdded)}</span>
+      <div style="display:flex;flex-direction:column;">
+        <button onclick="moveTaskOngoing('${t.id}',-1)" ${i===0?'disabled':''} style="background:none;border:none;color:${i===0?'var(--bd2)':'var(--t3)'};font-size:11px;padding:0;height:13px;line-height:13px;">▲</button>
+        <button onclick="moveTaskOngoing('${t.id}',1)" ${i===arr.length-1?'disabled':''} style="background:none;border:none;color:${i===arr.length-1?'var(--bd2)':'var(--t3)'};font-size:11px;padding:0;height:13px;line-height:13px;">▼</button>
+      </div>
       <button onclick="resolveTaskOngoing('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✓</button>
       <button onclick="resolveTaskOngoing('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✕</button>
     </div>`;
