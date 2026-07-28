@@ -771,7 +771,11 @@ const CYCLE = [
   {id:'d7',label:'D7 Rest',type:'cardio'},
 ];
 
-const W_TARGETS = {training:5, rest:3.5, cardio:4};
+// Training water target dropped 5->4.5 (Jul 27, TEMPORARY): steam room has
+// been broken for over a week. The 5-bottle figure was explicitly "training +
+// steam" — with steam not happening, that portion of the target isn't
+// applicable. Revert to 5 the day steam room is back in service.
+const W_TARGETS = {training:4.5, rest:3.5, cardio:4};
 
 // Items worth surfacing with clock time in the weekly export — the ones
 // actually useful for spotting correlations (Vyvanse timing, meals, crash).
@@ -823,27 +827,27 @@ const PROGRAM = {
     {n:'Smith Machine Incline Bench Press',s:'3 × 6–10',rest:'120s',tag:'',notes:'35° bench. Bar to upper chest, 1–2" below clavicles. RIR 1–2. 2 ramp sets first.'},
     {n:'Machine Bench Press',s:'3 × 8–12',rest:'90s',tag:'DS',notes:'Final set only: drop 30%, AMRAP, rest 15s after drop.'},
     {n:'Cable Fly (Low-to-High)',s:'2\u20133 × 12\u201315',rest:'60s',tag:'',notes:'Added Jul 27 for lower-chest development \u2014 every other chest movement in the program is flat-to-incline, this is the only low-to-high angle, which is what actually biases the sternal/lower fibers. Pulleys at the bottom, sweep up and across to about chest height. Slight elbow bend held throughout, squeeze at the top.'},
-    {n:'Cable One-Arm Lateral Raise',s:'4 × 10–15',rest:'45s',tag:'',notes:'Elbow leads, slight bend. RIR 0–1.'},
+    {n:'Cable One-Arm Lateral Raise',s:'4 × 10–15',rest:'45s',tag:'',notes:'Pulley set low, stand with the machine to your side. Elbow leads, slight bend. RIR 0–1. Keep the shoulder down — don\'t shrug to move the weight.'},
     {n:'Dumbbell Seated Shoulder Press',s:'2 × 8–12',rest:'90s',tag:'',notes:'Seated. RIR 1–2. Avoid elbow lockout at top.'},
-    {n:'Cable Rope Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Standing, rope. Full stretch at bottom.'},
-    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'45s',tag:'',notes:'Spread rope at bottom. Elbows pinned.'},
+    {n:'Cable Rope Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Pulley set low, face away from the machine, rope overhead. Keep elbows fixed near your ears, don\'t let them flare. Full stretch at bottom.'},
+    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'45s',tag:'',notes:'Pulley set high (standard pushdown position). Spread rope at bottom. Elbows pinned.'},
     {n:'Machine Ab Crunch',s:'3 × 10–15',rest:'45s',tag:'',notes:'Add weight. Ribs to hips. Control the return.'},
     {n:'Doorway Pec Stretch',s:'3 × 30s holds',rest:'15s',tag:'',notes:'Forearm on doorframe, step through until you feel a stretch across the chest. Pecs are warm right now — best time to stretch them. Addresses the "tight" side of the posture fix; the Day 2 face pull addresses the "weak" side.'},
   ]},
   d2:{name:'PULL', target:'Back · Biceps · Rear Delts · Forearms', mins:56, ex:[
-    {n:'Cable Grip Lat Pulldown (Narrow Grip)',s:'3 × 6–10',rest:'105s',tag:'',notes:'Rope attachment, neutral grip (palms facing each other, let the ends separate near the bottom). Pull to upper chest. RIR 1–2.'},
+    {n:'Cable Grip Lat Pulldown (Narrow Grip)',s:'3 × 6–10',rest:'105s',tag:'',notes:'Rope attachment, neutral grip (palms facing each other, let the ends separate near the bottom). Pull to upper chest. Avoid leaning back to use body english, especially on later reps. RIR 1–2.'},
     {n:'Dumbbell Incline Bench Row',s:'3 × 8–12',rest:'90s',tag:'',notes:'Chest on incline pad. Elbows back. Full stretch at bottom.'},
-    {n:'Cable One-Arm Row',s:'2 × 10–15',rest:'75s',tag:'',notes:'Upper back + lat focus.'},
+    {n:'Cable One-Arm Row',s:'2 × 10–15',rest:'75s',tag:'',notes:'Pulley set high, pull down and across to the hip — elbow drives back and down. Upper back + lat focus.'},
     {n:'Dumbbell Seated Bent-Over Reverse Fly',s:'3 × 12–20',rest:'45s',tag:'',notes:'Wide arc. Squeeze at peak. RIR 0–1. Settled as the default over the last 3 sessions — this is the exercise, not an either/or.'},
     {n:'Dumbbell Shoulder Shrug',s:'2 × 10–15',rest:'60s',tag:'',notes:'Pause 1s at top. No rolling.'},
     {n:'EZ Bar Curl',s:'2 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. Controlled descent. RIR 1.'},
     {n:'Dumbbell Incline Curl',s:'3 × 10–15',rest:'0s',tag:'SS1',notes:'Arms hang back on incline bench. Superset directly into reverse curl.'},
     {n:'Barbell Reverse Curl',s:'3 × 12–15',rest:'60s',tag:'SS2',notes:'Pronated grip. Brachioradialis. Rest 60s then repeat SS.'},
-    {n:'Cable Rope Face Pull',s:'3 × 15–20',rest:'45s',tag:'',notes:'Pull elbows high, squeeze shoulder blades together at the top. Corrective volume for forward-head/rounded-shoulder posture — bumped from light maintenance since this is the main strengthening piece of that fix.'},
+    {n:'Cable Rope Face Pull',s:'3 × 15–20',rest:'45s',tag:'',notes:'Pulley set at upper-chest to face height. Pull to eye level, add external rotation at the top (thumbs point back) — squeeze shoulder blades together. Corrective volume for forward-head/rounded-shoulder posture — bumped from light maintenance since this is the main strengthening piece of that fix.'},
   ]},
   d3:{name:'LOWER', target:'Quads · Hams · Calves · Abs', mins:55, ex:[
     {n:'Smith Machine Squat',s:'3 × 6–10',rest:'120s',tag:'',notes:'Feet slightly forward, narrow stance, upright torso = quad-dominant. (CrossFit gym: barbell back squat preferred.)'},
-    {n:'Machine Leg Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Narrow-low foot position. Quad bias.'},
+    {n:'Machine Leg Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Narrow-low foot position. Quad bias. Don\'t lock knees out fully at the top.'},
     {n:'Smith Machine Stiff-Leg Deadlift',s:'3 × 6–10',rest:'120s',tag:'',notes:'Hip hinge. Feel hamstring stretch. Bar close to legs. RIR 1–2.'},
     {n:'Machine Seated Leg Curl',s:'2 × 10–15',rest:'60s',tag:'RP',notes:'Final set only: reach failure, rest 20s, squeeze 2–3 more.'},
     {n:'Machine Leg Extension',s:'2 × 12–15',rest:'45s',tag:'',notes:'Pause at top. RIR 0–1.'},
@@ -861,7 +865,7 @@ const PROGRAM = {
     {n:'Dumbbell Fly',s:'2 × 10–12',rest:'45s',tag:'',notes:'Slight elbow bend held throughout, control the stretch — don\'t let the dumbbells drop past chest level. Squeeze at peak.'},
     {n:'Cable Front Lat Pulldown (Close Grip)',s:'3 × 8–12',rest:'90s',tag:'',notes:'Straight bar, palms facing you (supinated/underhand), hands close together. This grip biases lower lats and pulls biceps in more than Day 2\'s neutral rope pull — genuinely different stimulus, not redundant. Pull to upper chest.'},
     {n:'Dumbbell One-Arm Row',s:'2 × 10–12',rest:'75s',tag:'',notes:'Mid-back focus. Brace on a bench, drive elbow back without twisting the torso. Full stretch each rep.'},
-    {n:'Cable Lateral Raise — SUBMAXIMAL',s:'2 × 12–15',rest:'45s',tag:'CAP',notes:'RIR 2–3 ONLY. Day 6 tomorrow. Never push these hard.'},
+    {n:'Cable Lateral Raise — SUBMAXIMAL',s:'2 × 12–15',rest:'45s',tag:'CAP',notes:'Pulley set low, stand with the machine to your side. Keep the shoulder down — don\'t shrug to move the weight. RIR 2–3 ONLY. Day 6 tomorrow. Never push these hard.'},
     {n:'Machine Leg Extension',s:'2 × 12–15',rest:'0s',tag:'SS1',notes:'Maintenance only. Superset with leg curl.'},
     {n:'Machine Seated Leg Curl',s:'2 × 12–15',rest:'45s',tag:'SS2',notes:'Rest 45s then repeat SS.'},
     {n:'Cable Woodchop (High-to-Low)',s:'2 × 12–15',rest:'45s',tag:'',notes:'Each side. Rotate from the torso, not just the arms. Replaced the crunch here — Day 1 and Day 3 already cover flexion, this is the week\'s only rotational oblique work.'},
@@ -869,12 +873,12 @@ const PROGRAM = {
   ]},
   d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Forearms · Calves', mins:52, ex:[
     {n:'Machine Shoulder Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'RIR 1–2. No elbow lockout at top.'},
-    {n:'Cable Lateral Raise',s:'3 × 12–20 + FS',rest:'45s',tag:'FS',notes:'Final set to failure. PRIMARY lateral delt session.'},
-    {n:'Machine Reverse Fly OR Cable Rear Lateral Raise',s:'2 × 12–20',rest:'45s',tag:'',notes:'Cable single-arm version here (constant tension). Deliberately different from Day 2.'},
+    {n:'Cable Lateral Raise',s:'3 × 12–20 + FS',rest:'45s',tag:'FS',notes:'Pulley set low, stand with the machine to your side. Keep the shoulder down — don\'t shrug to move the weight, especially as you fatigue toward the failure set. Final set to failure. PRIMARY lateral delt session.'},
+    {n:'Machine Reverse Fly OR Cable Rear Lateral Raise',s:'2 × 12–20',rest:'45s',tag:'',notes:'Cable version: pulley set at chest height, pull across the body to the opposite side (reverse fly motion). Cable single-arm version here (constant tension). Deliberately different from Day 2.'},
     {n:'EZ Bar Curl',s:'3 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. RIR 1.'},
     {n:'Dumbbell Alternating Hammer Curl',s:'2 × 10–15',rest:'45s',tag:'',notes:'Thumbs-up grip. Brachialis focus.'},
-    {n:'Cable Rope Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Standing, rope. Long-head bias. Full stretch at bottom.'},
-    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'0s',tag:'SS1',notes:'Superset into wrist curl.'},
+    {n:'Cable Rope Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Pulley set low, face away from the machine, rope overhead. Keep elbows fixed near your ears, don\'t let them flare. Long-head bias. Full stretch at bottom.'},
+    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'0s',tag:'SS1',notes:'Pulley set high (standard pushdown position). Superset into wrist curl.'},
     {n:'Dumbbell Wrist Curl (Palms Up)',s:'2 × 15–20',rest:'0s',tag:'SS2',notes:'Forearms on thighs or bench edge, palms facing up, full stretch at bottom. Flexor-focused — complements the Reverse Curl\'s extensor bias from Day 2. Superset into calf raise.'},
     {n:'Barbell Seated Calf Raise',s:'3 × 12–20',rest:'60s',tag:'SS3',notes:'Sit on flat bench, bar across padded thighs, 25lb plate under feet. Knee bent = soleus. Rest 60s then repeat the 3-exercise circuit — bumped from 45s since the third exercise adds real cumulative work. (No machine calf raise at gym.)'},
   ]},
@@ -901,9 +905,9 @@ training:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Bike or walk · not a workout'},
     {id:'session',label:'Complete all sets — log in JEFIT',sub:'Compounds 1–3 RIR · isolations 0–2 RIR'},
     {id:'wgym',label:'500ml (~17oz) water during session',sub:'Sip between sets'},
-    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in'},
-    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out'},
-    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting'},
+    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in — TEMP OPTIONAL: steam room broken',optional:true},
+    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out — TEMP OPTIONAL: broken since Jul 20',optional:true},
+    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting — TEMP OPTIONAL: steam room broken',optional:true},
   ]},
   {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
@@ -1733,7 +1737,7 @@ function renderWater() {
   document.getElementById('waterCount').textContent = `${state.water}/${tgt} (${oz}/${tgtOz}oz)`;
   const mlNow = ozToMl(oz), mlTgt = ozToMl(tgtOz);
   const dayDesc = ({
-    training:'Training + steam: 5 bottles',
+    training:'Training (steam broken, 4.5 target): 4.5 bottles',
     rest:'Rest day: 3.5 bottles',
     cardio:'Cardio day: 4 bottles',
   })[edt];
