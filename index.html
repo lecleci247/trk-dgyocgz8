@@ -1228,8 +1228,18 @@ function computeWeeklyTrend(){
     while(d <= endDate){
       const day = loadDay(localDateStr(d));
       if(day){
-        uwSum += parseInt((day.uworld&&day.uworld.done)||0);
-        uwDays++;
+        // UWorld only counts days where the split fields were actually
+        // entered — matches the same check getTrailingSplitAvg() already
+        // uses. Without this, a day that only has a Health Sync record
+        // (sleep/HR auto-populated before any UWorld is logged — e.g. the
+        // current day, mid-morning) would count as a real "0" and drag the
+        // average down before the day has even happened. Sleep/HR don't
+        // have this problem since Health Sync populates them for real,
+        // independent of whether UWorld's been touched yet.
+        if(day.uworld && day.uworld.unusedDone!=='' && day.uworld.unusedDone!=null){
+          uwSum += parseInt((day.uworld&&day.uworld.done)||0);
+          uwDays++;
+        }
         const sh = validSleepHours(day.metrics);
         if(sh!=null){ sleepSum+=sh; sleepN++; }
         const hr = parseFloat(day.metrics && day.metrics.hr);
