@@ -1112,6 +1112,14 @@ function loadSettings() {
   // Defaults to 0 (full historical cum applies) for anyone who hasn't yet
   // re-anchored under this logic — preserves prior behavior exactly.
   if(settings.poolBaselineCum == null) settings.poolBaselineCum = 0;
+  // These two must default to the CURRENT cumulative totals, not 0 — this
+  // is a first-run migration for the Jul 29 fix. Defaulting to 0 would
+  // treat every unused/redo question ever logged as "since baseline" and
+  // massively over-subtract from unusedLeft the first time this loads.
+  // Defaulting to current cum makes today's existing pool numbers still
+  // accurate, and only NEW logging counts against them from here forward.
+  if(settings.poolBaselineCumUnused == null) settings.poolBaselineCumUnused = getCumUnusedDone();
+  if(settings.poolBaselineCumRedo == null) settings.poolBaselineCumRedo = getCumRedoDone();
 }
 function saveSettings() {
   try { localStorage.setItem('pplua_settings', JSON.stringify(settings)); } catch(e){}
@@ -1193,6 +1201,40 @@ function getCumDone() {
   while(d <= today) {
     const day = loadDay(localDateStr(d));
     total += parseInt(day?.uworld?.done||0);
+    d.setDate(d.getDate()+1);
+  }
+  return total;
+}
+// ── SPLIT CUMULATIVE (unused-only, redo-only) ───────────────────────────────
+// getCumDone() above is the COMBINED unused+redo total — correct for
+// lifetime "totalDone" display, but wrong for tracking the unused pool
+// specifically. unusedLeft must only be reduced by actual unused
+// consumption; redo work draws from a completely separate pool (incorrect +
+// marked-but-correct) and shouldn't touch it at all. Using the combined
+// total for that was a real bug — any day with redo>0 was incorrectly
+// eating into unusedLeft too, since the old model assumed redo only starts
+// once unused hits zero (sequential), when the actual daily structure runs
+// both in parallel every day.
+function getCumUnusedDone() {
+  let total = 0;
+  const start = new Date(TRACKER_START+'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  let d = new Date(start);
+  while(d <= today) {
+    const day = loadDay(localDateStr(d));
+    total += parseInt(day?.uworld?.unusedDone||0);
+    d.setDate(d.getDate()+1);
+  }
+  return total;
+}
+function getCumRedoDone() {
+  let total = 0;
+  const start = new Date(TRACKER_START+'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  let d = new Date(start);
+  while(d <= today) {
+    const day = loadDay(localDateStr(d));
+    total += parseInt(day?.uworld?.redoDone||0);
     d.setDate(d.getDate()+1);
   }
   return total;
@@ -1295,15 +1337,15 @@ function getTrailingSplitAvg(days) {
 // floor, only exceeded when genuinely falling behind calls for more).
 function computeStudy() {
   const cum = getCumDone();
-  // Only questions logged SINCE the pool was last manually re-anchored count
-  // against it. This is what makes typing a fresh "current truth" into the
-  // pool fields take effect immediately instead of being silently offset by
-  // everything logged since the tracker started.
-  const cumSinceBaseline = Math.max(0, cum - (settings.poolBaselineCum||0));
-  const unusedLeft = Math.max(0, settings.unused - cumSinceBaseline);
-  // Once unused is exhausted, further logged progress counts against the
-  // known incorrect+marked backlog specifically.
-  const redoProgress = Math.max(0, cumSinceBaseline - settings.unused);
+  // FIXED (Jul 29): unused and redo are now tracked as two independent
+  // totals since baseline, not one combined pool with sequential
+  // exhaustion. The old model assumed redo only starts counting once
+  // unused hits zero — wrong, since the real daily structure runs both in
+  // parallel (50 unused + 20-25 redo, same day) — so any redo logged was
+  // incorrectly reducing unusedLeft too.
+  const cumUnusedSinceBaseline = Math.max(0, getCumUnusedDone() - (settings.poolBaselineCumUnused||0));
+  const unusedLeft = Math.max(0, settings.unused - cumUnusedSinceBaseline);
+  const redoProgress = Math.max(0, getCumRedoDone() - (settings.poolBaselineCumRedo||0));
   // Miss rate derives automatically from what's actually typed in — no
   // separate field to keep in sync. used = total bank size - unused
   // remaining (both from the snapshot you last entered, not the app's
@@ -1751,8 +1793,11 @@ function saveDayUworld(dateStr){
   try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
   // Re-anchor the pool baseline to the corrected total — otherwise this
   // correction gets silently double-subtracted from unusedLeft later,
-  // the same way a fresh pool-number entry re-anchors it today.
+  // the same way a fresh pool-number entry re-anchors it today. Both split
+  // baselines need resetting, same fix as the bind handlers below.
   settings.poolBaselineCum = getCumDone();
+  settings.poolBaselineCumUnused = getCumUnusedDone();
+  settings.poolBaselineCumRedo = getCumRedoDone();
   saveSettings();
   const status = document.getElementById('ddUwStatus');
   if(status) status.textContent = 'Saved ✓ — total now '+day.uworld.done;
@@ -2404,10 +2449,10 @@ bind('uwRedoDone',   function(){ state.uworld.redoDone=this.value; syncUworldDon
 bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
 bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
 
-bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
-bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
-bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
-bind('poolMarkedCorrect', function(){ settings.markedCorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); saveSettings(); renderUWorld(); });
+bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
+bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
+bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
+bind('poolMarkedCorrect', function(){ settings.markedCorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
 bind('poolTotal',    function(){ settings.totalQuestions=Math.max(1,parseInt(this.value||UW_DEFAULT.total)); saveSettings(); renderUWorld(); });
 bind('dayNotes',     function(){ state.notes = this.value; saveState(); });
 
