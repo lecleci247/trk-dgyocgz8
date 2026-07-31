@@ -598,8 +598,13 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
         <div class="uw-il">Marked-but-correct (false positives)</div>
         <input class="uw-in" type="number" id="poolMarkedCorrect" inputmode="numeric" min="0" placeholder="25">
       </div>
+      <div class="uw-ig">
+        <div class="uw-il">Deferred (in Unused, not touching yet)</div>
+        <input class="uw-in" type="number" id="poolDeferred" inputmode="numeric" min="0" placeholder="17">
+      </div>
     </div>
-    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:-2px;margin-bottom:8px;">UWorld's Marked and Incorrect filters overlap — a question can be both. To avoid double-counting the redo pool, get this number by selecting Correct + Marked together in UWorld (reads as a union), then: Correct + Marked − that union = marked-but-correct.</p>
+    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:-2px;margin-bottom:2px;">UWorld's Marked and Incorrect filters overlap — a question can be both. To avoid double-counting the redo pool, get this number by selecting Correct + Marked together in UWorld (reads as a union), then: Correct + Marked − that union = marked-but-correct.</p>
+    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:0;margin-bottom:8px;">Deferred = questions still sitting in Unused on purpose (e.g. Biostat/Social Sciences saved for pre-exam). Keeps the raw Unused number honest while letting the pace tracker and redo-only switch treat these as "not actionable yet" instead of waiting for them to hit literal zero.</p>
     <div class="miss-rate-display">
       <span class="mrd-lbl">Current miss rate (auto)</span>
       <span class="mrd-val" id="missRateDisplay">—</span>
@@ -808,7 +813,7 @@ const CYCLE = [
 // been broken for over a week. The 5-bottle figure was explicitly "training +
 // steam" — with steam not happening, that portion of the target isn't
 // applicable. Revert to 5 the day steam room is back in service.
-const W_TARGETS = {training:4.5, rest:3.5, cardio:4};
+const W_TARGETS = {training:5, rest:3.5, cardio:4};
 
 // Items worth surfacing with clock time in the weekly export — the ones
 // actually useful for spotting correlations (Vyvanse timing, meals, crash).
@@ -939,9 +944,9 @@ training:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Bike or walk · not a workout'},
     {id:'session',label:'Complete all sets — log in JEFIT',sub:'Compounds 1–3 RIR · isolations 0–2 RIR'},
     {id:'wgym',label:'500ml (~17oz) water during session',sub:'Sip between sets'},
-    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in — TEMP OPTIONAL: steam room broken',optional:true},
-    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out — TEMP OPTIONAL: broken since Jul 20',optional:true},
-    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting — TEMP OPTIONAL: steam room broken',optional:true},
+    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in'},
+    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out'},
+    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting'},
   ]},
   {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
@@ -1120,6 +1125,11 @@ function loadSettings() {
   // accurate, and only NEW logging counts against them from here forward.
   if(settings.poolBaselineCumUnused == null) settings.poolBaselineCumUnused = getCumUnusedDone();
   if(settings.poolBaselineCumRedo == null) settings.poolBaselineCumRedo = getCumRedoDone();
+  // Deferred count (Jul 31): the 17 Biostat/Social Sciences questions being
+  // held for ~2-3 days pre-exam. Defaults to 17 to match current reality —
+  // update this field (not the Unused count) once that number changes, and
+  // set it to 0 once you actually start working through them.
+  if(settings.deferredCount == null) settings.deferredCount = 17;
 }
 function saveSettings() {
   try { localStorage.setItem('pplua_settings', JSON.stringify(settings)); } catch(e){}
@@ -1345,6 +1355,12 @@ function computeStudy() {
   // incorrectly reducing unusedLeft too.
   const cumUnusedSinceBaseline = Math.max(0, getCumUnusedDone() - (settings.poolBaselineCumUnused||0));
   const unusedLeft = Math.max(0, settings.unused - cumUnusedSinceBaseline);
+  // Deferred questions (e.g. Biostat/Social Sciences saved for pre-exam)
+  // stay counted in the raw pool number on purpose — unusedLeft above stays
+  // truthful to what's actually in UWorld. This second value is what all
+  // the PHASE-TRANSITION logic below should actually key off of, since the
+  // deferred set will never move and shouldn't block the redo-only switch.
+  const actionableUnusedLeft = Math.max(0, unusedLeft - (settings.deferredCount||0));
   const redoProgress = Math.max(0, getCumRedoDone() - (settings.poolBaselineCumRedo||0));
   // Miss rate derives automatically from what's actually typed in — no
   // separate field to keep in sync. used = total bank size - unused
@@ -1408,11 +1424,11 @@ function computeStudy() {
   const p1End = new Date(PHASES[0].end+'T00:00:00');
   const nowMid = new Date(); nowMid.setHours(0,0,0,0);
   let unusedStatus='ontrack', unusedTxt='';
-  if(unusedLeft<=0){ unusedStatus='ahead'; unusedTxt='First pass cleared.'; }
+  if(actionableUnusedLeft<=0){ unusedStatus='ahead'; unusedTxt=settings.deferredCount>0 ? `First pass cleared — ${settings.deferredCount} deferred remain, untouched on purpose.` : 'First pass cleared.'; }
   else if(unusedAvg===null){ unusedStatus='ontrack'; unusedTxt=`No trailing data yet — log today's unused count to start tracking pace.`; }
-  else if(unusedAvg<=0){ unusedStatus='crit'; unusedTxt=`0/day trailing over ${trailing.days}d — ${unusedLeft} unused won't move without logging.`; }
+  else if(unusedAvg<=0){ unusedStatus='crit'; unusedTxt=`0/day trailing over ${trailing.days}d — ${actionableUnusedLeft} unused (excl. deferred) won't move without logging.`; }
   else {
-    const daysToFinish = unusedLeft/unusedAvg;
+    const daysToFinish = actionableUnusedLeft/unusedAvg;
     const projFinish = new Date(nowMid); projFinish.setDate(nowMid.getDate()+Math.ceil(daysToFinish));
     const daysLate = Math.round((projFinish-p1End)/864e5);
     const dateStr = projFinish.toLocaleDateString('en-US',{month:'short',day:'numeric'});
@@ -1420,7 +1436,7 @@ function computeStudy() {
     else if(daysLate<=0){ unusedStatus='ontrack'; unusedTxt=`${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 finishes ~${dateStr}, on pace for Jul 31.`; }
     else {
       const daysToP1 = Math.max(1, Math.round((p1End-nowMid)/864e5));
-      const neededPace = Math.ceil(unusedLeft / daysToP1);
+      const neededPace = Math.ceil(actionableUnusedLeft / daysToP1);
       unusedStatus = daysLate>5 ? 'crit' : 'behind';
       unusedTxt = `${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 projects to ~${dateStr}, ${daysLate}d past deadline. Need ${neededPace}/day to close it.`;
     }
@@ -1430,7 +1446,7 @@ function computeStudy() {
   // Positive during first pass is normal (unused generates new redo material
   // faster than 20-25/day clears it) — the signal here isn't "is it growing,"
   // it's "is it growing faster than the math predicts."
-  const firstPassActive = unusedLeft > 0;
+  const firstPassActive = actionableUnusedLeft > 0;
   let flowStatus='ontrack', flowTxt='';
   if(redoAvg===null){
     flowStatus='ontrack'; flowTxt=`No trailing data yet — log today's redo count to start tracking flow.`;
@@ -1446,7 +1462,7 @@ function computeStudy() {
     else { flowStatus='behind'; flowTxt=`${redoAvg.toFixed(0)}/day trailing \u2014 first pass cleared, but that's below the ${DAILY_TARGET.postFirstPassMin}\u2013${DAILY_TARGET.postFirstPassMax}/day post-first-pass target.`; }
   }
 
-  return {cum, unusedLeft, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
+  return {cum, unusedLeft, actionableUnusedLeft, deferredCount: settings.deferredCount||0, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
           evenPace, bareMin, deficit, first, knownRedoLeft, expectedFutureIncorrect, missRatePct: missRate*100,
           expectedFutureMarkedCorrect, markedCorrectPct: markedCorrectRate*100,
           unusedStatus, unusedTxt, flowStatus, flowTxt, trailingDays: trailing?trailing.days:0,
@@ -1644,12 +1660,9 @@ function computeCoach() {
   if(isChecked(state.checked,'vyv') && isChecked(state.checked,'adderall'))
     bits.push(`Both <b>Vyvanse and Adderall</b> logged today — worth flagging for the comparison you're tracking.`);
 
-  // Steam-room line suppressed while it's broken (TEMP — matches the optional
-  // checklist flags and 4.5-bottle water target set Jul 27). Restore this
-  // when steam room is back in service.
-  // if(state.dayType==='training'){
-  //   bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
-  // }
+  if(state.dayType==='training'){
+    bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
+  }
   return bits.length ? bits[0] + (bits.length>1 ? '<br><br>'+bits[1] : '') : '';
 }
 // ══════════════════════════════════════════════════════════════════════════
@@ -1977,7 +1990,7 @@ function renderWater() {
   document.getElementById('waterCount').textContent = `${state.water}/${tgt} (${oz}/${tgtOz}oz)`;
   const mlNow = ozToMl(oz), mlTgt = ozToMl(tgtOz);
   const dayDesc = ({
-    training:'Training (steam broken, 4.5 target): 4.5 bottles',
+    training:'Training + steam: 5 bottles',
     rest:'Rest day: 3.5 bottles',
     cardio:'Cardio day: 4 bottles',
   })[edt];
@@ -1992,12 +2005,12 @@ function renderUWorld() {
   // weekly totals, CSV export, day-detail modal) keeps working unchanged.
   state.uworld.done = unusedDone + redoDone;
 
-  const firstPassActive = c.unusedLeft > 0;
+  const firstPassActive = c.actionableUnusedLeft > 0;
 
   document.getElementById('uwPhaseTag').textContent = getPhase().label;
   document.getElementById('uwWeekLbl').textContent = `Week: ${getWeekDone()}/300`;
   document.getElementById('uwCumLbl').textContent = `Total: ${c.totalDone} done`;
-  document.getElementById('uwUnused').textContent = c.unusedLeft;
+  document.getElementById('uwUnused').textContent = c.actionableUnusedLeft<=0 && c.deferredCount>0 ? c.unusedLeft+' (deferred)' : c.unusedLeft;
   document.getElementById('uwRedo').textContent = c.redoLeft;
   document.getElementById('uwDaysLeft').textContent = getDaysLeft();
   document.getElementById('uwSuggest').textContent = c.suggested;
@@ -2039,6 +2052,7 @@ function renderUWorld() {
   if(document.activeElement !== document.getElementById('poolIncorrect')) document.getElementById('poolIncorrect').value = settings.incorrect;
   if(document.activeElement !== document.getElementById('poolMarked')) document.getElementById('poolMarked').value = settings.marked;
   if(document.activeElement !== document.getElementById('poolMarkedCorrect')) document.getElementById('poolMarkedCorrect').value = settings.markedCorrect;
+  if(document.activeElement !== document.getElementById('poolDeferred')) document.getElementById('poolDeferred').value = settings.deferredCount;
   if(document.activeElement !== document.getElementById('poolTotal')) document.getElementById('poolTotal').value = settings.totalQuestions;
   document.getElementById('missRateDisplay').textContent = c.missRatePct.toFixed(1)+'%';
 
@@ -2051,14 +2065,14 @@ function renderUWorld() {
 // the number actually shown above.
 function renderStudyExplain(c){
   const parts = [];
-  const firstPassActive = c.unusedLeft > 0;
+  const firstPassActive = c.actionableUnusedLeft > 0;
   if(firstPassActive){
     parts.push(`<b style="color:var(--t1)">Daily structure (set Jul 21, redo bumped Jul 22):</b> ${DAILY_TARGET.unusedPerDay} unused + ${DAILY_TARGET.redoPerDayMin}\u2013${DAILY_TARGET.redoPerDayMax} redo, both timed, no tutor mode. Redo runs daily now instead of waiting for Phase 2 — closes the spacing gap between missing a question and seeing it again.`);
   } else {
     parts.push(`<b style="color:var(--t1)">Daily structure:</b> first pass is cleared, so the day is now ${DAILY_TARGET.postFirstPassMin}\u2013${DAILY_TARGET.postFirstPassMax} redo questions, timed, weighted toward the persistent weak subjects.`);
   }
   parts.push(`<b style="color:var(--t1)">Why three separate trajectory lines (set Jul 22):</b> one blended "behind by X, do Y/day" number was hiding two different problems — unused has a hard deadline (Jul 31), while redo doesn't get "behind" the same way since finishing unused questions actively generates new redo material faster than 20\u201325/day can clear it. A growing redo backlog during first pass is expected, not a failure — so it gets judged against what the math predicts, not against zero growth.`);
-  parts.push(`<b style="color:var(--t1)">Unused remaining:</b> ${c.unusedLeft} first-pass questions.`);
+  parts.push(`<b style="color:var(--t1)">Unused remaining:</b> ${c.unusedLeft} first-pass questions${c.deferredCount>0 ? ` (${c.deferredCount} deferred, not actionable yet — see below)` : ''}.`);
   parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (incorrect + marked-but-correct — this is the true union of incorrect ∪ marked, not a raw sum, since marked and incorrect overlap).`);
   parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.unusedLeft} unused × ${c.missRatePct.toFixed(1)}% miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> future incorrect, plus ${c.unusedLeft} unused × ${c.markedCorrectPct.toFixed(1)}% marked-but-correct rate = <b style="color:var(--t1)">~${c.expectedFutureMarkedCorrect}</b> future marked-but-correct.`);
   parts.push(`<b style="color:var(--t1)">Total remaining exposure:</b> ${c.unusedLeft} unused + (${c.knownRedoLeft} known + ${c.expectedFutureIncorrect + c.expectedFutureMarkedCorrect} projected) redo = <b style="color:var(--t1)">${c.remaining}</b> question exposures.`);
@@ -2453,6 +2467,7 @@ bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value|
 bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
 bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
 bind('poolMarkedCorrect', function(){ settings.markedCorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
+bind('poolDeferred', function(){ settings.deferredCount=Math.max(0,parseInt(this.value||0)); saveSettings(); renderUWorld(); });
 bind('poolTotal',    function(){ settings.totalQuestions=Math.max(1,parseInt(this.value||UW_DEFAULT.total)); saveSettings(); renderUWorld(); });
 bind('dayNotes',     function(){ state.notes = this.value; saveState(); });
 
