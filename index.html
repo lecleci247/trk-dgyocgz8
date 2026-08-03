@@ -1273,15 +1273,16 @@ function computeWeeklyTrend(){
     while(d <= endDate){
       const day = loadDay(localDateStr(d));
       if(day){
-        // UWorld only counts days where the split fields were actually
-        // entered — matches the same check getTrailingSplitAvg() already
-        // uses. Without this, a day that only has a Health Sync record
-        // (sleep/HR auto-populated before any UWorld is logged — e.g. the
-        // current day, mid-morning) would count as a real "0" and drag the
-        // average down before the day has even happened. Sleep/HR don't
-        // have this problem since Health Sync populates them for real,
-        // independent of whether UWorld's been touched yet.
-        if(day.uworld && day.uworld.unusedDone!=='' && day.uworld.unusedDone!=null){
+        // UWorld only counts days where redo was actually entered — matches
+        // the same fix applied to getTrailingSplitAvg(). Gating on
+        // unusedDone (old check) silently excluded every day going forward
+        // once that field was removed from the UI in the redo-only rebuild.
+        // Still sums day.uworld.done, not redoDone directly — for pre-rebuild
+        // days, done correctly holds combined unused+redo activity; for
+        // post-rebuild days, done already equals redoDone by construction
+        // (see syncUworldDone()), so this stays consistent across the
+        // transition without needing to special-case old vs new days.
+        if(day.uworld && day.uworld.redoDone!=='' && day.uworld.redoDone!=null){
           uwSum += parseInt((day.uworld&&day.uworld.done)||0);
           uwDays++;
         }
@@ -1321,7 +1322,12 @@ function getTrailingSplitAvg(days) {
   for(let i=0;i<days;i++){
     const d = new Date(today); d.setDate(today.getDate()-i);
     const day = loadDay(localDateStr(d));
-    if(day && day.uworld && day.uworld.unusedDone!=='' && day.uworld.unusedDone!=null){
+    // FIXED (Aug 3): gate on redoDone, not unusedDone. The "Unused done
+    // today" field was removed from the UI in the redo-only rebuild, so it
+    // can never be populated again — gating on it silently excluded every
+    // real day going forward, including days where redo genuinely was
+    // logged, falling back to stale pre-rebuild data instead.
+    if(day && day.uworld && day.uworld.redoDone!=='' && day.uworld.redoDone!=null){
       unusedSum += parseInt(day.uworld.unusedDone||0);
       redoSum += parseInt(day.uworld.redoDone||0);
       n++;
