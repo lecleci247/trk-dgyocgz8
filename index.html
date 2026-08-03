@@ -502,42 +502,28 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
       </div>
       <div class="uw-inputs">
         <div class="uw-ig">
-          <div class="uw-il">Unused done today</div>
-          <input class="uw-in" type="number" id="uwUnusedDone" inputmode="numeric" min="0" placeholder="0">
-        </div>
-        <div class="uw-ig">
           <div class="uw-il">Redo done today</div>
           <input class="uw-in" type="number" id="uwRedoDone" inputmode="numeric" min="0" placeholder="0">
         </div>
       </div>
       <div class="uw-tr" style="margin-bottom:2px">
-        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwUnusedTargetLbl">Unused: 0/50</span>
-        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwRedoTargetLbl">Redo: 0/15–20</span>
+        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwRedoTargetLbl">Redo: 0/50–60</span>
       </div>
-      <div class="mini-prog-wrap"><div class="mini-prog" id="uwProgUnused" style="width:0%;background:var(--bl)"></div></div>
-      <div class="mini-prog-wrap" style="margin-top:4px"><div class="mini-prog" id="uwProgRedo" style="width:0%;background:var(--gr)"></div></div>
+      <div class="mini-prog-wrap"><div class="mini-prog" id="uwProgRedo" style="width:0%;background:var(--gr)"></div></div>
       <div class="uw-tr" style="margin-bottom:0;margin-top:6px">
         <span class="mono" style="font-size:9px;color:var(--t3)" id="uwWeekLbl">Week: 0/300</span>
         <span class="mono" style="font-size:9px;color:var(--t3)" id="uwCumLbl">Total: 0 done</span>
       </div>
     </div>
     <div class="uw-stats">
-      <div class="uw-stat"><div class="uw-sn" id="uwUnused">720</div><div class="uw-sl">First-pass left</div></div>
       <div class="uw-stat"><div class="uw-sn" id="uwRedo">400</div><div class="uw-sl">Redo pool</div></div>
-      <div class="uw-stat"><div class="uw-sn" id="uwDaysLeft">—</div><div class="uw-sl">Days to exam</div></div>
+      <div class="uw-stat"><div class="uw-sn" id="uwDaysLeft">—</div><div class="uw-sl">Study days left</div></div>
       <div class="uw-stat"><div class="uw-sn" id="uwSuggest">50</div><div class="uw-sl">Suggested/day</div></div>
+      <div class="uw-stat"><div class="uw-sn" id="uwDeferred">17</div><div class="uw-sl">Deferred (later)</div></div>
     </div>
-    <div class="uw-pace" id="uwPaceUnused">
+    <div class="uw-pace" id="uwPaceRedo">
       <span class="dot"></span>
-      <span><b style="color:var(--t1)">Unused:</b> <span id="uwPaceUnusedTxt">—</span></span>
-    </div>
-    <div class="uw-pace" id="uwPaceFlow">
-      <span class="dot"></span>
-      <span><b style="color:var(--t1)">Redo flow:</b> <span id="uwPaceFlowTxt">—</span></span>
-    </div>
-    <div class="uw-pace" id="uwPaceOverall">
-      <span class="dot"></span>
-      <span><b style="color:var(--t1)">Overall:</b> <span id="uwPaceOverallTxt">—</span></span>
+      <span><b style="color:var(--t1)">Redo pace:</b> <span id="uwPaceRedoTxt">—</span></span>
     </div>
   </div>
 
@@ -728,6 +714,16 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     </div>
     <div id="taskOngoingList"></div>
   </div>
+
+  <div class="ptitle">Topics to Review</div>
+  <p style="font-size:11px;color:var(--t3);padding:0 14px 8px;">Same as Ongoing — carries forward, star to prioritize, check or cross off once you feel solid on it. Pairs with the weak-subject-weighted UWorld blocks (currently Dermatology, Heme/Onc, Endocrine) — this is where the specific sub-topics within those go, not a replacement for them.</p>
+  <div class="ref-card" style="padding:12px 14px;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="text" id="topicReviewInput" placeholder="Add a topic..." style="flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--t1);font-size:13px;" onkeydown="if(event.key==='Enter')addTopicReview()">
+      <button onclick="addTopicReview()" style="background:var(--am);color:#000;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;">Add</button>
+    </div>
+    <div id="topicReviewList"></div>
+  </div>
   <div class="hint">Tasks are miscellaneous, not metrics — kept out of every export on purpose.</div>
 </div>
 
@@ -789,14 +785,11 @@ const PHASES = [
   {num:4,end:STUDY_END,label:'Phase 4',desc:'Final consolidation'},
   {num:5,end:TAPER_START,label:'Taper',desc:'Light review only'},
 ];
-// Daily split targets, set Jul21 (evidence-based reassessment: tutor->timed,
-// daily rolling redo instead of waiting for Phase 2). Switches automatically
-// once unusedLeft hits 0 — see renderUWorld() — not tied to the calendar
-// PHASES above, since first-pass may finish before/after the Jul 31 boundary.
+// Redo-only target (Aug 3) — the 50 unused + 20-25 redo split retired along
+// with first pass. One number now: 50-60/day clears the pool by Aug 23
+// (STUDY_END) at current trailing pace, with room to spare.
 const DAILY_TARGET = {
-  unusedPerDay: 50,
-  redoPerDayMin: 20, redoPerDayMax: 25,
-  postFirstPassMin: 50, postFirstPassMax: 60,
+  redoMin: 50, redoMax: 60,
 };
 
 const CYCLE = [
@@ -1347,125 +1340,71 @@ function getTrailingSplitAvg(days) {
 // floor, only exceeded when genuinely falling behind calls for more).
 function computeStudy() {
   const cum = getCumDone();
-  // FIXED (Jul 29): unused and redo are now tracked as two independent
-  // totals since baseline, not one combined pool with sequential
-  // exhaustion. The old model assumed redo only starts counting once
-  // unused hits zero — wrong, since the real daily structure runs both in
-  // parallel (50 unused + 20-25 redo, same day) — so any redo logged was
-  // incorrectly reducing unusedLeft too.
   const cumUnusedSinceBaseline = Math.max(0, getCumUnusedDone() - (settings.poolBaselineCumUnused||0));
   const unusedLeft = Math.max(0, settings.unused - cumUnusedSinceBaseline);
-  // Deferred questions (e.g. Biostat/Social Sciences saved for pre-exam)
-  // stay counted in the raw pool number on purpose — unusedLeft above stays
-  // truthful to what's actually in UWorld. This second value is what all
-  // the PHASE-TRANSITION logic below should actually key off of, since the
-  // deferred set will never move and shouldn't block the redo-only switch.
+  // Deferred questions (Biostat/Social Sciences saved for pre-exam) stay
+  // counted in the raw pool number on purpose — unusedLeft stays truthful
+  // to what's actually in UWorld. actionableUnusedLeft is what all
+  // forward-looking math should use, since the deferred set won't move
+  // until you actually start it.
   const actionableUnusedLeft = Math.max(0, unusedLeft - (settings.deferredCount||0));
   const redoProgress = Math.max(0, getCumRedoDone() - (settings.poolBaselineCumRedo||0));
-  // Miss rate derives automatically from what's actually typed in — no
-  // separate field to keep in sync. used = total bank size - unused
-  // remaining (both from the snapshot you last entered, not the app's
-  // internally-decremented tracking, so it reflects real QBank truth).
   const totalQ = settings.totalQuestions || UW_DEFAULT.total;
   const usedSnapshot = Math.max(1, totalQ - settings.unused);
   const missRate = Math.max(0, Math.min(1, (settings.incorrect||0) / usedSnapshot));
-  const expectedFutureIncorrect = Math.round(unusedLeft * missRate);
-  // Marked and Incorrect overlap in UWorld (a question can be both), so
-  // incorrect + marked double-counts that overlap. The only slice of
-  // "marked" NOT already inside "incorrect" is marked-but-correct — so
-  // incorrect + markedCorrect gives the true union with no double-count,
-  // by construction. See "Update your UWorld pool" for how to get that number.
+  // FIXED (Aug 3): future-incorrect/marked-correct projection now uses
+  // actionableUnusedLeft, not raw unusedLeft — the deferred 17 aren't being
+  // touched, so they shouldn't be projected as generating new redo material
+  // yet. Using the raw count was silently inflating the redo pool with
+  // phantom growth from material that isn't in play.
+  const expectedFutureIncorrect = Math.round(actionableUnusedLeft * missRate);
   const markedCorrectRate = Math.max(0, Math.min(1, (settings.markedCorrect||0) / usedSnapshot));
-  const expectedFutureMarkedCorrect = Math.round(unusedLeft * markedCorrectRate);
+  const expectedFutureMarkedCorrect = Math.round(actionableUnusedLeft * markedCorrectRate);
   const knownRedoLeft = Math.max(0, (settings.incorrect||0) + (settings.markedCorrect||0) - redoProgress);
   const redoLeft = knownRedoLeft + expectedFutureIncorrect + expectedFutureMarkedCorrect;
-  const remaining = unusedLeft + redoLeft;
+  const remaining = actionableUnusedLeft + redoLeft;
 
   const daysLeft = getStudyDaysLeft();
-  const bareMin = daysLeft>0 ? remaining/daysLeft : remaining;
-  // Standard is 50/day, a fixed policy floor — only scale above it when the
-  // bare-minimum math genuinely calls for more (nearest-10 rounded).
-  const evenPace = Math.max(STANDARD_DAILY_TARGET, Math.ceil(bareMin/10)*10);
 
-  // Deficit compares actual progress against the framework's own STANDARD
-  // commitment (50/day), not a reconstructed original pool size — the old
-  // reconstruction approach breaks under the miss-rate-weighted formula,
-  // since each real question done now shrinks the pool by more than 1
-  // (it also shrinks the projected-redo component). Tying deficit directly
-  // to the stated standard is both simpler and more faithful to the framework.
-  const first = firstLoggedDate();
-  let deficit = 0, expectedByNow = 0;
-  if(first){
-    const studyDaysSinceStart = studyDaysBetween(first, todayKey()); // inclusive of today
-    expectedByNow = STANDARD_DAILY_TARGET * (studyDaysSinceStart - 1); // through yesterday, at standard pace
-    deficit = Math.round(expectedByNow - cum); // + = behind
-  }
+  // ── REDO PACE (Aug 3 rewrite) — the one number that matters now that
+  // first pass is done. Old unused-deadline + redo-flow-vs-generation split
+  // existed to separate two different problems while both were live
+  // simultaneously; there's only one pool left, so there's only one line.
+  // Clean forward math, not a deficit carried from whenever tracking started.
+  const redoPerDay = daysLeft>0 ? redoLeft/daysLeft : redoLeft;
+  const suggested = Math.max(40, Math.ceil(redoPerDay/5)*5); // round to nearest 5, 40 floor
 
-  // Suggested = buffered even pace, nudged by 1/3 of any live deficit
-  // (spread rule: never dump a full miss onto one day).
-  let target = evenPace + (deficit>0 ? Math.round(deficit/3) : Math.round(deficit/3));
-  // Clamp matches the framework's own stated bounds: 40 minimum-acceptable
-  // floor on hard days, 65 catch-up ceiling — explicitly avoid 80-100.
-  const clamped = Math.max(40, Math.min(65, Math.max(evenPace, target)>0?target:evenPace));
-
-  let status='ontrack', txt='';
-  if(daysLeft<=0){ status='ontrack'; txt='Study window closed. Taper: light review, sleep, logistics.'; }
-  else if(!first){ status='ontrack'; txt=`Not started yet. Standard is ${evenPace}/day. Log today's questions to begin tracking.`; }
-  else if(deficit > 40){ status='crit'; txt=`Behind by ~${deficit}. ${clamped}/day closes the gap over the next few days without a cram.`; }
-  else if(deficit > 10){ status='behind'; txt=`Slightly behind (~${deficit}). Nudged to ${clamped}/day, spread not dumped.`; }
-  else if(deficit < -30){ status='ahead'; txt=`Ahead by ~${Math.abs(deficit)}. Hold ${clamped}/day or bank the buffer.`; }
-  else { status='ontrack'; txt=`On pace. ${clamped}/day keeps you on schedule.`; }
-
-  // ── UNUSED PACE: will first pass finish by the Jul 31 deadline? ──────────
-  // The deadline-driven signal — this is the one that should carry urgency.
   const trailing = getTrailingSplitAvg(5);
-  const unusedAvg = trailing ? trailing.unusedAvg : null;
   const redoAvg = trailing ? trailing.redoAvg : null;
-  const p1End = new Date(PHASES[0].end+'T00:00:00');
+  const studyEnd = new Date(STUDY_END+'T00:00:00');
   const nowMid = new Date(); nowMid.setHours(0,0,0,0);
-  let unusedStatus='ontrack', unusedTxt='';
-  if(actionableUnusedLeft<=0){ unusedStatus='ahead'; unusedTxt=settings.deferredCount>0 ? `First pass cleared — ${settings.deferredCount} deferred remain, untouched on purpose.` : 'First pass cleared.'; }
-  else if(unusedAvg===null){ unusedStatus='ontrack'; unusedTxt=`No trailing data yet — log today's unused count to start tracking pace.`; }
-  else if(unusedAvg<=0){ unusedStatus='crit'; unusedTxt=`0/day trailing over ${trailing.days}d — ${actionableUnusedLeft} unused (excl. deferred) won't move without logging.`; }
-  else {
-    const daysToFinish = actionableUnusedLeft/unusedAvg;
+  let status='ontrack', txt='';
+  if(redoLeft<=0){
+    status='ahead'; txt='Redo pool cleared. Light review or move to the deferred set.';
+  } else if(redoAvg===null){
+    status='ontrack'; txt=`No trailing data yet — log today's redo count to start tracking pace. Need ~${suggested}/day to clear ${redoLeft} by ${fmtMonthDay(STUDY_END)}.`;
+  } else if(redoAvg<=0){
+    status='crit'; txt=`0/day trailing over ${trailing.days}d — ${redoLeft} redo won't move without logging. Target ${suggested}/day.`;
+  } else {
+    const daysToFinish = redoLeft/redoAvg;
     const projFinish = new Date(nowMid); projFinish.setDate(nowMid.getDate()+Math.ceil(daysToFinish));
-    const daysLate = Math.round((projFinish-p1End)/864e5);
+    const daysLate = Math.round((projFinish-studyEnd)/864e5);
     const dateStr = projFinish.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    if(daysLate<=-2){ unusedStatus='ahead'; unusedTxt=`${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 finishes ~${dateStr}, ahead of the Jul 31 deadline.`; }
-    else if(daysLate<=0){ unusedStatus='ontrack'; unusedTxt=`${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 finishes ~${dateStr}, on pace for Jul 31.`; }
+    if(daysLate<=-2){ status='ahead'; txt=`${redoAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 clears ~${dateStr}, ahead of ${fmtMonthDay(STUDY_END)}. Could ease off ${suggested}/day or bank the buffer.`; }
+    else if(daysLate<=0){ status='ontrack'; txt=`${redoAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 clears ~${dateStr}, on pace for ${fmtMonthDay(STUDY_END)}.`; }
     else {
-      const daysToP1 = Math.max(1, Math.round((p1End-nowMid)/864e5));
-      const neededPace = Math.ceil(actionableUnusedLeft / daysToP1);
-      unusedStatus = daysLate>5 ? 'crit' : 'behind';
-      unusedTxt = `${unusedAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 projects to ~${dateStr}, ${daysLate}d past deadline. Need ${neededPace}/day to close it.`;
+      const daysToEnd = Math.max(1, Math.round((studyEnd-nowMid)/864e5));
+      const neededPace = Math.ceil(redoLeft / daysToEnd);
+      status = daysLate>5 ? 'crit' : 'behind';
+      txt = `${redoAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 projects to ~${dateStr}, ${daysLate}d past ${fmtMonthDay(STUDY_END)}. Need ${neededPace}/day to close it.`;
     }
   }
 
-  // ── REDO FLOW: is the backlog growing faster than expected, or shrinking? ─
-  // Positive during first pass is normal (unused generates new redo material
-  // faster than 20-25/day clears it) — the signal here isn't "is it growing,"
-  // it's "is it growing faster than the math predicts."
-  const firstPassActive = actionableUnusedLeft > 0;
-  let flowStatus='ontrack', flowTxt='';
-  if(redoAvg===null){
-    flowStatus='ontrack'; flowTxt=`No trailing data yet — log today's redo count to start tracking flow.`;
-  } else if(firstPassActive){
-    const genRate = unusedAvg!==null ? unusedAvg : DAILY_TARGET.unusedPerDay;
-    const generated = genRate * (missRate + markedCorrectRate);
-    const netFlow = redoAvg - generated;
-    if(netFlow >= 0){ flowStatus='ahead'; flowTxt=`${redoAvg.toFixed(0)}/day trailing vs ~${generated.toFixed(0)}/day generated \u2014 holding flat or shrinking even while first pass is active.`; }
-    else if(netFlow >= -8){ flowStatus='ontrack'; flowTxt=`${redoAvg.toFixed(0)}/day trailing vs ~${generated.toFixed(0)}/day generated \u2014 backlog growing modestly (~${Math.abs(netFlow).toFixed(0)}/day), expected while first pass is still active.`; }
-    else { flowStatus='behind'; flowTxt=`${redoAvg.toFixed(0)}/day trailing vs ~${generated.toFixed(0)}/day generated \u2014 growing faster than expected (~${Math.abs(netFlow).toFixed(0)}/day). Push toward ${DAILY_TARGET.redoPerDayMax}/day if you can.`; }
-  } else {
-    if(redoAvg >= DAILY_TARGET.postFirstPassMin){ flowStatus='ahead'; flowTxt=`${redoAvg.toFixed(0)}/day trailing \u2014 first pass cleared, no new generation, backlog is actually shrinking.`; }
-    else { flowStatus='behind'; flowTxt=`${redoAvg.toFixed(0)}/day trailing \u2014 first pass cleared, but that's below the ${DAILY_TARGET.postFirstPassMin}\u2013${DAILY_TARGET.postFirstPassMax}/day post-first-pass target.`; }
-  }
-
-  return {cum, unusedLeft, actionableUnusedLeft, deferredCount: settings.deferredCount||0, redoLeft, remaining, daysLeft, suggested:clamped, status, txt,
-          evenPace, bareMin, deficit, first, knownRedoLeft, expectedFutureIncorrect, missRatePct: missRate*100,
+  return {cum, unusedLeft, actionableUnusedLeft, deferredCount: settings.deferredCount||0,
+          redoLeft, remaining, daysLeft, suggested, redoPerDay, status, txt,
+          knownRedoLeft, expectedFutureIncorrect, missRatePct: missRate*100,
           expectedFutureMarkedCorrect, markedCorrectPct: markedCorrectRate*100,
-          unusedStatus, unusedTxt, flowStatus, flowTxt, trailingDays: trailing?trailing.days:0,
+          trailingDays: trailing?trailing.days:0, redoAvg,
           totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
 }
 function firstLoggedDate(){
@@ -1624,14 +1563,13 @@ function computeCoach() {
 
   // UWorld trajectory — the coach line was training-only before Jul 27;
   // this was the biggest gap, since study pace can be more time-critical
-  // than any single training cue most days.
+  // than any single training cue most days. Updated Aug 3 for the
+  // redo-only single-status model.
   const studyC = computeStudy();
-  if(studyC.unusedStatus==='crit')
-    bits.push(`UWorld unused pace is <b>critically behind</b> the Jul 31 deadline — this is the one to protect today.`);
-  else if(studyC.unusedStatus==='behind')
-    bits.push(`UWorld unused pace is <b>slightly behind</b> the Jul 31 deadline — worth closing today rather than letting it drift.`);
-  else if(studyC.flowStatus==='behind')
-    bits.push(`Redo backlog is <b>growing faster than expected</b> right now — a bit more redo volume today would help.`);
+  if(studyC.status==='crit')
+    bits.push(`UWorld redo pace is <b>critically behind</b> ${fmtMonthDay(STUDY_END)} — this is the one to protect today.`);
+  else if(studyC.status==='behind')
+    bits.push(`UWorld redo pace is <b>slightly behind</b> ${fmtMonthDay(STUDY_END)} — worth closing today rather than letting it drift.`);
 
   // Yesterday's signals — a bad crash or short night carries into today.
   const yesterdayObj = (() => {
@@ -1999,53 +1937,27 @@ function renderWater() {
 
 function renderUWorld() {
   const c = computeStudy();
-  const unusedDone = parseInt(state.uworld.unusedDone||0);
   const redoDone = parseInt(state.uworld.redoDone||0);
-  // "done" stays the auto-synced sum so every existing consumer (streaks,
-  // weekly totals, CSV export, day-detail modal) keeps working unchanged.
-  state.uworld.done = unusedDone + redoDone;
-
-  const firstPassActive = c.actionableUnusedLeft > 0;
+  // "done" stays in sync as just the redo count now — unused tracking is
+  // paused (not deleted) until the deferred set starts closer to the exam.
+  state.uworld.done = redoDone;
 
   document.getElementById('uwPhaseTag').textContent = getPhase().label;
   document.getElementById('uwWeekLbl').textContent = `Week: ${getWeekDone()}/300`;
   document.getElementById('uwCumLbl').textContent = `Total: ${c.totalDone} done`;
-  document.getElementById('uwUnused').textContent = c.actionableUnusedLeft<=0 && c.deferredCount>0 ? c.unusedLeft+' (deferred)' : c.unusedLeft;
   document.getElementById('uwRedo').textContent = c.redoLeft;
-  document.getElementById('uwDaysLeft').textContent = getDaysLeft();
+  document.getElementById('uwDaysLeft').textContent = c.daysLeft;
   document.getElementById('uwSuggest').textContent = c.suggested;
+  document.getElementById('uwDeferred').textContent = c.deferredCount;
 
-  if(firstPassActive){
-    const uTarget = DAILY_TARGET.unusedPerDay;
-    document.getElementById('uwUnusedTargetLbl').textContent = `Unused: ${unusedDone}/${uTarget}`;
-    document.getElementById('uwProgUnused').style.width = Math.min(100, Math.round(unusedDone/uTarget*100))+'%';
-    document.getElementById('uwProgUnused').style.opacity = 1;
-    const rMin = DAILY_TARGET.redoPerDayMin, rMax = DAILY_TARGET.redoPerDayMax;
-    document.getElementById('uwRedoTargetLbl').textContent = `Redo: ${redoDone}/${rMin}\u2013${rMax}`;
-    document.getElementById('uwProgRedo').style.width = Math.min(100, Math.round(redoDone/rMin*100))+'%';
-  } else {
-    // First pass cleared — unused bar goes moot, redo becomes the whole day.
-    document.getElementById('uwUnusedTargetLbl').textContent = `Unused: cleared ✓`;
-    document.getElementById('uwProgUnused').style.width = '100%';
-    document.getElementById('uwProgUnused').style.opacity = 0.4;
-    const rMin = DAILY_TARGET.postFirstPassMin, rMax = DAILY_TARGET.postFirstPassMax;
-    document.getElementById('uwRedoTargetLbl').textContent = `Redo: ${redoDone}/${rMin}\u2013${rMax}`;
-    document.getElementById('uwProgRedo').style.width = Math.min(100, Math.round(redoDone/rMin*100))+'%';
-  }
+  const rMin = DAILY_TARGET.redoMin, rMax = DAILY_TARGET.redoMax;
+  document.getElementById('uwRedoTargetLbl').textContent = `Redo: ${redoDone}/${rMin}\u2013${rMax}`;
+  document.getElementById('uwProgRedo').style.width = Math.min(100, Math.round(redoDone/rMin*100))+'%';
 
-  const paceU = document.getElementById('uwPaceUnused');
-  paceU.className = 'uw-pace '+c.unusedStatus;
-  document.getElementById('uwPaceUnusedTxt').textContent = c.unusedTxt;
+  const paceR = document.getElementById('uwPaceRedo');
+  paceR.className = 'uw-pace '+c.status;
+  document.getElementById('uwPaceRedoTxt').innerHTML = c.txt;
 
-  const paceF = document.getElementById('uwPaceFlow');
-  paceF.className = 'uw-pace '+c.flowStatus;
-  document.getElementById('uwPaceFlowTxt').textContent = c.flowTxt;
-
-  const paceO = document.getElementById('uwPaceOverall');
-  paceO.className = 'uw-pace '+c.status;
-  document.getElementById('uwPaceOverallTxt').innerHTML = c.txt;
-
-  if(document.activeElement !== document.getElementById('uwUnusedDone')) document.getElementById('uwUnusedDone').value = state.uworld.unusedDone||'';
   if(document.activeElement !== document.getElementById('uwRedoDone')) document.getElementById('uwRedoDone').value = state.uworld.redoDone||'';
 
   if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
@@ -2065,34 +1977,12 @@ function renderUWorld() {
 // the number actually shown above.
 function renderStudyExplain(c){
   const parts = [];
-  const firstPassActive = c.actionableUnusedLeft > 0;
-  if(firstPassActive){
-    parts.push(`<b style="color:var(--t1)">Daily structure (set Jul 21, redo bumped Jul 22):</b> ${DAILY_TARGET.unusedPerDay} unused + ${DAILY_TARGET.redoPerDayMin}\u2013${DAILY_TARGET.redoPerDayMax} redo, both timed, no tutor mode. Redo runs daily now instead of waiting for Phase 2 — closes the spacing gap between missing a question and seeing it again.`);
-  } else {
-    parts.push(`<b style="color:var(--t1)">Daily structure:</b> first pass is cleared, so the day is now ${DAILY_TARGET.postFirstPassMin}\u2013${DAILY_TARGET.postFirstPassMax} redo questions, timed, weighted toward the persistent weak subjects.`);
-  }
-  parts.push(`<b style="color:var(--t1)">Why three separate trajectory lines (set Jul 22):</b> one blended "behind by X, do Y/day" number was hiding two different problems — unused has a hard deadline (Jul 31), while redo doesn't get "behind" the same way since finishing unused questions actively generates new redo material faster than 20\u201325/day can clear it. A growing redo backlog during first pass is expected, not a failure — so it gets judged against what the math predicts, not against zero growth.`);
-  parts.push(`<b style="color:var(--t1)">Unused remaining:</b> ${c.unusedLeft} first-pass questions${c.deferredCount>0 ? ` (${c.deferredCount} deferred, not actionable yet — see below)` : ''}.`);
-  parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (incorrect + marked-but-correct — this is the true union of incorrect ∪ marked, not a raw sum, since marked and incorrect overlap).`);
-  parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.unusedLeft} unused × ${c.missRatePct.toFixed(1)}% miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> future incorrect, plus ${c.unusedLeft} unused × ${c.markedCorrectPct.toFixed(1)}% marked-but-correct rate = <b style="color:var(--t1)">~${c.expectedFutureMarkedCorrect}</b> future marked-but-correct.`);
-  parts.push(`<b style="color:var(--t1)">Total remaining exposure:</b> ${c.unusedLeft} unused + (${c.knownRedoLeft} known + ${c.expectedFutureIncorrect + c.expectedFutureMarkedCorrect} projected) redo = <b style="color:var(--t1)">${c.remaining}</b> question exposures.`);
-  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, at 6 days/week with one floating day off (not pinned to a specific weekday), through ${fmtMonthDay(STUDY_END)}. Taper is ${fmtMonthDay(TAPER_START)} (0–20 questions only), exam ${fmtMonthDay(EXAM)}.`);
-  parts.push(`<b style="color:var(--t1)">Bare minimum pace:</b> ${c.remaining} ÷ ${c.daysLeft} = ${c.bareMin.toFixed(1)}/day.`);
-  parts.push(`<b style="color:var(--t1)">Standard target:</b> ${STANDARD_DAILY_TARGET}/day is the fixed floor regardless of how low the bare minimum runs — only scales higher when actually needed → <b style="color:var(--t1)">${c.evenPace}/day</b>.`);
-
-  if(!c.first){
-    parts.push(`You haven't logged a study day yet, so there's no actual pace to compare against — today's goal is just the standard, ${c.evenPace}/day.`);
-  } else {
-    const dir = c.deficit>0 ? 'behind' : c.deficit<0 ? 'ahead' : 'exactly on pace';
-    const amt = Math.abs(c.deficit);
-    if(c.deficit===0){
-      parts.push(`Since you started logging on ${c.first}, you're exactly on the pace you committed to. No adjustment needed.`);
-    } else {
-      parts.push(`Since you started logging on ${c.first}, you're <b style="color:var(--t1)">${amt} questions ${dir}</b> your committed pace.`);
-      parts.push(`The miss-day rule spreads any gap over 3 days rather than dumping it on one: ${c.evenPace} ${c.deficit>0?'+':'−'} (${amt} ÷ 3) = <b style="color:var(--t1)">${c.suggested}/day</b>, today's actual goal.`);
-    }
-  }
-  parts.push(`Range is clamped to 40–65/day — the framework's own floor and catch-up ceiling. 80–100 question days are explicitly to be avoided, even when behind.`);
+  parts.push(`<b style="color:var(--t1)">Daily structure (set Aug 3):</b> redo-only now, ${DAILY_TARGET.redoMin}\u2013${DAILY_TARGET.redoMax}/day, timed, no tutor mode. Unused/first-pass tracking is paused — the 3-line unused/redo/overall split existed to separate two problems that only mattered while both were live at once; there's one pool left, so there's one line.`);
+  parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (incorrect + marked-but-correct — the true union of incorrect ∪ marked, not a raw sum, since marked and incorrect overlap).`);
+  parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.actionableUnusedLeft} actionable unused × ${c.missRatePct.toFixed(1)}% miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> future incorrect, plus × ${c.markedCorrectPct.toFixed(1)}% marked-but-correct rate = <b style="color:var(--t1)">~${c.expectedFutureMarkedCorrect}</b> future marked-but-correct. Only counts the ${c.actionableUnusedLeft} actionable questions, not the ${c.deferredCount} deferred ones sitting untouched.`);
+  parts.push(`<b style="color:var(--t1)">Total remaining redo:</b> ${c.knownRedoLeft} known + ${c.expectedFutureIncorrect + c.expectedFutureMarkedCorrect} projected = <b style="color:var(--t1)">${c.redoLeft}</b>.`);
+  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, at 6 days/week with one floating day off, through ${fmtMonthDay(STUDY_END)}. Deferred set (${c.deferredCount}) planned for Aug 22\u201323, taper ${fmtMonthDay(TAPER_START)}, exam ${fmtMonthDay(EXAM)}.`);
+  parts.push(`<b style="color:var(--t1)">Forward pace:</b> ${c.redoLeft} ÷ ${c.daysLeft} days = <b style="color:var(--t1)">${c.redoPerDay.toFixed(1)}/day</b>, rounded up to ${c.suggested}/day. Clean forward math only — not a deficit carried from whenever tracking started.`);
 
   document.getElementById('uwExplainBody').innerHTML = parts.map(p=>`<div style="margin-bottom:6px">${p}</div>`).join('');
 }
@@ -2431,7 +2321,7 @@ function switchTab(name){
   });
   if(name==='train'){ previewDay=null; renderWorkoutPage(); }
   if(name==='study'){ renderUWorld(); renderAnki(); }
-  if(name==='tasks'){ renderTasksToday(); renderTasksOngoing(); }
+  if(name==='tasks'){ renderTasksToday(); renderTasksOngoing(); renderTopicsReview(); }
   window.scrollTo(0,0);
 }
 
@@ -2453,12 +2343,12 @@ bind('metSleep', function(){ state.metrics.sleep=this.value; saveState(); render
 bind('metHR',    function(){ state.metrics.hr=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 
 function syncUworldDone(){
-  const unusedDone = parseInt(state.uworld.unusedDone||0);
-  const redoDone = parseInt(state.uworld.redoDone||0);
-  state.uworld.done = unusedDone + redoDone;
+  // Unused tracking paused (Aug 3) — done is just redo now. state.uworld.unusedDone
+  // stays in the data model untouched (old days keep their real values,
+  // CSV/history unaffected), it's just not written to from the UI anymore.
+  state.uworld.done = parseInt(state.uworld.redoDone||0);
 }
-bind('uwUnusedDone', function(){ state.uworld.unusedDone=this.value; syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
-bind('uwRedoDone',   function(){ state.uworld.redoDone=this.value; syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
+bind('uwRedoDone', function(){ state.uworld.redoDone=this.value; syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
 
 bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
 bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
@@ -2603,6 +2493,69 @@ function renderTasksOngoing(){
       </div>
       <button onclick="resolveTaskOngoing('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✓</button>
       <button onclick="resolveTaskOngoing('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ── TOPICS TO REVIEW — same pattern as Ongoing, own storage key. Point is a
+// running list of specific sub-topics (e.g. "SJS/TEN vs DRESS") to pair with
+// the weak-subject-weighted UWorld blocks, not a duplicate of the subject
+// list itself.
+function loadTopicsReview(){
+  try{ const s = localStorage.getItem('ppluaTopicsReview'); return s?JSON.parse(s):[]; }
+  catch(e){ return []; }
+}
+function saveTopicsReview(arr){
+  try{ localStorage.setItem('ppluaTopicsReview', JSON.stringify(arr)); }catch(e){}
+}
+function addTopicReview(){
+  const el = document.getElementById('topicReviewInput');
+  const text = el.value.trim();
+  if(!text) return;
+  const arr = loadTopicsReview();
+  arr.push({id:taskId(), text, dateAdded:localDateStr(new Date()), priority:false});
+  saveTopicsReview(arr);
+  el.value='';
+  renderTopicsReview();
+}
+function resolveTopicReview(id){
+  const arr = loadTopicsReview().filter(t=>t.id!==id);
+  saveTopicsReview(arr);
+  renderTopicsReview();
+}
+function toggleTopicPriorityReview(id){
+  const arr = loadTopicsReview();
+  const item = arr.find(t=>t.id===id);
+  if(item) item.priority = !item.priority;
+  saveTopicsReview(arr);
+  renderTopicsReview();
+}
+function moveTopicReview(id, dir){
+  const arr = loadTopicsReview();
+  const i = arr.findIndex(t=>t.id===id);
+  const j = i+dir;
+  if(i<0 || j<0 || j>=arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  saveTopicsReview(arr);
+  renderTopicsReview();
+}
+function renderTopicsReview(){
+  const listEl = document.getElementById('topicReviewList');
+  if(!listEl) return;
+  const arr = loadTopicsReview();
+  if(arr.length===0){ listEl.innerHTML = `<div style="font-size:12px;color:var(--t3);padding:6px 0;">Nothing queued.</div>`; return; }
+  listEl.innerHTML = arr.map((t,i)=>{
+    const textColor = t.priority ? 'var(--re)' : 'var(--t1)';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid var(--bd);">
+      <button onclick="toggleTopicPriorityReview('${t.id}')" style="background:none;border:none;color:${t.priority?'var(--re)':'var(--t3)'};font-size:15px;width:20px;padding:0;">${t.priority?'★':'☆'}</button>
+      <span style="flex:1;font-size:13px;color:${textColor};${t.priority?'font-weight:600;':''}">${escapeHtml(t.text)}</span>
+      <span style="font-size:10px;color:var(--t3);">${ageLabel(t.dateAdded)}</span>
+      <div style="display:flex;flex-direction:column;">
+        <button onclick="moveTopicReview('${t.id}',-1)" ${i===0?'disabled':''} style="background:none;border:none;color:${i===0?'var(--bd2)':'var(--t3)'};font-size:11px;padding:0;height:13px;line-height:13px;">▲</button>
+        <button onclick="moveTopicReview('${t.id}',1)" ${i===arr.length-1?'disabled':''} style="background:none;border:none;color:${i===arr.length-1?'var(--bd2)':'var(--t3)'};font-size:11px;padding:0;height:13px;line-height:13px;">▼</button>
+      </div>
+      <button onclick="resolveTopicReview('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✓</button>
+      <button onclick="resolveTopicReview('${t.id}')" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:6px;width:26px;height:26px;font-size:13px;">✕</button>
     </div>`;
   }).join('');
 }
