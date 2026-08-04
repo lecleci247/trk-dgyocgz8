@@ -500,16 +500,35 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
         <span class="uw-title">📋 UWorld</span>
         <span class="uw-phase" id="uwPhaseTag">—</span>
       </div>
-      <div class="uw-inputs">
+      <div class="uw-il" style="padding:0 14px;margin-bottom:4px;">Log a block (size, wrong, marked-correct — wrong/marked-correct optional)</div>
+      <div class="uw-inputs" style="gap:6px;">
+        <div class="uw-ig" style="flex:1.2;">
+          <div class="uw-il">Size</div>
+          <input class="uw-in" type="number" id="blkSize" inputmode="numeric" min="0" placeholder="0">
+        </div>
         <div class="uw-ig">
-          <div class="uw-il">Redo done today</div>
-          <input class="uw-in" type="number" id="uwRedoDone" inputmode="numeric" min="0" placeholder="0">
+          <div class="uw-il">Wrong</div>
+          <input class="uw-in" type="number" id="blkWrong" inputmode="numeric" min="0" placeholder="0">
+        </div>
+        <div class="uw-ig">
+          <div class="uw-il">Mkd-correct</div>
+          <input class="uw-in" type="number" id="blkMarkedCorrect" inputmode="numeric" min="0" placeholder="0">
         </div>
       </div>
-      <div class="uw-tr" style="margin-bottom:2px">
+      <div style="display:flex;gap:8px;padding:0 14px;margin-top:6px;">
+        <button onclick="addRedoBlock()" style="flex:1;background:var(--am);color:#000;border:none;border-radius:8px;padding:8px 0;font-size:13px;font-weight:600;">Add block</button>
+        <button onclick="undoLastBlock()" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:8px;padding:8px 14px;font-size:12px;">Undo last</button>
+      </div>
+      <div class="uw-tr" style="margin-bottom:2px;margin-top:8px;padding:0 14px;">
         <span class="mono" style="font-size:9px;color:var(--t3)" id="uwRedoTargetLbl">Redo: 0/50–60</span>
       </div>
       <div class="mini-prog-wrap"><div class="mini-prog" id="uwProgRedo" style="width:0%;background:var(--gr)"></div></div>
+      <div class="uw-tr" style="margin-bottom:0;margin-top:6px">
+        <span class="mono" style="font-size:9.5px;color:var(--t2)" id="uwTodayBreakdown">Today: 0 redo · 0 wrong · 0 mkd-correct · — accuracy</span>
+      </div>
+      <div class="uw-tr" style="margin-bottom:0;margin-top:2px">
+        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwConfirmedHard">Confirmed hard (wrong during redo, all-time): 0</span>
+      </div>
       <div class="uw-tr" style="margin-bottom:0;margin-top:6px">
         <span class="mono" style="font-size:9px;color:var(--t3)" id="uwWeekLbl">Week: 0/300</span>
         <span class="mono" style="font-size:9px;color:var(--t3)" id="uwCumLbl">Total: 0 done</span>
@@ -1057,7 +1076,7 @@ function blankDay() {
   return {
     date:todayKey(), dayType:'training', cycleDay:'', checked:{}, realRest:false,
     water:0, waterOz:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
-    uworld:{done:'',goal:'',unusedDone:'',redoDone:''}, anki:{done:'',due:''}, syncTime:null, readiness:'',
+    uworld:{done:'',goal:'',unusedDone:'',redoDone:'',redoWrong:'',redoMarkedCorrect:'',lastBlock:null}, anki:{done:'',due:''}, syncTime:null, readiness:'',
     crashSeverity:'', notes:'',
   };
 }
@@ -1238,6 +1257,24 @@ function getCumRedoDone() {
   while(d <= today) {
     const day = loadDay(localDateStr(d));
     total += parseInt(day?.uworld?.redoDone||0);
+    d.setDate(d.getDate()+1);
+  }
+  return total;
+}
+// "Confirmed hard" (Aug 4): a question missed DURING redo means wrong twice,
+// a real signal worth its own running total — separate from the pool-size
+// math, which is unaffected by right/wrong on a redo attempt (that's
+// reconciled periodically via the actual UWorld filter counts instead).
+// Summed the same way as everything else here — across logged days, not a
+// separately-incremented number — so it can't drift out of sync.
+function getCumRedoWrong() {
+  let total = 0;
+  const start = new Date(TRACKER_START+'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  let d = new Date(start);
+  while(d <= today) {
+    const day = loadDay(localDateStr(d));
+    total += parseInt(day?.uworld?.redoWrong||0);
     d.setDate(d.getDate()+1);
   }
   return total;
@@ -1963,11 +2000,16 @@ function renderUWorld() {
   document.getElementById('uwRedoTargetLbl').textContent = `Redo: ${redoDone}/${rMin}\u2013${rMax}`;
   document.getElementById('uwProgRedo').style.width = Math.min(100, Math.round(redoDone/rMin*100))+'%';
 
+  const wrongToday = parseInt(state.uworld.redoWrong||0);
+  const mcToday = parseInt(state.uworld.redoMarkedCorrect||0);
+  const acc = redoDone>0 ? Math.round((redoDone-wrongToday)/redoDone*100) : null;
+  document.getElementById('uwTodayBreakdown').textContent =
+    `Today: ${redoDone} redo \u00b7 ${wrongToday} wrong \u00b7 ${mcToday} mkd-correct \u00b7 ${acc===null?'\u2014':acc+'%'} accuracy`;
+  document.getElementById('uwConfirmedHard').textContent = `Confirmed hard (wrong during redo, all-time): ${getCumRedoWrong()}`;
+
   const paceR = document.getElementById('uwPaceRedo');
   paceR.className = 'uw-pace '+c.status;
   document.getElementById('uwPaceRedoTxt').innerHTML = c.txt;
-
-  if(document.activeElement !== document.getElementById('uwRedoDone')) document.getElementById('uwRedoDone').value = state.uworld.redoDone||'';
 
   if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
   if(document.activeElement !== document.getElementById('poolIncorrect')) document.getElementById('poolIncorrect').value = settings.incorrect;
@@ -2357,7 +2399,38 @@ function syncUworldDone(){
   // CSV/history unaffected), it's just not written to from the UI anymore.
   state.uworld.done = parseInt(state.uworld.redoDone||0);
 }
-bind('uwRedoDone', function(){ state.uworld.redoDone=this.value; syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks(); });
+// ── REDO BLOCK LOGGING (Aug 4) ───────────────────────────────────────────
+// Replaces the single "Redo done today" input. Blocks run whatever size
+// feels right that session (10, 25, 15...) — this adds each one to the
+// day's running totals instead of making you sum them in your head first.
+// Wrong/marked-correct are optional per block (blank = 0), so a quick
+// "just did 10 more" still logs fast without forcing detail every time.
+function addRedoBlock(){
+  const sizeEl = document.getElementById('blkSize');
+  const wrongEl = document.getElementById('blkWrong');
+  const mcEl = document.getElementById('blkMarkedCorrect');
+  const size = parseInt(sizeEl.value||0);
+  if(!size || size<=0) return;
+  const wrong = Math.max(0, Math.min(size, parseInt(wrongEl.value||0)));
+  const mc = parseInt(mcEl.value||0);
+
+  state.uworld.redoDone = parseInt(state.uworld.redoDone||0) + size;
+  state.uworld.redoWrong = parseInt(state.uworld.redoWrong||0) + wrong;
+  state.uworld.redoMarkedCorrect = parseInt(state.uworld.redoMarkedCorrect||0) + mc;
+  state.uworld.lastBlock = {size, wrong, mc}; // one-deep undo, not a full history
+
+  sizeEl.value=''; wrongEl.value=''; mcEl.value='';
+  syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks();
+}
+function undoLastBlock(){
+  const last = state.uworld.lastBlock;
+  if(!last) return;
+  state.uworld.redoDone = Math.max(0, parseInt(state.uworld.redoDone||0) - last.size);
+  state.uworld.redoWrong = Math.max(0, parseInt(state.uworld.redoWrong||0) - last.wrong);
+  state.uworld.redoMarkedCorrect = Math.max(0, parseInt(state.uworld.redoMarkedCorrect||0) - last.mc);
+  state.uworld.lastBlock = null; // one-deep only — can't chain undos
+  syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks();
+}
 
 bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
 bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
