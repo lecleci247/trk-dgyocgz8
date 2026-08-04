@@ -806,7 +806,7 @@ const CYCLE = [
 // been broken for over a week. The 5-bottle figure was explicitly "training +
 // steam" — with steam not happening, that portion of the target isn't
 // applicable. Revert to 5 the day steam room is back in service.
-const W_TARGETS = {training:5, rest:3.5, cardio:4};
+const W_TARGETS = {training:4.5, rest:3.5, cardio:4};
 
 // Items worth surfacing with clock time in the weekly export — the ones
 // actually useful for spotting correlations (Vyvanse timing, meals, crash).
@@ -937,9 +937,9 @@ training:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Bike or walk · not a workout'},
     {id:'session',label:'Complete all sets — log in JEFIT',sub:'Compounds 1–3 RIR · isolations 0–2 RIR'},
     {id:'wgym',label:'500ml (~17oz) water during session',sub:'Sip between sets'},
-    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in'},
-    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out'},
-    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting'},
+    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in — TEMP OPTIONAL: steam room broken ~3-4wk (from Aug 3ish)',optional:true},
+    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out — TEMP OPTIONAL: broken ~3-4wk',optional:true},
+    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting — TEMP OPTIONAL: steam room broken ~3-4wk',optional:true},
   ]},
   {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
@@ -1604,9 +1604,12 @@ function computeCoach() {
   if(isChecked(state.checked,'vyv') && isChecked(state.checked,'adderall'))
     bits.push(`Both <b>Vyvanse and Adderall</b> logged today — worth flagging for the comparison you're tracking.`);
 
-  if(state.dayType==='training'){
-    bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
-  }
+  // Steam-room line suppressed (TEMP — steam room broken again, ~3-4wk from
+  // Aug 3ish, matches the optional checklist flags and 4.5-bottle water
+  // target). Restore when steam room is actually back in service.
+  // if(state.dayType==='training'){
+  //   bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
+  // }
   return bits.length ? bits[0] + (bits.length>1 ? '<br><br>'+bits[1] : '') : '';
 }
 // ══════════════════════════════════════════════════════════════════════════
@@ -1934,7 +1937,7 @@ function renderWater() {
   document.getElementById('waterCount').textContent = `${state.water}/${tgt} (${oz}/${tgtOz}oz)`;
   const mlNow = ozToMl(oz), mlTgt = ozToMl(tgtOz);
   const dayDesc = ({
-    training:'Training + steam: 5 bottles',
+    training:'Training (steam broken ~3-4wk): 4.5 bottles',
     rest:'Rest day: 3.5 bottles',
     cardio:'Cardio day: 4 bottles',
   })[edt];
