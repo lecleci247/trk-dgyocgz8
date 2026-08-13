@@ -1673,8 +1673,13 @@ function renderWeekly() {
     const data = loadDay(localDateStr(d));
     let pct=0, uwDone=0, tag='';
     if(data && SECTIONS[data.dayType||'training']){
-      const all = SECTIONS[data.dayType].flatMap(s=>s.items);
-      const done = all.filter(it=>data.checked[it.id]).length;
+      // FIXED (Aug 12): was using s.items (includes optional items like
+      // Ensure/Adderall/the temp-optional steam items), while the top
+      // progress bar, CSV export, and soft-fatigue signal all correctly use
+      // requiredItems(s). Same day was showing two different percentages
+      // depending which part of the dashboard you looked at.
+      const all = SECTIONS[data.dayType].flatMap(s=>requiredItems(s));
+      const done = all.filter(it=>isChecked(data.checked,it.id)).length;
       pct = all.length>0?Math.round(done/all.length*100):0;
       uwDone = parseInt(data.uworld?.done||0);
       tag = data.cycleDay ? CYCLE.find(c=>c.id===data.cycleDay)?.label.split(' ')[0]||'' : '';
@@ -1714,13 +1719,17 @@ function openDayDetail(dateStr, isToday){
     <div class="dd-row"><span class="dd-k">Weight</span><span class="dd-v">${m.weight?m.weight+' lbs':'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Water</span><span class="dd-v">${day.water||0}/${W_TARGETS[dt]||5} bottles (${ozToMl((day.water||0)*32)}/${ozToMl((W_TARGETS[dt]||5)*32)}mL)</span></div>
     ${isToday
-      ? `<div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} done</span></div>`
+      ? `<div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} redo done</span></div>`
       : `<div class="dd-notes">
           <div class="dd-notes-lbl">UWorld <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">— editable</span></div>
           <div class="uw-inputs" style="margin-top:4px">
-            <div class="uw-ig"><div class="uw-il">Unused done</div><input class="uw-in" type="number" id="ddUwUnused" min="0" placeholder="0" value="${(day.uworld&&day.uworld.unusedDone)||''}"></div>
             <div class="uw-ig"><div class="uw-il">Redo done</div><input class="uw-in" type="number" id="ddUwRedo" min="0" placeholder="0" value="${(day.uworld&&day.uworld.redoDone)||''}"></div>
+            <div class="uw-ig"><div class="uw-il">Wrong</div><input class="uw-in" type="number" id="ddUwWrong" min="0" placeholder="0" value="${(day.uworld&&day.uworld.redoWrong)||''}"></div>
+            <div class="uw-ig"><div class="uw-il">Mkd-correct</div><input class="uw-in" type="number" id="ddUwMc" min="0" placeholder="0" value="${(day.uworld&&day.uworld.redoMarkedCorrect)||''}"></div>
           </div>
+          ${(day.uworld&&day.uworld.unusedDone) ? `<div class="uw-inputs" style="margin-top:4px">
+            <div class="uw-ig"><div class="uw-il">Unused done <span style="text-transform:none;font-weight:400;">(legacy — pre-Aug 3 only)</span></div><input class="uw-in" type="number" id="ddUwUnused" min="0" placeholder="0" value="${day.uworld.unusedDone}"></div>
+          </div>` : `<input type="hidden" id="ddUwUnused" value="">`}
           <button class="sync-alt" style="margin-top:6px" onclick="saveDayUworld('${dateStr}')">Save UWorld</button>
           <div class="anki-sub" id="ddUwStatus" style="margin-top:4px"></div>
         </div>`}
@@ -1781,11 +1790,19 @@ function saveDayUworld(dateStr){
   if(!day.uworld) day.uworld = {};
   const uEl = document.getElementById('ddUwUnused');
   const rEl = document.getElementById('ddUwRedo');
+  const wEl = document.getElementById('ddUwWrong');
+  const mEl = document.getElementById('ddUwMc');
   const unusedDone = uEl ? uEl.value : '';
   const redoDone = rEl ? rEl.value : '';
   day.uworld.unusedDone = unusedDone;
   day.uworld.redoDone = redoDone;
-  day.uworld.done = (parseInt(unusedDone||0)) + (parseInt(redoDone||0));
+  day.uworld.redoWrong = wEl ? wEl.value : '';
+  day.uworld.redoMarkedCorrect = mEl ? mEl.value : '';
+  // FIXED (Aug 12): was unusedDone+redoDone, which stopped matching reality
+  // the moment syncUworldDone() switched to redo-only on Aug 4 — this was
+  // silently able to produce a different "done" total for a corrected past
+  // day than the live app would ever produce for the same numbers today.
+  day.uworld.done = parseInt(redoDone||0);
   try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
   // Re-anchor the pool baseline to the corrected total — otherwise this
   // correction gets silently double-subtracted from unusedLeft later,
@@ -1796,7 +1813,7 @@ function saveDayUworld(dateStr){
   settings.poolBaselineCumRedo = getCumRedoDone();
   saveSettings();
   const status = document.getElementById('ddUwStatus');
-  if(status) status.textContent = 'Saved ✓ — total now '+day.uworld.done;
+  if(status) status.textContent = 'Saved ✓ — '+day.uworld.done+' redo done';
   renderUWorld(); renderWeekly(); renderStreaks();
 }
 
