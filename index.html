@@ -697,7 +697,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <div class="ref-row"><span class="ref-k">Sleep floor</span><span class="ref-v">Never under 7h on a training day.</span></div>
     <div class="ref-row"><span class="ref-k">Scale weight</span><span class="ref-v">7-day average only. Never react to one reading.</span></div>
     <div class="ref-row"><span class="ref-k">Day 5 laterals</span><span class="ref-v">Submaximal, RIR 2–3. Protect Day 6.</span></div>
-    <div class="ref-row"><span class="ref-k">Steam + Watch</span><span class="ref-v">Apple Watch never enters the steam room.</span></div>
+    <div class="ref-row"><span class="ref-k">Steam + Watch</span><span class="ref-v">Apple Watch never enters the steam room (pool's fine).</span></div>
     <div class="ref-row"><span class="ref-k">Creatine</span><span class="ref-v">5 grams daily, every day.</span></div>
   </div>
   <div class="ref-card">
@@ -821,11 +821,10 @@ const CYCLE = [
   {id:'d7',label:'D7 Rest',type:'cardio'},
 ];
 
-// Training water target dropped 5->4.5 (Jul 27, TEMPORARY): steam room has
-// been broken for over a week. The 5-bottle figure was explicitly "training +
-// steam" — with steam not happening, that portion of the target isn't
-// applicable. Revert to 5 the day steam room is back in service.
-const W_TARGETS = {training:4.5, rest:3.5, cardio:4};
+// Training water target reverted 4.5->5 (Aug 21): steam room confirmed
+// fixed. The 5-bottle figure is "training + steam" — restored now that
+// steam is happening again.
+const W_TARGETS = {training:5, rest:3.5, cardio:4};
 
 // Items worth surfacing with clock time in the weekly export — the ones
 // actually useful for spotting correlations (Vyvanse timing, meals, crash).
@@ -889,7 +888,7 @@ const PROGRAM = {
     {n:'Dumbbell Incline Bench Row',s:'3 × 8–12',rest:'90s',tag:'',notes:'Chest on incline pad. Elbows back. Full stretch at bottom.'},
     {n:'Cable One-Arm Row',s:'2 × 10–15',rest:'75s',tag:'',notes:'Pulley set high, pull down and across to the hip — elbow drives back and down. Upper back + lat focus.'},
     {n:'Dumbbell Seated Bent-Over Reverse Fly',s:'3 × 12–20',rest:'45s',tag:'',notes:'Wide arc. Squeeze at peak. RIR 0–1. Settled as the default over the last 3 sessions — this is the exercise, not an either/or.'},
-    {n:'Dumbbell Shoulder Shrug',s:'2 × 10–15',rest:'60s',tag:'',notes:'Pause 1s at top. No rolling.'},
+    {n:'Cable Shrug (Straight Bar)',s:'2 × 10–15',rest:'60s',tag:'',notes:'Low pulley, straight bar attachment, stand facing the machine. Pure vertical elevation, no rowing motion. Pause 1s at top. No rolling. Swapped from Dumbbell Shoulder Shrug (Aug 18) after hitting the 65 lb dumbbell ceiling at 65x14/65x13. Cable keeps tension more consistent through the top of the rep and has real room to keep progressing.'},
     {n:'EZ Bar Curl',s:'2 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. Controlled descent. RIR 1.'},
     {n:'Dumbbell Incline Curl',s:'3 × 10–15',rest:'0s',tag:'SS1',notes:'Arms hang back on incline bench. Superset directly into reverse curl.'},
     {n:'Barbell Reverse Curl',s:'3 × 12–15',rest:'60s',tag:'SS2',notes:'Pronated grip. Brachioradialis. Rest 60s then repeat SS.'},
@@ -956,9 +955,9 @@ training:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Bike or walk · not a workout'},
     {id:'session',label:'Complete all sets — log in JEFIT',sub:'Compounds 1–3 RIR · isolations 0–2 RIR'},
     {id:'wgym',label:'500ml (~17oz) water during session',sub:'Sip between sets'},
-    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam',sub:'Non-negotiable · before walking in — TEMP OPTIONAL: steam room broken ~3-4wk (from Aug 3ish)',optional:true},
-    {id:'steam',label:'15–20 min steam room',sub:'Phone timer outside · Apple Watch stays out — TEMP OPTIONAL: broken ~3-4wk',optional:true},
-    {id:'wposte',label:'500ml (~17oz) water AFTER steam',sub:'Immediately after exiting — TEMP OPTIONAL: steam room broken ~3-4wk',optional:true},
+    {id:'wpreste',label:'500ml (~17oz) water BEFORE steam/pool',sub:'Non-negotiable · before walking in'},
+    {id:'steam',label:'15–20 min steam room or pool',sub:'Timer either way · Watch stays out for steam, fine at the pool'},
+    {id:'wposte',label:'500ml (~17oz) water AFTER steam/pool',sub:'Immediately after exiting'},
   ]},
   {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
@@ -1199,7 +1198,11 @@ function getPhase() {
 }
 function getDaysLeft() {
   const now = new Date(); now.setHours(0,0,0,0);
-  const e = new Date(EXAM); e.setHours(0,0,0,0);
+  // Bare 'YYYY-MM-DD' parses as UTC midnight; setHours() below then floors it
+  // to LOCAL midnight, silently losing a day in any timezone behind UTC.
+  // Appending T00:00:00 forces local-time parsing (fixed Aug 21 — was
+  // showing 3d instead of 4d on 2026-08-21).
+  const e = new Date(EXAM+'T00:00:00'); e.setHours(0,0,0,0);
   return Math.max(0, Math.ceil((e-now)/864e5));
 }
 function getStudyDaysLeft() {
@@ -1640,12 +1643,10 @@ function computeCoach() {
   if(isChecked(state.checked,'vyv') && isChecked(state.checked,'adderall'))
     bits.push(`Both <b>Vyvanse and Adderall</b> logged today — worth flagging for the comparison you're tracking.`);
 
-  // Steam-room line suppressed (TEMP — steam room broken again, ~3-4wk from
-  // Aug 3ish, matches the optional checklist flags and 4.5-bottle water
-  // target). Restore when steam room is actually back in service.
-  // if(state.dayType==='training'){
-  //   bits.push('Pre-steam <b>500ml water</b> is non-negotiable, and the Apple Watch stays out of the steam room.');
-  // }
+  // Steam-room line restored (Aug 21): steam room confirmed fixed.
+  if(state.dayType==='training'){
+    bits.push('Pre-steam/pool <b>500ml water</b> is non-negotiable, and the Apple Watch stays out if it\'s steam.');
+  }
   return bits.length ? bits[0] + (bits.length>1 ? '<br><br>'+bits[1] : '') : '';
 }
 // ══════════════════════════════════════════════════════════════════════════
@@ -1990,7 +1991,7 @@ function renderWater() {
   document.getElementById('waterCount').textContent = `${state.water}/${tgt} (${oz}/${tgtOz}oz)`;
   const mlNow = ozToMl(oz), mlTgt = ozToMl(tgtOz);
   const dayDesc = ({
-    training:'Training (steam broken ~3-4wk): 4.5 bottles',
+    training:'Training: 5 bottles',
     rest:'Rest day: 3.5 bottles',
     cardio:'Cardio day: 4 bottles',
   })[edt];
