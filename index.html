@@ -32,11 +32,9 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .hdr-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--ac);text-transform:uppercase;}
 .hdr-right{display:flex;align-items:center;gap:8px;}
 .hdr-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3);}
-.hdr-exam{font-family:'DM Mono',monospace;font-size:10px;color:var(--re);background:var(--re-bg);padding:2px 7px;border-radius:4px;border:1px solid var(--re-bd);}
-.prog-wrap{height:2px;background:var(--s2);border-radius:2px;overflow:hidden;}
-.prog-bar{height:100%;background:var(--gr);border-radius:2px;transition:width .3s;}
-.prog-row{display:flex;justify-content:space-between;margin-top:4px;}
-.prog-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
+.presence-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.presence-pill{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.04em;padding:4px 9px;border-radius:12px;border:1px solid var(--bd2);color:var(--t3);transition:all .2s;}
+.presence-pill.active{background:var(--gr-bg);border-color:var(--gr2);color:var(--gr);}
 
 /* ── TABS ── */
 .tabbar{position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--s1);border-top:1px solid var(--bd);display:flex;padding-bottom:var(--safe-bot);max-width:430px;margin:0 auto;}
@@ -132,43 +130,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .rd-trig.cold{color:var(--t3);}
 .rd-trig.cold .dot{background:var(--bd2);}
 
-/* ── UWORLD ── */
-.uw-card{margin:6px 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
-.uw-top{padding:12px 14px 10px;}
-.uw-tr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.uw-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--bl);}
-.uw-phase{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);background:var(--bl-bg);padding:2px 7px;border-radius:4px;border:1px solid #1a2833;}
-.uw-inputs{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.uw-ig{flex:1;}
-.uw-il{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
-.uw-in{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--t1);font-family:'DM Sans';font-size:22px;font-weight:600;text-align:center;padding:7px 4px;outline:none;-webkit-appearance:none;appearance:none;}
-.uw-in:focus{border-color:var(--bl);}
-.uw-in.suggest-in{color:var(--ac2);background:var(--bg);border-color:var(--bd);}
-.mini-prog-wrap{height:5px;background:var(--s2);border-radius:3px;overflow:hidden;margin-bottom:6px;}
-.mini-prog{height:100%;border-radius:3px;transition:width .3s;}
-.uw-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bd);}
-.uw-stat{padding:9px 4px;text-align:center;border-right:1px solid var(--bd);}
-.uw-stat:last-child{border-right:none;}
-.uw-sn{font-size:15px;font-weight:600;color:var(--t1);}
-.uw-sl{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--t3);text-transform:uppercase;margin-top:2px;letter-spacing:.04em;}
-.uw-pace{padding:9px 14px;border-top:1px solid var(--bd);font-size:11.5px;color:var(--t2);display:flex;align-items:center;gap:7px;}
-.uw-pace .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.uw-pace.ahead .dot{background:var(--gr);}
-.uw-pace.ontrack .dot{background:var(--bl);}
-.uw-pace.behind .dot{background:var(--am);}
-.uw-pace.crit .dot{background:var(--re);}
-
 /* ── ANKI ── */
-.anki-card{margin:0 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
-.anki-top{padding:12px 14px;}
-.anki-tr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.anki-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--pu);}
-.anki-pct{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
-.anki-inputs{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.anki-ig{flex:1;}
-.anki-il{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
-.anki-in{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:6px;color:var(--t1);font-family:'DM Sans';font-size:22px;font-weight:600;text-align:center;padding:7px 4px;outline:none;-webkit-appearance:none;appearance:none;}
-.anki-in:focus{border-color:var(--pu);}
 .anki-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
 
 /* ── WATER ── */
@@ -217,14 +179,8 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .opt-tag{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);background:var(--s3);padding:1px 5px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;}
 
 /* ── STREAKS ── */
-.streak-card{margin:6px 16px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;display:flex;align-items:center;}
-.streak-item{flex:1;text-align:center;}
-.streak-n{font-size:20px;font-weight:700;color:var(--ac2);}
-.streak-l{display:block;font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
-.streak-div{width:1px;height:28px;background:var(--bd);}
 
 /* ── MISS RATE DISPLAY ── */
-.miss-rate-display{display:flex;justify-content:space-between;align-items:center;background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:9px 12px;margin-top:8px;}
 .mrd-lbl{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;}
 .mrd-val{font-size:16px;font-weight:700;color:var(--ac2);}
 
@@ -236,21 +192,14 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .notes-input::placeholder{color:var(--t3);}
 
 /* ── SECTION ACCENTS ── */
-.s-am .sec-ic{filter:none;} 
-.sec.s-am{border-left:2px solid var(--am);}
-.sec.s-pre{border-left:2px solid var(--ac);}
-.sec.s-wo{border-left:2px solid var(--re);}
-.sec.s-po{border-left:2px solid var(--gr2);}
-.sec.s-nu{border-left:2px solid var(--ac2);}
-.sec.s-ev{border-left:2px solid var(--pu);}
+.sec.s-training{border-left:2px solid var(--re);}
+.sec.s-nutrition{border-left:2px solid var(--ac2);}
+.sec.s-meds{border-left:2px solid var(--am);}
+.sec.s-health{border-left:2px solid var(--pu);}
 
 /* ── BANNER ── */
-.done-banner{margin:8px 16px;background:var(--gr-bg);border:1px solid var(--gr2);border-radius:10px;padding:13px;text-align:center;display:none;}
-.done-banner.show{display:block;}
-.db-t{font-size:14px;font-weight:600;color:var(--gr);}
-.db-s{font-size:11px;color:var(--t2);margin-top:3px;}
 
-/* ── SECTION TITLES (workout/study pages) ── */
+/* ── SECTION TITLES (page headers) ── */
 .ptitle{padding:14px 16px 4px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);}
 .psub{padding:0 16px 8px;font-size:12px;color:var(--t3);}
 
@@ -302,6 +251,12 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .ref-k{color:var(--t3);flex-shrink:0;width:38%;}
 .ref-v{color:var(--t1);}
 
+.hh-row{display:flex;align-items:center;padding:7px 12px;border-bottom:1px solid var(--bd);font-size:11px;}
+.hh-row:last-child{border-bottom:none;}
+.hh-row.hh-head{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);background:var(--s2);}
+.hh-d{flex:1.3;color:var(--t2);}
+.hh-v{flex:1;text-align:right;color:var(--t1);}
+
 /* ── UTILITY ── */
 .hint{margin:0 16px 8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);line-height:1.6;text-align:center;padding:8px;}
 .reset-btn{display:block;margin:14px auto 4px;background:none;border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-family:'DM Mono',monospace;font-size:10px;padding:8px 16px;cursor:pointer;}
@@ -345,14 +300,9 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <span class="hdr-title">PPLUA Command</span>
     <div class="hdr-right">
       <span class="hdr-date" id="hdrDate">—</span>
-      <span class="hdr-exam" id="hdrExam">—</span>
     </div>
   </div>
-  <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
-  <div class="prog-row">
-    <span class="prog-lbl" id="progTxt">0/0 done</span>
-    <span class="prog-lbl" id="progPct">0%</span>
-  </div>
+  <div class="presence-row" id="presenceRow"></div>
 </div>
 
 <!-- ═══════════ PAGE: TODAY ═══════════ -->
@@ -410,21 +360,6 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <div class="rd-soft" id="rdSoft" style="display:none;font-size:11px;color:var(--am);padding:8px 14px 2px;border-top:1px solid var(--bd);margin-top:4px;"></div>
   </div>
 
-  <!-- WEEKLY TREND -->
-  <div class="rd-card ok" id="trendCard" style="display:none;">
-    <div class="rd-top">
-      <span class="rd-ttl">Since Last Week</span>
-    </div>
-    <div id="trendRows" style="padding:2px 14px 12px;font-size:12px;color:var(--t2);"></div>
-  </div>
-
-  <!-- STREAKS -->
-  <div class="streak-card">
-    <div class="streak-item"><span class="streak-n" id="streakProtein">0</span><span class="streak-l">protein streak</span></div>
-    <div class="streak-div"></div>
-    <div class="streak-item"><span class="streak-n" id="streakUworld">0</span><span class="streak-l">UWorld streak</span></div>
-  </div>
-
   <!-- COACH LINE -->
   <div class="coach" id="coachCard" style="display:none">
     <div class="coach-lbl">Today</div>
@@ -469,13 +404,36 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
     <textarea id="dayNotes" class="notes-input" rows="3" placeholder="e.g. Didn't log a crash — was out and didn't feel it until I got home. Had a few drinks tonight."></textarea>
   </div>
 
-  <!-- DONE BANNER -->
-  <div class="done-banner" id="doneBanner">
-    <div class="db-t">✓ Day complete</div>
-    <div class="db-s">Everything checked. Log the session in JEFIT if you haven't.</div>
+  <button class="reset-btn" onclick="resetDay()">Reset today's checkmarks</button>
+</div>
+
+<!-- ═══════════ PAGE: HEALTH ═══════════ -->
+<div class="page" id="page-health">
+  <div class="ptitle">Health Trends</div>
+  <div class="psub">Auto-synced from Apple Health via the Shortcut. Nothing to log here.</div>
+
+  <!-- WEEKLY TREND (moved from Today, Aug 31) -->
+  <div class="rd-card ok" id="trendCard" style="display:none;">
+    <div class="rd-top">
+      <span class="rd-ttl">Since Last Week</span>
+    </div>
+    <div id="trendRows" style="padding:2px 14px 12px;font-size:12px;color:var(--t2);"></div>
   </div>
 
-  <button class="reset-btn" onclick="resetDay()">Reset today's checkmarks</button>
+  <div class="ptitle">Progress Check-in</div>
+  <div class="ref-card">
+    <div class="uw-tr" style="margin-bottom:0;">
+      <span style="font-size:13px;color:var(--t1);">Photos & measurements</span>
+      <span class="mono" id="photoCheckinStatus" style="font-size:10px;color:var(--t3);">—</span>
+    </div>
+    <p style="font-size:11px;color:var(--t3);line-height:1.5;margin-top:6px;">Roughly monthly, not daily — a real check on actual change over time, not a gut read in the mirror.</p>
+    <button class="sync-btn" style="margin-top:8px" onclick="logPhotoCheckin()">Log check-in today</button>
+  </div>
+
+  <div class="ptitle">Last 14 Days</div>
+  <div class="ref-card" style="padding:0;overflow:hidden;">
+    <div id="healthHistory"></div>
+  </div>
 </div>
 
 <!-- ═══════════ PAGE: TRAIN ═══════════ -->
@@ -489,152 +447,6 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   <div class="cycle-wrap"><div class="cycle-days" id="cycleDaysTrain"></div></div>
 </div>
 
-<!-- ═══════════ PAGE: STUDY ═══════════ -->
-<div class="page" id="page-study">
-  <div class="ptitle">ABIM board prep</div>
-
-  <!-- UWORLD -->
-  <div class="uw-card">
-    <div class="uw-top">
-      <div class="uw-tr">
-        <span class="uw-title">📋 UWorld</span>
-        <span class="uw-phase" id="uwPhaseTag">—</span>
-      </div>
-      <div class="uw-il" style="padding:0 14px;margin-bottom:4px;">Log a block (size, wrong, marked-correct — wrong/marked-correct optional)</div>
-      <div class="uw-inputs" style="gap:6px;">
-        <div class="uw-ig" style="flex:1.2;">
-          <div class="uw-il">Size</div>
-          <input class="uw-in" type="number" id="blkSize" inputmode="numeric" min="0" placeholder="0">
-        </div>
-        <div class="uw-ig">
-          <div class="uw-il">Wrong</div>
-          <input class="uw-in" type="number" id="blkWrong" inputmode="numeric" min="0" placeholder="0">
-        </div>
-        <div class="uw-ig">
-          <div class="uw-il">Mkd-correct</div>
-          <input class="uw-in" type="number" id="blkMarkedCorrect" inputmode="numeric" min="0" placeholder="0">
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;padding:0 14px;margin-top:6px;">
-        <button onclick="addRedoBlock()" style="flex:1;background:var(--am);color:#000;border:none;border-radius:8px;padding:8px 0;font-size:13px;font-weight:600;">Add block</button>
-        <button onclick="undoLastBlock()" style="background:none;border:1px solid var(--bd2);color:var(--t3);border-radius:8px;padding:8px 14px;font-size:12px;">Undo last</button>
-      </div>
-      <div class="uw-tr" style="margin-bottom:2px;margin-top:8px;padding:0 14px;">
-        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwRedoTargetLbl">Redo: 0/50–60</span>
-      </div>
-      <div class="mini-prog-wrap"><div class="mini-prog" id="uwProgRedo" style="width:0%;background:var(--gr)"></div></div>
-      <div class="uw-tr" style="margin-bottom:0;margin-top:6px">
-        <span class="mono" style="font-size:9.5px;color:var(--t2)" id="uwTodayBreakdown">Today: 0 redo · 0 wrong · 0 mkd-correct · — accuracy</span>
-      </div>
-      <div class="uw-tr" style="margin-bottom:0;margin-top:2px">
-        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwConfirmedHard">Confirmed hard (wrong during redo, all-time): 0</span>
-      </div>
-      <div class="uw-tr" style="margin-bottom:0;margin-top:6px">
-        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwWeekLbl">Week: 0/300</span>
-        <span class="mono" style="font-size:9px;color:var(--t3)" id="uwCumLbl">Total: 0 done</span>
-      </div>
-    </div>
-    <div class="uw-stats">
-      <div class="uw-stat"><div class="uw-sn" id="uwRedo">400</div><div class="uw-sl">Redo pool</div></div>
-      <div class="uw-stat"><div class="uw-sn" id="uwDaysLeft">—</div><div class="uw-sl">Study days left</div></div>
-      <div class="uw-stat"><div class="uw-sn" id="uwSuggest">50</div><div class="uw-sl">Suggested/day</div></div>
-      <div class="uw-stat"><div class="uw-sn" id="uwDeferred">17</div><div class="uw-sl">Deferred (later)</div></div>
-    </div>
-    <div class="uw-pace" id="uwPaceRedo">
-      <span class="dot"></span>
-      <span><b style="color:var(--t1)">Redo pace:</b> <span id="uwPaceRedoTxt">—</span></span>
-    </div>
-  </div>
-
-  <!-- WHY THIS NUMBER -->
-  <div class="ref-card" id="uwExplainCard">
-    <div class="ref-h">Why today's goal is what it is</div>
-    <div id="uwExplainBody" style="font-size:11.5px;color:var(--t2);line-height:1.75;"></div>
-  </div>
-
-  <!-- ANKI -->
-  <div class="anki-card">
-    <div class="anki-top">
-      <div class="anki-tr">
-        <span class="anki-title">🃏 Anki</span>
-        <span class="anki-pct" id="ankiPct">Set due cards</span>
-      </div>
-      <div class="anki-inputs">
-        <div class="anki-ig">
-          <div class="anki-il">Done</div>
-          <input class="anki-in" type="number" id="ankiDone" inputmode="numeric" min="0" placeholder="0">
-        </div>
-        <div class="anki-ig">
-          <div class="anki-il">Due</div>
-          <input class="anki-in" type="number" id="ankiDue" inputmode="numeric" min="0" placeholder="0">
-        </div>
-      </div>
-      <div class="mini-prog-wrap"><div class="mini-prog" id="ankiProg" style="width:0%;background:var(--pu)"></div></div>
-      <div class="anki-sub" id="ankiSub">Set due cards, update done as you go</div>
-    </div>
-  </div>
-
-  <!-- UPDATE POOL -->
-  <div class="ref-card">
-    <div class="ref-h">Update your UWorld pool</div>
-    <p style="font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:10px;">Update these whenever you check UWorld's stats. Miss rate is calculated automatically from Unused and Incorrect below — nothing to type or keep in sync.</p>
-    <div class="uw-inputs">
-      <div class="uw-ig">
-        <div class="uw-il">Unused remaining</div>
-        <input class="uw-in" type="number" id="poolUnused" inputmode="numeric" min="0" placeholder="610">
-      </div>
-      <div class="uw-ig">
-        <div class="uw-il">Incorrect remaining</div>
-        <input class="uw-in" type="number" id="poolIncorrect" inputmode="numeric" min="0" placeholder="292">
-      </div>
-    </div>
-    <div class="uw-inputs" style="margin-top:8px">
-      <div class="uw-ig">
-        <div class="uw-il">Marked remaining</div>
-        <input class="uw-in" type="number" id="poolMarked" inputmode="numeric" min="0" placeholder="90">
-      </div>
-      <div class="uw-ig">
-        <div class="uw-il">Total questions in bank</div>
-        <input class="uw-in" type="number" id="poolTotal" inputmode="numeric" min="1" placeholder="1248">
-      </div>
-    </div>
-    <div class="uw-inputs" style="margin-top:8px">
-      <div class="uw-ig">
-        <div class="uw-il">Marked-but-correct (false positives)</div>
-        <input class="uw-in" type="number" id="poolMarkedCorrect" inputmode="numeric" min="0" placeholder="25">
-      </div>
-      <div class="uw-ig">
-        <div class="uw-il">Deferred (in Unused, not touching yet)</div>
-        <input class="uw-in" type="number" id="poolDeferred" inputmode="numeric" min="0" placeholder="17">
-      </div>
-    </div>
-    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:-2px;margin-bottom:2px;">UWorld's Marked and Incorrect filters overlap — a question can be both. To avoid double-counting the redo pool, get this number by selecting Correct + Marked together in UWorld (reads as a union), then: Correct + Marked − that union = marked-but-correct.</p>
-    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:0;margin-bottom:8px;">Deferred = questions still sitting in Unused on purpose (e.g. Biostat/Social Sciences saved for pre-exam). Keeps the raw Unused number honest while letting the pace tracker and redo-only switch treat these as "not actionable yet" instead of waiting for them to hit literal zero.</p>
-    <div class="miss-rate-display">
-      <span class="mrd-lbl">Current miss rate (auto)</span>
-      <span class="mrd-val" id="missRateDisplay">—</span>
-    </div>
-    <p style="font-size:10.5px;color:var(--t3);line-height:1.5;margin-top:8px;">Miss rate = incorrect ÷ used, where used = total questions − unused remaining. This projects how many of your remaining unused questions will likely need a redo pass too — not just what's already known-incorrect today. Only change "Total questions" if UWorld adds content to the bank.</p>
-    <div class="anki-sub" style="margin-top:8px">Update weekly, or whenever your QBank stats change. Persists across days.</div>
-  </div>
-
-  <div class="divider"></div>
-  <div class="ptitle">Study rules</div>
-  <div class="ref-card">
-    <div class="ref-row"><span class="ref-k">Cadence</span><span class="ref-v">6 days/week, one floating day off. Not pinned to a specific weekday.</span></div>
-    <div class="ref-row"><span class="ref-k">Priority order</span><span class="ref-v">1) Incorrect questions. 2) Marked, correct-but-guessed or right-answer-wrong-diagnosis. 3) Questions missed again during redo. 4) Marked questions still shaky after review.</span></div>
-    <div class="ref-row"><span class="ref-k">Missed a day</span><span class="ref-v">Never double up. Spread the deficit over the next 3 days.</span></div>
-    <div class="ref-row"><span class="ref-k">Main block</span><span class="ref-v">40 timed mixed questions, review same day. +10 more if energy allows.</span></div>
-    <div class="ref-row"><span class="ref-k">Phase 1 (Jul 13–31)</span><span class="ref-v">Finish unused. 50/day standard, 40 floor, 60–65 catch-up ceiling.</span></div>
-    <div class="ref-row"><span class="ref-k">Phase 2 (Aug 1–14)</span><span class="ref-v">Redo incorrect + marked. 50/day, up to 55–60 if pool runs large and quality holds.</span></div>
-    <div class="ref-row"><span class="ref-k">Phase 3 (Aug 15–21)</span><span class="ref-v">Final mixed weakness pass. 40–50/day, cap at 40 if review quality drops.</span></div>
-    <div class="ref-row"><span class="ref-k">Phase 4 (Aug 22–23)</span><span class="ref-v">Final consolidation. 30–50/day. No new resources.</span></div>
-    <div class="ref-row"><span class="ref-k">Taper (Aug 24)</span><span class="ref-v">0–20 questions max, only if it reduces anxiety. Protect sleep.</span></div>
-    <div class="ref-row"><span class="ref-k">Hard limit</span><span class="ref-v">Avoid 80–100 question days even when behind — review quality collapses first.</span></div>
-    <div class="ref-row"><span class="ref-k">Anki</span><span class="ref-v">UWorld first. Cap 5–10 new/edited cards per day — targeted traps and differentiators only, not a second curriculum.</span></div>
-    <div class="ref-row"><span class="ref-k">New QBank</span><span class="ref-v">Don't add one unless UWorld is fully exhausted and review is high quality.</span></div>
-  </div>
-</div>
 
 <!-- ═══════════ PAGE: SETUP ═══════════ -->
 <div class="page" id="page-setup">
@@ -673,7 +485,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 
   <div class="divider"></div>
   <div class="ptitle">Full data export (backup / Excel)</div>
-  <div class="psub">Downloads every day you've ever logged as a CSV file — dates, checklist completion, sleep, HR, water, UWorld/Anki, and every timestamp. This is your durable backup: opens in Excel, Numbers, or Google Sheets, and it's the fastest way to hand months of history to Claude for deeper analysis.</div>
+  <div class="psub">Downloads every day you've ever logged as a CSV file — dates, checklist completion, sleep, HR, water, and every timestamp. This is your durable backup: opens in Excel, Numbers, or Google Sheets, and it's the fastest way to hand months of history to Claude for deeper analysis.</div>
   <div class="ref-card">
     <button class="sync-btn" style="margin-bottom:8px" onclick="downloadFullCSV()">⬇️ Export All Data (CSV)</button>
     <div class="anki-sub" id="csvStatus">Downloads to Files app or your browser's downloads.</div>
@@ -735,7 +547,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   </div>
 
   <div class="ptitle">Topics to Review</div>
-  <p style="font-size:11px;color:var(--t3);padding:0 14px 8px;">Same as Ongoing — carries forward, star to prioritize, check or cross off once you feel solid on it. Pairs with the weak-subject-weighted UWorld blocks (currently Dermatology, Heme/Onc, Endocrine) — this is where the specific sub-topics within those go, not a replacement for them.</p>
+  <p style="font-size:11px;color:var(--t3);padding:0 14px 8px;">Same as Ongoing — carries forward, star to prioritize, check or cross off once you feel solid on it. For specific things worth a closer look, not a duplicate of Ongoing's broader items.</p>
   <div class="ref-card" style="padding:12px 14px;">
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <input type="text" id="topicReviewInput" placeholder="Add a topic..." style="flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--t1);font-size:13px;" onkeydown="if(event.key==='Enter')addTopicReview()">
@@ -763,7 +575,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 <div class="tabbar">
   <button class="tab active" id="tab-today" onclick="switchTab('today')"><span class="tab-ic">✓</span><span class="tab-lbl">Today</span></button>
   <button class="tab" id="tab-train" onclick="switchTab('train')"><span class="tab-ic">🏋️</span><span class="tab-lbl">Train</span></button>
-  <button class="tab" id="tab-study" onclick="switchTab('study')"><span class="tab-ic">📋</span><span class="tab-lbl">Study</span></button>
+  <button class="tab" id="tab-health" onclick="switchTab('health')"><span class="tab-ic">❤️</span><span class="tab-lbl">Health</span></button>
   <button class="tab" id="tab-setup" onclick="switchTab('setup')"><span class="tab-ic">⚙︎</span><span class="tab-lbl">Setup</span></button>
   <button class="tab" id="tab-tasks" onclick="switchTab('tasks')"><span class="tab-ic">📝</span><span class="tab-lbl">Tasks</span></button>
 </div>
@@ -772,44 +584,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 <script>
 // ══════════════════════════════════════════════════════════════════════════
 //  PPLUA COMMAND · consolidated tracker
-//  Source of truth: Master_Handoff (corrected gym-verified program)
 // ══════════════════════════════════════════════════════════════════════════
-
-const EXAM = '2026-08-25';        // per the latest framework — CONFLICTS with a prior message that said Aug 24, flagged for confirmation
-const TRACKER_START = '2026-07-06';
-const STUDY_END = '2026-08-23';   // last day of Phase 4 — "serious study days through Aug 23" per the framework
-const TAPER_START = '2026-08-24'; // single taper day, 0-20 questions max, before the exam itself
-const STUDY_DAYS_PER_WEEK = 6;    // one floating day off per week — not pinned to a weekday
-const STANDARD_DAILY_TARGET = 50; // the framework's fixed policy floor — not just a computed nearest-10 rounding
-
-function fmtMonthDay(dateStr){
-  const [y,m,d] = dateStr.split('-').map(Number);
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return months[m-1]+' '+d;
-}
-
-// ── UWORLD BASELINE (editable via Study page pool inputs, persisted) ────────
-// From latest QBank check: 1248 total, 818 used, 430 unused, 436 correct,
-// 377 incorrect, 126 marked (of which 101 overlap with incorrect and 25 are
-// marked-but-correct, confirmed via Correct+Marked union = 537).
-const UW_DEFAULT = {unused:430, incorrect:377, marked:126, markedCorrect:25, missRate:46.1, total:1248, histDone:818};
-
-// Phase 1: finish unused first-pass (Jul 13-31). Phase 2: redo incorrect+marked
-// (Aug 1-14). Phase 3: final mixed weakness pass (Aug 15-21). Phase 4: final
-// consolidation, lighter volume (Aug 22-23). Taper Aug 24. Exam Aug 25.
-const PHASES = [
-  {num:1,end:'2026-07-31',label:'Phase 1',desc:'Finish unused first-pass'},
-  {num:2,end:'2026-08-14',label:'Phase 2',desc:'Redo incorrect + marked'},
-  {num:3,end:'2026-08-21',label:'Phase 3',desc:'Final mixed weakness pass'},
-  {num:4,end:STUDY_END,label:'Phase 4',desc:'Final consolidation'},
-  {num:5,end:TAPER_START,label:'Taper',desc:'Light review only'},
-];
-// Redo-only target (Aug 3) — the 50 unused + 20-25 redo split retired along
-// with first pass. One number now: 50-60/day clears the pool by Aug 23
-// (STUDY_END) at current trailing pace, with room to spare.
-const DAILY_TARGET = {
-  redoMin: 50, redoMax: 60,
-};
 
 const CYCLE = [
   {id:'d1',label:'D1 Push',type:'training'},
@@ -872,18 +647,19 @@ function ozToMl(oz){ return Math.round(oz * (950/32)); }
 
 // ── PROGRAM (gym-verified, from Master Handoff) ─────────────────────────────
 const PROGRAM = {
-  d1:{name:'PUSH', target:'Chest (incl. Lower) · Delts · Triceps · Abs', mins:63, ex:[
+  d1:{name:'PUSH', target:'Chest (incl. Lower) · Delts · Triceps · Thoracic Mobility · Abs', mins:67, ex:[
     {n:'Smith Machine Incline Bench Press',s:'3 × 6–10',rest:'120s',tag:'',notes:'35° bench. Bar to upper chest, 1–2" below clavicles. RIR 1–2. 2 ramp sets first.'},
     {n:'Machine Bench Press',s:'3 × 8–12',rest:'90s',tag:'DS',notes:'Final set only: drop 30%, AMRAP, rest 15s after drop.'},
     {n:'Cable Fly (Low-to-High)',s:'2\u20133 × 12\u201315',rest:'60s',tag:'',notes:'Added Jul 27 for lower-chest development \u2014 every other chest movement in the program is flat-to-incline, this is the only low-to-high angle, which is what actually biases the sternal/lower fibers. Pulleys at the bottom, sweep up and across to about chest height. Slight elbow bend held throughout, squeeze at the top.'},
     {n:'Cable One-Arm Lateral Raise',s:'4 × 10–15',rest:'45s',tag:'',notes:'Pulley set low, stand with the machine to your side. Elbow leads, slight bend. RIR 0–1. Keep the shoulder down — don\'t shrug to move the weight.'},
     {n:'Dumbbell Seated Shoulder Press',s:'2 × 8–12',rest:'90s',tag:'',notes:'Seated. RIR 1–2. Avoid elbow lockout at top.'},
     {n:'Cable Rope Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Pulley set low, face away from the machine, rope overhead. Keep elbows fixed near your ears, don\'t let them flare. Full stretch at bottom.'},
-    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'45s',tag:'',notes:'Pulley set high (standard pushdown position). Spread rope at bottom. Elbows pinned.'},
+    {n:'Cable Tricep Pushdown (Rope)',s:'3 × 10–15',rest:'45s',tag:'',notes:'Pulley set high (standard pushdown position). Spread rope at bottom. Elbows pinned. Bumped 2->3 sets Aug 31, total triceps volume was sitting at MEV.'},
     {n:'Machine Ab Crunch',s:'3 × 10–15',rest:'45s',tag:'',notes:'Add weight. Ribs to hips. Control the return.'},
+    {n:'Foam Roller Thoracic Extension',s:'2 × 8–10 reps',rest:'30s',tag:'',notes:'Foam roller placed horizontally under your upper back, hands behind your head, extend back over the roller then curl back up, slow and controlled. Addresses the spine itself, not just the surrounding muscles. A pressing-heavy week pulls the thoracic spine into flexion over time, nothing else in the program addresses that directly. Added Aug 31.'},
     {n:'Doorway Pec Stretch',s:'3 × 30s holds',rest:'15s',tag:'',notes:'Forearm on doorframe, step through until you feel a stretch across the chest. Pecs are warm right now — best time to stretch them. Addresses the "tight" side of the posture fix; the Day 2 face pull addresses the "weak" side.'},
   ]},
-  d2:{name:'PULL', target:'Back · Biceps · Rear Delts · Forearms', mins:56, ex:[
+  d2:{name:'PULL', target:'Back · Biceps · Rear Delts · Rotator Cuff · Neck · Forearms', mins:68, ex:[
     {n:'Cable Grip Lat Pulldown (Narrow Grip)',s:'3 × 6–10',rest:'105s',tag:'',notes:'Rope attachment, neutral grip (palms facing each other, let the ends separate near the bottom). Pull to upper chest. Avoid leaning back to use body english, especially on later reps. RIR 1–2.'},
     {n:'Dumbbell Incline Bench Row',s:'3 × 8–12',rest:'90s',tag:'',notes:'Chest on incline pad. Elbows back. Full stretch at bottom.'},
     {n:'Cable One-Arm Row',s:'2 × 10–15',rest:'75s',tag:'',notes:'Pulley set high, pull down and across to the hip — elbow drives back and down. Upper back + lat focus.'},
@@ -893,8 +669,12 @@ const PROGRAM = {
     {n:'Dumbbell Incline Curl',s:'3 × 10–15',rest:'0s',tag:'SS1',notes:'Arms hang back on incline bench. Superset directly into reverse curl.'},
     {n:'Barbell Reverse Curl',s:'3 × 12–15',rest:'60s',tag:'SS2',notes:'Pronated grip. Brachioradialis. Rest 60s then repeat SS.'},
     {n:'Cable Rope Face Pull',s:'3 × 15–20',rest:'45s',tag:'',notes:'Pulley set at upper-chest to face height. Pull to eye level, add external rotation at the top (thumbs point back) — squeeze shoulder blades together. Corrective volume for forward-head/rounded-shoulder posture — bumped from light maintenance since this is the main strengthening piece of that fix.'},
+    {n:'Cable External Rotation',s:'2 × 15–20',rest:'30s',tag:'',notes:'Pulley set at elbow height, elbow pinned to your side at 90°, rotate forearm outward against the cable. Light weight — this is rotator cuff prehab, not a strength exercise, control matters more than load. Added Aug 31 alongside the increased rear delt volume.'},
+    {n:'Plate-Loaded Neck Extension',s:'2–3 × 12–15',rest:'45s',tag:'',notes:'Lying face-down on a bench, head off the end, light plate held against the back of your head. Extend neck up, controlled. Start light, this is new volume. Directly complements the forward-head posture work already running through this day. Neck training back online now that boards are done.'},
+    {n:'Overhead Lat Stretch (Doorway)',s:'2 × 30s holds',rest:'15s',tag:'',notes:'Hand on the doorframe overhead, step through and drop your hip away to feel the stretch down the side of your back. Each side. Lats are warm right now, same logic as the existing pec stretch. Added Aug 31 — heavy pulling volume all week with nothing stretching it.'},
+    {n:'Neck and Upper Trap Stretch',s:'2 × 30s holds',rest:'15s',tag:'',notes:'Tilt your head to one side, gentle overpressure with the same-side hand, opposite arm reaching down and back. Each side. Pairs with the neck extension work above, same tight/weak posture logic as the pec stretch and face pull. Added Aug 31.'},
   ]},
-  d3:{name:'LOWER', target:'Quads · Hams · Calves · Abs', mins:55, ex:[
+  d3:{name:'LOWER', target:'Quads · Hams · Calves · Abs', mins:57, ex:[
     {n:'Smith Machine Squat',s:'3 × 6–10',rest:'120s',tag:'',notes:'Feet slightly forward, narrow stance, upright torso = quad-dominant. (CrossFit gym: barbell back squat preferred.)'},
     {n:'Machine Leg Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Narrow-low foot position. Quad bias. Don\'t lock knees out fully at the top.'},
     {n:'Smith Machine Stiff-Leg Deadlift',s:'3 × 6–10',rest:'120s',tag:'',notes:'Hip hinge. Feel hamstring stretch. Bar close to legs. RIR 1–2.'},
@@ -903,36 +683,39 @@ const PROGRAM = {
     {n:'Barbell Seated Calf Raise',s:'3 × 10–15',rest:'45s',tag:'',notes:'Sit on flat bench, bar across padded thighs. Knee bent = soleus bias. Confirmed as your actual Lower-day calf variant (corrects an earlier assumption this was standing/gastroc).'},
     {n:'Machine Hip Abduction',s:'2 × 15–20',rest:'0s',tag:'SS1',notes:'HOIST standing version. Superset into leg raise. (CrossFit: GHD back extension.)'},
     {n:'Parallel Bar Leg Raise',s:'3 × 10–15',rest:'45s',tag:'SS2',notes:'Curl pelvis up. No swinging. Rest 45s then repeat SS. (CrossFit: hanging leg raise.)'},
+    {n:'Kneeling Hip Flexor Stretch',s:'2 × 30s holds',rest:'15s',tag:'',notes:'Half-kneeling lunge position, back knee down, tuck the pelvis and push hips forward until you feel a stretch through the front of the back hip. Each side. Added Aug 31 — the SLDL above already covers the hamstring stretch, nothing covered the flexor side of the same hip.'},
   ]},
-  d4:{name:'REST / ZONE 2', target:'Optional 20–30 min Zone 2 · Calves · Serratus', mins:8, rest:true, ex:[
-    {n:'Zone 2 cardio (optional)',s:'20–30 min',rest:'—',tag:'',notes:'Peloton, recumbent bike, or Concept2 rower. 115–134 bpm, conversational. Follows leg day: avoid stairmaster and lower-body-heavy cardio.'},
+  d4:{name:'REST / ZONE 2', target:'Optional 25–35 min Zone 2 · Calves · Serratus', mins:8, rest:true, ex:[
+    {n:'Zone 2 cardio (optional)',s:'25–35 min',rest:'—',tag:'',notes:'Peloton, recumbent bike, or Concept2 rower. 115–134 bpm, conversational. Follows leg day: avoid stairmaster and lower-body-heavy cardio. Bumped from 20-30 to 25-35 min Aug 31.'},
     {n:'Standing Calf Raise',s:'2–3 × 15–20',rest:'45s',tag:'',notes:'Full stretch at bottom, pause at top. Straight-knee = gastrocnemius bias. Correction: Day 3 and Day 6 both actually use the seated/soleus variant, so this is the only straight-knee gastroc work anywhere in the cycle, not a pairing with Day 3.'},
     {n:'Push-Up Plus',s:'2 × 15–20',rest:'45s',tag:'',notes:'Standard push-up position. SERRATUS CUE: at the top, don\'t just lock the elbows, actively push the floor away further and let the shoulder blades round forward/spread apart. A normal push-up stops before this point, that extra protraction rep is what actually loads serratus anterior. Swapped in from Barbell Landmine Kneeling One-Arm Press (Aug 21) after shoulder pain with the landmine version. JEFIT itself already made this swap back on Aug 14, no landmine entries logged since Aug 6.'},
   ]},
-  d5:{name:'UPPER', target:'Chest #2 · Back #2 · Lateral Delt #2 · Obliques', mins:56, ex:[
+  d5:{name:'UPPER', target:'Chest #2 · Back #2 · Lateral Delt #2 · Rear Delt · Obliques', mins:62, ex:[
     {n:'Dumbbell Bench Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'Flat bench. RIR 1. Press slightly inward at top.'},
     {n:'Dumbbell Fly',s:'2 × 10–12',rest:'45s',tag:'',notes:'Slight elbow bend held throughout, control the stretch — don\'t let the dumbbells drop past chest level. Squeeze at peak.'},
     {n:'Cable Front Lat Pulldown (Close Grip)',s:'3 × 8–12',rest:'90s',tag:'',notes:'Straight bar, palms facing you (supinated/underhand), hands close together. This grip biases lower lats and pulls biceps in more than Day 2\'s neutral rope pull — genuinely different stimulus, not redundant. Pull to upper chest.'},
     {n:'Dumbbell One-Arm Row',s:'2 × 10–12',rest:'75s',tag:'',notes:'Mid-back focus. Brace on a bench, drive elbow back without twisting the torso. Full stretch each rep.'},
+    {n:'Chest-Supported Dumbbell Reverse Fly',s:'2–3 × 12–15',rest:'45s',tag:'',notes:'Chest against a steep incline bench, arms hang straight down, sweep out and up in a wide arc. Chest support removes lower-back involvement, strict rear delt isolation. Added Aug 31 — this day had zero direct rear delt work despite being a full Upper day.'},
     {n:'Cable Lateral Raise — SUBMAXIMAL',s:'2 × 12–15',rest:'45s',tag:'CAP',notes:'Pulley set low, stand with the machine to your side. Keep the shoulder down — don\'t shrug to move the weight. RIR 2–3 ONLY. Day 6 tomorrow. Never push these hard.'},
     {n:'Machine Leg Extension',s:'2 × 12–15',rest:'0s',tag:'SS1',notes:'Maintenance only. Superset with leg curl.'},
     {n:'Machine Seated Leg Curl',s:'2 × 12–15',rest:'45s',tag:'SS2',notes:'Rest 45s then repeat SS.'},
     {n:'Cable Woodchop (High-to-Low)',s:'2 × 12–15',rest:'45s',tag:'',notes:'Pulley set high, pull down and across the body. Each side. Rotate from the torso, not just the arms. Replaced the crunch here — Day 1 and Day 3 already cover flexion, this is the week\'s only rotational oblique work.'},
+    {n:'Overhead Lat Stretch (Doorway)',s:'2 × 30s holds',rest:'15s',tag:'',notes:'Hand on the doorframe overhead, step through and drop your hip away to feel the stretch down the side of your back. Each side. Second heavy pulling day of the week, same reasoning as Day 2. Added Aug 31.'},
     {n:'Doorway Pec Stretch',s:'3 × 30s holds',rest:'15s',tag:'',notes:'Forearm on doorframe, step through until you feel a stretch across the chest. Second chest day of the week — same reasoning as Day 1.'},
   ]},
-  d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Forearms · Calves', mins:52, ex:[
+  d6:{name:'DELTS / ARMS / CALVES', target:'Lateral Delts (primary) · Biceps · Triceps · Forearms · Calves', mins:53, ex:[
     {n:'Machine Shoulder Press',s:'3 × 8–12',rest:'90s',tag:'',notes:'RIR 1–2. No elbow lockout at top.'},
     {n:'Cable Lateral Raise',s:'3 × 12–20 + FS',rest:'45s',tag:'FS',notes:'Pulley set low, stand with the machine to your side. Keep the shoulder down — don\'t shrug to move the weight, especially as you fatigue toward the failure set. Final set to failure. PRIMARY lateral delt session.'},
     {n:'Machine Reverse Fly OR Cable Rear Lateral Raise',s:'2 × 12–20',rest:'45s',tag:'',notes:'Cable version: pulley set at chest height, pull across the body to the opposite side (reverse fly motion). Cable single-arm version here (constant tension). Deliberately different from Day 2.'},
     {n:'EZ Bar Curl',s:'3 × 8–12',rest:'60s',tag:'',notes:'Elbows pinned. RIR 1.'},
     {n:'Dumbbell Alternating Hammer Curl',s:'2 × 10–15',rest:'45s',tag:'',notes:'Thumbs-up grip. Brachialis focus.'},
     {n:'Cable Rope Overhead Tricep Extension',s:'3 × 10–15',rest:'60s',tag:'',notes:'Pulley set low, face away from the machine, rope overhead. Keep elbows fixed near your ears, don\'t let them flare. Long-head bias. Full stretch at bottom.'},
-    {n:'Cable Tricep Pushdown (Rope)',s:'2 × 10–15',rest:'0s',tag:'SS1',notes:'Pulley set high (standard pushdown position). Superset into wrist curl.'},
+    {n:'Cable Tricep Pushdown (Rope)',s:'3 × 10–15',rest:'0s',tag:'SS1',notes:'Pulley set high (standard pushdown position). Superset into wrist curl. Bumped 2->3 sets Aug 31, total triceps volume was sitting at MEV.'},
     {n:'Dumbbell Wrist Curl (Palms Up)',s:'2 × 15–20',rest:'0s',tag:'SS2',notes:'Forearms on thighs or bench edge, palms facing up, full stretch at bottom. Flexor-focused — complements the Reverse Curl\'s extensor bias from Day 2. Superset into calf raise.'},
     {n:'Barbell Seated Calf Raise',s:'3 × 12–20',rest:'60s',tag:'SS3',notes:'Sit on flat bench, bar across padded thighs, 25lb plate under feet. Knee bent = soleus. Rest 60s then repeat the 3-exercise circuit — bumped from 45s since the third exercise adds real cumulative work. (No machine calf raise at gym.)'},
   ]},
-  d7:{name:'REST / ZONE 2', target:'Optional 20–30 min Zone 2 · Calves · Serratus · Abs', mins:14, rest:true, ex:[
-    {n:'Zone 2 cardio (optional)',s:'20–30 min',rest:'—',tag:'',notes:'Rower, Peloton, or Concept2. 115–134 bpm. Arms recovered, legs fresh. Bag work in Phase 2+.'},
+  d7:{name:'REST / ZONE 2', target:'Optional 25–35 min Zone 2 · Calves · Serratus · Abs', mins:14, rest:true, ex:[
+    {n:'Zone 2 cardio (optional)',s:'25–35 min',rest:'—',tag:'',notes:'Rower, Peloton, or Concept2. 115–134 bpm. Arms recovered, legs fresh. Bag work in Phase 2+. Bumped from 20-30 to 25-35 min Aug 31.'},
     {n:'Barbell Seated Calf Raise',s:'2–3 × 15–20',rest:'45s',tag:'',notes:'Bent-knee = soleus bias. Same variant as Day 6 — pairs with Day 4\'s standing version for full gastroc + soleus coverage across the week.'},
     {n:'Push-Up Plus',s:'2 × 15–20',rest:'45s',tag:'',notes:'Standard push-up position. SERRATUS CUE: at the top, don\'t just lock the elbows — actively push the floor away further and let the shoulder blades round forward/spread apart. A normal push-up stops before this point; that extra protraction rep is what actually loads serratus anterior.'},
     {n:'"Hardest Ab Workout" (YouTube, ~6 min)',s:'1 round',rest:'—',tag:'',notes:'Do this LAST, after cardio, not before. An intense circuit spikes HR well past the Zone 2 ceiling — doing it first would drag the opening minutes of cardio out of zone while you recover.'},
@@ -941,123 +724,104 @@ const PROGRAM = {
 // ── CHECKLIST SECTIONS ──────────────────────────────────────────────────────
 const SECTIONS = {
 training:[
-  {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
-    {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
-    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
-    {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
-    {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
-    {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
-  ]},
-  {id:'pre',label:'Pre-Workout',icon:'⚡',cls:'s-pre',items:[
+  {id:'training',label:'Training',icon:'🏋️',cls:'s-training',items:[
     {id:'wpre',label:'500ml (~17oz) water before gym',sub:'60–90 min window before lifting'},
-  ]},
-  {id:'wo',label:'Workout',icon:'🏋️',cls:'s-wo',items:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Bike or walk · not a workout'},
     {id:'session',label:'Complete all sets — log in JEFIT',sub:'Compounds 1–3 RIR · isolations 0–2 RIR'},
+    {id:'vo2max',label:'VO2max intervals (optional)',sub:'4x4min hard/3min easy · weekly or biweekly, separate from Zone 2 — Zone 2 builds aerobic base, this targets VO2max specifically. Added Aug 31.',optional:true},
     {id:'wgym',label:'500ml (~17oz) water during session',sub:'Sip between sets'},
     {id:'wpreste',label:'500ml (~17oz) water BEFORE steam/pool',sub:'Non-negotiable · before walking in'},
     {id:'steam',label:'15–20 min steam room or pool',sub:'Timer either way · Watch stays out for steam, fine at the pool'},
     {id:'wposte',label:'500ml (~17oz) water AFTER steam/pool',sub:'Immediately after exiting'},
+    {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately after — don\'t wait'},
   ]},
-  {id:'po',label:'Post-Workout',icon:'✓',cls:'s-po',items:[
-    {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:'Immediately — don\'t wait'},
-  ]},
-  {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
+  {id:'nutrition',label:'Nutrition',icon:'🍗',cls:'s-nutrition',items:[
+    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
     {id:'lunch',label:'Main meal — 40–50g protein',sub:'Hard target 12:30–1:00pm. Covers breakfast, post-workout, and lunch in one.'},
-    {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
-    {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
-  ]},
-  {id:'desk',label:'Desk Breaks',icon:'🪑',cls:'s-nu',items:[
-    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every study break — the highest-leverage move for forward head',optional:true},
-    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume on rest/cardio days, half on Day 2 & 6',optional:true},
-    {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
-    {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
-  ]},
-  {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
-    {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
-  ]},
-  {id:'ev',label:'Evening',icon:'🌙',cls:'s-ev',items:[
     {id:'dinner',label:'Dinner — 40–50g protein',sub:'Good Chop or equivalent'},
     {id:'weve',label:'Finish remaining water bottles',sub:'Check WaterMinder before bed'},
     {id:'casein',label:'Pre-sleep: casein or cottage cheese',sub:'40g casein or 250g cottage cheese + half scoop whey'},
   ]},
-],
-rest:[
-  {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
-    {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
-    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
-    {id:'creat',label:'5g creatine',sub:'Take daily — with water'},
-    {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
+  {id:'meds',label:'Meds',icon:'💊',cls:'s-meds',items:[
+    {id:'vitd',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
     {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
-    {id:'vyv',label:'Vyvanse 20mg',sub:'After breakfast'},
+    {id:'vyv',label:'Vyvanse 20mg (optional)',sub:'Eat something first — even a bite',optional:true},
     {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
-  ]},
-  {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
-    {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
-    {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
     {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
+    {id:'crash',label:'Afternoon crash (optional)',sub:'Check the moment it hits — timestamp marks onset. Only relevant on a medicated day.',optional:true},
   ]},
-  {id:'desk',label:'Desk Breaks',icon:'🪑',cls:'s-nu',items:[
-    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every study break — the highest-leverage move for forward head',optional:true},
-    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume today, half on Day 2 & 6',optional:true},
+  {id:'health',label:'Health',icon:'🧘',cls:'s-health',items:[
+    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every couple hours — the highest-leverage move for forward head',optional:true},
+    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume on rest/cardio days, half on Day 2 & 6',optional:true},
     {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
     {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
   ]},
-  {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
-    {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
-  ]},
-  {id:'ev',label:'Evening',icon:'🌙',cls:'s-ev',items:[
+],
+rest:[
+  {id:'nutrition',label:'Nutrition',icon:'🍗',cls:'s-nutrition',items:[
+    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
+    {id:'bfrest',label:'Breakfast — 30–40g protein',sub:'Eggs + Greek yogurt + oats'},
+    {id:'lunch',label:'Lunch — 40–50g protein',sub:'By the clock, not by hunger'},
     {id:'dinner',label:'Dinner — 40–50g protein',sub:''},
     {id:'weve',label:'Hit 3.5 bottles water today',sub:'~3.3L · check WaterMinder'},
     {id:'casein',label:'Pre-sleep: casein or cottage cheese',sub:'40g casein or 250g cottage cheese'},
   ]},
+  {id:'meds',label:'Meds',icon:'💊',cls:'s-meds',items:[
+    {id:'vitd',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
+    {id:'creat',label:'5g creatine',sub:'Take daily — with water'},
+    {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
+    {id:'vyv',label:'Vyvanse 20mg (optional)',sub:'After breakfast',optional:true},
+    {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
+    {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
+    {id:'crash',label:'Afternoon crash (optional)',sub:'Check the moment it hits — timestamp marks onset. Only relevant on a medicated day.',optional:true},
+  ]},
+  {id:'health',label:'Health',icon:'🧘',cls:'s-health',items:[
+    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every couple hours — the highest-leverage move for forward head',optional:true},
+    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume today, half on Day 2 & 6',optional:true},
+    {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
+    {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
+  ]},
 ],
 cardio:[
-  {id:'am',label:'Morning',icon:'☀️',cls:'s-am',items:[
-    {id:'meds',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
-    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
-    {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
-    {id:'vyv',label:'Vyvanse 20mg',sub:'Eat something first — even a bite'},
-    {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
-  ]},
-  {id:'wo',label:'Cardio Session',icon:'🚴',cls:'s-wo',items:[
+  {id:'training',label:'Training',icon:'🚴',cls:'s-training',items:[
     {id:'warmup',label:'5 min easy warm-up',sub:'Let HR rise gradually'},
-    {id:'zone2',label:'20–30 min Zone 2 (115–134 BPM)',sub:'Peloton/recumbent · fully conversational'},
+    {id:'zone2',label:'25–35 min Zone 2 (115–134 BPM)',sub:'Peloton/recumbent · fully conversational'},
+    {id:'vo2max',label:'VO2max intervals (optional)',sub:'4x4min hard/3min easy · weekly or biweekly, separate from Zone 2 — Zone 2 builds aerobic base, this targets VO2max specifically. Added Aug 31.',optional:true},
     {id:'wcard',label:'500ml (~17oz) water during session',sub:'Log in WaterMinder'},
     {id:'cool',label:'5 min cool-down',sub:'Let HR drop to ~100 BPM'},
     {id:'logah',label:'Log workout in Apple Health',sub:'Select cycling · check HR zones after'},
     {id:'wpreste',label:'500ml (~17oz) water before pool',sub:'Recovery from the ride, not more heat. Steam still fine if you prefer.'},
     {id:'steam',label:'15–20 min pool (steam optional)',sub:'Pool is the default after a hot ride. Watch stays out only if it\'s steam.'},
     {id:'wposte',label:'500ml (~17oz) water after pool',sub:'Immediately after exiting'},
-  ]},
-  {id:'po',label:'Post-Cardio',icon:'✓',cls:'s-po',items:[
     {id:'shake',label:'40g ISO100 + 5g creatine shake',sub:''},
   ]},
-  {id:'md',label:'Midday',icon:'🕐',cls:'s-nu',items:[
+  {id:'nutrition',label:'Nutrition',icon:'🍗',cls:'s-nutrition',items:[
+    {id:'wam',label:'250ml (~8oz) water before coffee',sub:'Before anything else'},
     {id:'lunch',label:'Main meal — 40–50g protein',sub:'Hard target 12:30–1:00pm. Covers breakfast, post-cardio, and lunch in one.'},
-    {id:'crash',label:'Afternoon crash',sub:'Check the moment it hits — timestamp marks onset'},
-    {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
-  ]},
-  {id:'desk',label:'Desk Breaks',icon:'🪑',cls:'s-nu',items:[
-    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every study break — the highest-leverage move for forward head',optional:true},
-    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume today, half on Day 2 & 6',optional:true},
-    {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
-    {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
-  ]},
-  {id:'nu',label:'Nutrition',icon:'🍗',cls:'s-nu',items:[
-    {id:'prot',label:'Hit 160g protein today',sub:'~40g per meal × 4 feedings'},
-  ]},
-  {id:'ev',label:'Evening',icon:'🌙',cls:'s-ev',items:[
     {id:'dinner',label:'Dinner — 40–50g protein',sub:''},
     {id:'weve',label:'Hit 4 bottles water today',sub:'~3.8L · cardio day'},
     {id:'casein',label:'Pre-sleep: casein or cottage cheese',sub:'40g casein or 250g cottage cheese'},
+  ]},
+  {id:'meds',label:'Meds',icon:'💊',cls:'s-meds',items:[
+    {id:'vitd',label:'Morning meds',sub:'Includes Vitamin D3, 2,000–4,000 IU'},
+    {id:'ensure',label:'Ensure Max Protein (optional)',sub:'30g protein · skip caffeinated flavors',optional:true},
+    {id:'vyv',label:'Vyvanse 20mg (optional)',sub:'Eat something first — even a bite',optional:true},
+    {id:'reduceddose',label:'Reduced dose today (optional)',sub:'Half dose, delayed, or skipped vs your usual',optional:true},
+    {id:'adderall',label:'Adderall IR (optional)',sub:'Short-release, PRN afternoon',optional:true},
+    {id:'crash',label:'Afternoon crash (optional)',sub:'Check the moment it hits — timestamp marks onset. Only relevant on a medicated day.',optional:true},
+  ]},
+  {id:'health',label:'Health',icon:'🧘',cls:'s-health',items:[
+    {id:'chintuck',label:'Chin tucks (optional)',sub:'2×10, every couple hours — the highest-leverage move for forward head',optional:true},
+    {id:'gripper',label:'Gripper work (optional)',sub:'3×15–25/hand · full volume today, half on Day 2 & 6',optional:true},
+    {id:'fingerstretch',label:'Finger stretcher (optional)',sub:'3×15–25 · alternate with gripper, not the same session',optional:true},
+    {id:'pullaparts',label:'Band pull-aparts (optional)',sub:'2–3×15–20 · once you have a band',optional:true},
   ]},
 ],
 };
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let state = {};
-let settings = {};   // persistent across days (UWorld pool, HR baseline)
+let settings = {};   // persistent across days (HR baseline)
 
 // Date -> 'YYYY-MM-DD' using LOCAL calendar components, not toISOString's
 // UTC conversion. toISOString() shifts the date at UTC midnight, which in
@@ -1077,7 +841,7 @@ function blankDay() {
   return {
     date:todayKey(), dayType:'training', cycleDay:'', checked:{}, realRest:false,
     water:0, waterOz:0, metrics:{weight:'',sleep:'',hr:'',steps:''}, collapsed:{},
-    uworld:{done:'',goal:'',unusedDone:'',redoDone:'',redoWrong:'',redoMarkedCorrect:'',lastBlock:null}, anki:{done:'',due:''}, syncTime:null, readiness:'',
+    syncTime:null, readiness:'',
     crashSeverity:'', notes:'',
   };
 }
@@ -1111,38 +875,7 @@ function loadSettings() {
     const s = localStorage.getItem('pplua_settings');
     settings = s ? JSON.parse(s) : {};
   } catch(e) { settings = {}; }
-  if(settings.unused == null) settings.unused = UW_DEFAULT.unused;
-  // incorrect/marked replace the old combined "redo" field — these are brand
-  // new fields, so anyone's existing settings will correctly pick up the
-  // fresh defaults below the first time this runs, no migration needed.
-  if(settings.incorrect == null) settings.incorrect = UW_DEFAULT.incorrect;
-  if(settings.marked == null) settings.marked = UW_DEFAULT.marked;
-  // marked-but-correct: the only slice of "marked" that isn't already inside
-  // "incorrect" — see computeStudy() for why this replaces the old naive sum.
-  if(settings.markedCorrect == null) settings.markedCorrect = UW_DEFAULT.markedCorrect;
-  // Miss rate is no longer stored — it's derived live from unused/incorrect/
-  // totalQuestions in computeStudy(), so it can never go stale relative to
-  // whatever's actually typed into those fields.
-  if(settings.totalQuestions == null) settings.totalQuestions = UW_DEFAULT.total;
-  if(settings.baselineUsed == null) settings.baselineUsed = UW_DEFAULT.histDone;
   if(settings.hrBaseline == null) settings.hrBaseline = 79;  // Master Handoff baseline
-  // Everything logged since this cum snapshot decrements the pool going forward.
-  // Defaults to 0 (full historical cum applies) for anyone who hasn't yet
-  // re-anchored under this logic — preserves prior behavior exactly.
-  if(settings.poolBaselineCum == null) settings.poolBaselineCum = 0;
-  // These two must default to the CURRENT cumulative totals, not 0 — this
-  // is a first-run migration for the Jul 29 fix. Defaulting to 0 would
-  // treat every unused/redo question ever logged as "since baseline" and
-  // massively over-subtract from unusedLeft the first time this loads.
-  // Defaulting to current cum makes today's existing pool numbers still
-  // accurate, and only NEW logging counts against them from here forward.
-  if(settings.poolBaselineCumUnused == null) settings.poolBaselineCumUnused = getCumUnusedDone();
-  if(settings.poolBaselineCumRedo == null) settings.poolBaselineCumRedo = getCumRedoDone();
-  // Deferred count (Jul 31): the 17 Biostat/Social Sciences questions being
-  // held for ~2-3 days pre-exam. Defaults to 17 to match current reality —
-  // update this field (not the Unused count) once that number changes, and
-  // set it to 0 once you actually start working through them.
-  if(settings.deferredCount == null) settings.deferredCount = 17;
 }
 function saveSettings() {
   try { localStorage.setItem('pplua_settings', JSON.stringify(settings)); } catch(e){}
@@ -1194,114 +927,11 @@ function readHashParams() {
 }
 
 // ── DATE HELPERS ───────────────────────────────────────────────────────────
-function getPhase() {
-  const now = new Date();
-  for(const p of PHASES) { if(now <= new Date(p.end + 'T23:59:59')) return p; }
-  return {num:5,label:'Exam Day',desc:fmtMonthDay(EXAM)};
-}
-function getDaysLeft() {
-  const now = new Date(); now.setHours(0,0,0,0);
-  // Bare 'YYYY-MM-DD' parses as UTC midnight; setHours() below then floors it
-  // to LOCAL midnight, silently losing a day in any timezone behind UTC.
-  // Appending T00:00:00 forces local-time parsing (fixed Aug 21 — was
-  // showing 3d instead of 4d on 2026-08-21).
-  const e = new Date(EXAM+'T00:00:00'); e.setHours(0,0,0,0);
-  return Math.max(0, Math.ceil((e-now)/864e5));
-}
-function getStudyDaysLeft() {
-  // 6 study days/week, one floating day off — not pinned to a specific weekday,
-  // so this uses a ratio over remaining calendar days rather than tracking
-  // which exact day gets skipped each week.
-  const now = new Date(); now.setHours(0,0,0,0);
-  const end = new Date(STUDY_END+'T00:00:00');
-  if(now > end) return 0;
-  const calendarDays = Math.round((end-now)/864e5) + 1;
-  return Math.max(1, Math.round(calendarDays * STUDY_DAYS_PER_WEEK/7));
-}
-
-// ── UWORLD CUMULATIVE (from logged daily done values) ──────────────────────
-function getCumDone() {
-  let total = 0;
-  const start = new Date(TRACKER_START+'T00:00:00');
-  const today = new Date(); today.setHours(0,0,0,0);
-  let d = new Date(start);
-  while(d <= today) {
-    const day = loadDay(localDateStr(d));
-    total += parseInt(day?.uworld?.done||0);
-    d.setDate(d.getDate()+1);
-  }
-  return total;
-}
-// ── SPLIT CUMULATIVE (unused-only, redo-only) ───────────────────────────────
-// getCumDone() above is the COMBINED unused+redo total — correct for
-// lifetime "totalDone" display, but wrong for tracking the unused pool
-// specifically. unusedLeft must only be reduced by actual unused
-// consumption; redo work draws from a completely separate pool (incorrect +
-// marked-but-correct) and shouldn't touch it at all. Using the combined
-// total for that was a real bug — any day with redo>0 was incorrectly
-// eating into unusedLeft too, since the old model assumed redo only starts
-// once unused hits zero (sequential), when the actual daily structure runs
-// both in parallel every day.
-function getCumUnusedDone() {
-  let total = 0;
-  const start = new Date(TRACKER_START+'T00:00:00');
-  const today = new Date(); today.setHours(0,0,0,0);
-  let d = new Date(start);
-  while(d <= today) {
-    const day = loadDay(localDateStr(d));
-    total += parseInt(day?.uworld?.unusedDone||0);
-    d.setDate(d.getDate()+1);
-  }
-  return total;
-}
-function getCumRedoDone() {
-  let total = 0;
-  const start = new Date(TRACKER_START+'T00:00:00');
-  const today = new Date(); today.setHours(0,0,0,0);
-  let d = new Date(start);
-  while(d <= today) {
-    const day = loadDay(localDateStr(d));
-    total += parseInt(day?.uworld?.redoDone||0);
-    d.setDate(d.getDate()+1);
-  }
-  return total;
-}
-// "Confirmed hard" (Aug 4): a question missed DURING redo means wrong twice,
-// a real signal worth its own running total — separate from the pool-size
-// math, which is unaffected by right/wrong on a redo attempt (that's
-// reconciled periodically via the actual UWorld filter counts instead).
-// Summed the same way as everything else here — across logged days, not a
-// separately-incremented number — so it can't drift out of sync.
-function getCumRedoWrong() {
-  let total = 0;
-  const start = new Date(TRACKER_START+'T00:00:00');
-  const today = new Date(); today.setHours(0,0,0,0);
-  let d = new Date(start);
-  while(d <= today) {
-    const day = loadDay(localDateStr(d));
-    total += parseInt(day?.uworld?.redoWrong||0);
-    d.setDate(d.getDate()+1);
-  }
-  return total;
-}
-function getWeekDone() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const dow = today.getDay();
-  const mon = new Date(today); mon.setDate(today.getDate()-(dow===0?6:dow-1));
-  let total = 0;
-  for(let i=0;i<7;i++){
-    const d = new Date(mon); d.setDate(mon.getDate()+i);
-    if(d>today) break;
-    const day = loadDay(localDateStr(d));
-    total += parseInt(day?.uworld?.done||0);
-  }
-  return total;
-}
-
 // ── WEEKLY TREND (this week vs last week) ───────────────────────────────────
-// Same Monday-Sunday boundary as getWeekDone(). "This week" is partial
-// (Monday through today) until Sunday, so /day averages are the fair
-// comparison — not raw totals, which would always favor last week early on.
+// Same Monday-Sunday boundary as everything else week-scoped in this file.
+// "This week" is partial (Monday through today) until Sunday, so /day
+// averages are the fair comparison — not raw totals, which would always
+// favor last week early on.
 function computeWeeklyTrend(){
   const today = new Date(); today.setHours(0,0,0,0);
   const dow = today.getDay();
@@ -1310,24 +940,11 @@ function computeWeeklyTrend(){
   const lastSun = new Date(thisMon); lastSun.setDate(thisMon.getDate()-1);
 
   function windowStats(startDate, endDate){
-    let uwSum=0, uwDays=0, sleepSum=0, sleepN=0, hrSum=0, hrN=0;
+    let sleepSum=0, sleepN=0, hrSum=0, hrN=0;
     let d = new Date(startDate);
     while(d <= endDate){
       const day = loadDay(localDateStr(d));
       if(day){
-        // UWorld only counts days where redo was actually entered — matches
-        // the same fix applied to getTrailingSplitAvg(). Gating on
-        // unusedDone (old check) silently excluded every day going forward
-        // once that field was removed from the UI in the redo-only rebuild.
-        // Still sums day.uworld.done, not redoDone directly — for pre-rebuild
-        // days, done correctly holds combined unused+redo activity; for
-        // post-rebuild days, done already equals redoDone by construction
-        // (see syncUworldDone()), so this stays consistent across the
-        // transition without needing to special-case old vs new days.
-        if(day.uworld && day.uworld.redoDone!=='' && day.uworld.redoDone!=null){
-          uwSum += parseInt((day.uworld&&day.uworld.done)||0);
-          uwDays++;
-        }
         const sh = validSleepHours(day.metrics);
         if(sh!=null){ sleepSum+=sh; sleepN++; }
         const hr = parseFloat(day.metrics && day.metrics.hr);
@@ -1336,7 +953,6 @@ function computeWeeklyTrend(){
       d.setDate(d.getDate()+1);
     }
     return {
-      uwPerDay: uwDays>0 ? uwSum/uwDays : null,
       sleepAvg: sleepN>0 ? sleepSum/sleepN : null,
       hrAvg: hrN>0 ? hrSum/hrN : null,
     };
@@ -1351,128 +967,13 @@ function computeWeeklyTrend(){
   const lastW = lastMonDay && parseFloat(lastMonDay.metrics && lastMonDay.metrics.weight);
   const weightDelta = (!isNaN(thisW) && !isNaN(lastW)) ? thisW-lastW : null;
 
-  return {thisWeek, lastWeek, weightDelta, hasLastWeek: lastWeek.uwPerDay!=null || lastWeek.sleepAvg!=null};
+  return {thisWeek, lastWeek, weightDelta, hasLastWeek: lastWeek.sleepAvg!=null || lastWeek.hrAvg!=null};
 }
 
 // ── TRAILING SPLIT AVERAGE (unused vs redo done/day, last N days) ──────────
 // Only averages over days with the split fields actually recorded — days
 // before the Jul21 rebuild only have a combined total, and treating those
 // as zero would wrongly drag the average down rather than just excluding them.
-function getTrailingSplitAvg(days) {
-  const today = new Date(); today.setHours(0,0,0,0);
-  let unusedSum=0, redoSum=0, n=0;
-  for(let i=0;i<days;i++){
-    const d = new Date(today); d.setDate(today.getDate()-i);
-    const day = loadDay(localDateStr(d));
-    // FIXED (Aug 3): gate on redoDone, not unusedDone. The "Unused done
-    // today" field was removed from the UI in the redo-only rebuild, so it
-    // can never be populated again — gating on it silently excluded every
-    // real day going forward, including days where redo genuinely was
-    // logged, falling back to stale pre-rebuild data instead.
-    if(day && day.uworld && day.uworld.redoDone!=='' && day.uworld.redoDone!=null){
-      unusedSum += parseInt(day.uworld.unusedDone||0);
-      redoSum += parseInt(day.uworld.redoDone||0);
-      n++;
-    }
-  }
-  if(n===0) return null;
-  return {unusedAvg: unusedSum/n, redoAvg: redoSum/n, days:n};
-}
-
-// ── ADAPTIVE STUDY TARGET ──────────────────────────────────────────────────
-// Implements the framework's exact adjustment formula: expected future
-// incorrects = unused remaining × current miss rate; redo pool = current
-// incorrect + marked + that projection; total exposure = unused + redo pool;
-// daily target = total / days left, then floored at the 50/day standard
-// (not just rounded up from the bare minimum — 50 is the stated policy
-// floor, only exceeded when genuinely falling behind calls for more).
-function computeStudy() {
-  const cum = getCumDone();
-  const cumUnusedSinceBaseline = Math.max(0, getCumUnusedDone() - (settings.poolBaselineCumUnused||0));
-  const unusedLeft = Math.max(0, settings.unused - cumUnusedSinceBaseline);
-  // Deferred questions (Biostat/Social Sciences saved for pre-exam) stay
-  // counted in the raw pool number on purpose — unusedLeft stays truthful
-  // to what's actually in UWorld. actionableUnusedLeft is what all
-  // forward-looking math should use, since the deferred set won't move
-  // until you actually start it.
-  const actionableUnusedLeft = Math.max(0, unusedLeft - (settings.deferredCount||0));
-  const redoProgress = Math.max(0, getCumRedoDone() - (settings.poolBaselineCumRedo||0));
-  const totalQ = settings.totalQuestions || UW_DEFAULT.total;
-  const usedSnapshot = Math.max(1, totalQ - settings.unused);
-  const missRate = Math.max(0, Math.min(1, (settings.incorrect||0) / usedSnapshot));
-  // FIXED (Aug 3): future-incorrect/marked-correct projection now uses
-  // actionableUnusedLeft, not raw unusedLeft — the deferred 17 aren't being
-  // touched, so they shouldn't be projected as generating new redo material
-  // yet. Using the raw count was silently inflating the redo pool with
-  // phantom growth from material that isn't in play.
-  const expectedFutureIncorrect = Math.round(actionableUnusedLeft * missRate);
-  const markedCorrectRate = Math.max(0, Math.min(1, (settings.markedCorrect||0) / usedSnapshot));
-  const expectedFutureMarkedCorrect = Math.round(actionableUnusedLeft * markedCorrectRate);
-  const knownRedoLeft = Math.max(0, (settings.incorrect||0) + (settings.markedCorrect||0) - redoProgress);
-  const redoLeft = knownRedoLeft + expectedFutureIncorrect + expectedFutureMarkedCorrect;
-  const remaining = actionableUnusedLeft + redoLeft;
-
-  const daysLeft = getStudyDaysLeft();
-
-  // ── REDO PACE (Aug 3 rewrite) — the one number that matters now that
-  // first pass is done. Old unused-deadline + redo-flow-vs-generation split
-  // existed to separate two different problems while both were live
-  // simultaneously; there's only one pool left, so there's only one line.
-  // Clean forward math, not a deficit carried from whenever tracking started.
-  const redoPerDay = daysLeft>0 ? redoLeft/daysLeft : redoLeft;
-  const suggested = Math.max(40, Math.ceil(redoPerDay/5)*5); // round to nearest 5, 40 floor
-
-  const trailing = getTrailingSplitAvg(5);
-  const redoAvg = trailing ? trailing.redoAvg : null;
-  const studyEnd = new Date(STUDY_END+'T00:00:00');
-  const nowMid = new Date(); nowMid.setHours(0,0,0,0);
-  let status='ontrack', txt='';
-  if(redoLeft<=0){
-    status='ahead'; txt='Redo pool cleared. Light review or move to the deferred set.';
-  } else if(redoAvg===null){
-    status='ontrack'; txt=`No trailing data yet — log today's redo count to start tracking pace. Need ~${suggested}/day to clear ${redoLeft} by ${fmtMonthDay(STUDY_END)}.`;
-  } else if(redoAvg<=0){
-    status='crit'; txt=`0/day trailing over ${trailing.days}d — ${redoLeft} redo won't move without logging. Target ${suggested}/day.`;
-  } else {
-    const daysToFinish = redoLeft/redoAvg;
-    const projFinish = new Date(nowMid); projFinish.setDate(nowMid.getDate()+Math.ceil(daysToFinish));
-    const daysLate = Math.round((projFinish-studyEnd)/864e5);
-    const dateStr = projFinish.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    if(daysLate<=-2){ status='ahead'; txt=`${redoAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 clears ~${dateStr}, ahead of ${fmtMonthDay(STUDY_END)}. Could ease off ${suggested}/day or bank the buffer.`; }
-    else if(daysLate<=0){ status='ontrack'; txt=`${redoAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 clears ~${dateStr}, on pace for ${fmtMonthDay(STUDY_END)}.`; }
-    else {
-      const daysToEnd = Math.max(1, Math.round((studyEnd-nowMid)/864e5));
-      const neededPace = Math.ceil(redoLeft / daysToEnd);
-      status = daysLate>5 ? 'crit' : 'behind';
-      txt = `${redoAvg.toFixed(0)}/day trailing (${trailing.days}d) \u2192 projects to ~${dateStr}, ${daysLate}d past ${fmtMonthDay(STUDY_END)}. Need ${neededPace}/day to close it.`;
-    }
-  }
-
-  return {cum, unusedLeft, actionableUnusedLeft, deferredCount: settings.deferredCount||0,
-          redoLeft, remaining, daysLeft, suggested, redoPerDay, status, txt,
-          knownRedoLeft, expectedFutureIncorrect, missRatePct: missRate*100,
-          expectedFutureMarkedCorrect, markedCorrectPct: markedCorrectRate*100,
-          trailingDays: trailing?trailing.days:0, redoAvg,
-          totalDone: settings.baselineUsed!=null ? settings.baselineUsed + cum : UW_DEFAULT.histDone + cum};
-}
-function firstLoggedDate(){
-  const start=new Date(TRACKER_START+'T00:00:00'); const today=new Date(); today.setHours(0,0,0,0);
-  let d=new Date(start);
-  while(d<=today){ const day=loadDay(localDateStr(d));
-    if(day && parseInt(day.uworld?.done||0)>0) return localDateStr(d);
-    d.setDate(d.getDate()+1); }
-  return null;
-}
-function studyDaysBetween(a,b){
-  // Same floating-day-off ratio applied retrospectively: this represents
-  // *expected* study days over a span, not literal calendar days, since we
-  // don't track which specific day was the off day each week.
-  const d=new Date(a+'T00:00:00'); const end=new Date(b+'T00:00:00');
-  if(d>end) return 1;
-  const calendarDays = Math.round((end-d)/864e5) + 1;
-  return Math.max(1, Math.round(calendarDays * STUDY_DAYS_PER_WEEK/7));
-}
-
 // ── CYCLE AUTO-SUGGEST ─────────────────────────────────────────────────────
 // Finds the last cycle day you actually logged (any past day with cycleDay set)
 // and suggests the next one. Handles lapses gracefully: it only advances from
@@ -1576,28 +1077,6 @@ function computeSoftFatigue(){
   return {count, hot: count>=2};
 }
 
-// Consecutive-day streaks. Past days are immutable and counted first; today
-// (live in-memory state, which may not be saved to storage yet) only adds
-// to the streak if it already qualifies — it never breaks a streak just
-// because the day isn't over yet.
-function computeStreaks(){
-  const today = new Date(); today.setHours(0,0,0,0);
-  function streakFor(predicate){
-    let streak = 0;
-    for(let i=1;i<60;i++){
-      const d = new Date(today); d.setDate(today.getDate()-i);
-      const day = loadDay(localDateStr(d));
-      if(!day || !predicate(day)) break;
-      streak++;
-    }
-    if(predicate(state)) streak++;
-    return streak;
-  }
-  const proteinStreak = streakFor(day => isChecked(day.checked, 'prot'));
-  const uworldStreak = streakFor(day => parseInt((day.uworld && day.uworld.done)||0) >= 40);
-  return {proteinStreak, uworldStreak};
-}
-
 // ── COACH LINE (single adaptive nudge for today) ───────────────────────────
 function computeCoach() {
   const bits=[];
@@ -1608,16 +1087,6 @@ function computeCoach() {
   if(cd==='d5') bits.push('Day 5 lateral raises stay <b>submaximal (RIR 2–3)</b> — protect tomorrow\'s Day 6.');
   if(cd==='d3') bits.push('Legs today: <b>no stairmaster</b> before or after, and Day 4 cardio should skip lower-body-heavy work.');
   if(cd==='d6') bits.push('Day 6 is your <b>primary lateral delt</b> session — final cable raise set to failure.');
-
-  // UWorld trajectory — the coach line was training-only before Jul 27;
-  // this was the biggest gap, since study pace can be more time-critical
-  // than any single training cue most days. Updated Aug 3 for the
-  // redo-only single-status model.
-  const studyC = computeStudy();
-  if(studyC.status==='crit')
-    bits.push(`UWorld redo pace is <b>critically behind</b> ${fmtMonthDay(STUDY_END)} — this is the one to protect today.`);
-  else if(studyC.status==='behind')
-    bits.push(`UWorld redo pace is <b>slightly behind</b> ${fmtMonthDay(STUDY_END)} — worth closing today rather than letting it drift.`);
 
   // Yesterday's signals — a bad crash or short night carries into today.
   const yesterdayObj = (() => {
@@ -1661,7 +1130,6 @@ function renderHeader() {
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   document.getElementById('hdrDate').textContent = days[now.getDay()]+' '+months[now.getMonth()]+' '+now.getDate();
-  document.getElementById('hdrExam').textContent = getDaysLeft()+'d to ABIM';
 }
 
 function renderWeekly() {
@@ -1675,22 +1143,25 @@ function renderWeekly() {
     const d = new Date(mon); d.setDate(mon.getDate()+i);
     const isFut = d > today, isToday = d.getTime()===today.getTime();
     const data = loadDay(localDateStr(d));
-    let pct=0, uwDone=0, tag='';
-    if(data && SECTIONS[data.dayType||'training']){
+    let pct=0, tag='';
+    if(data && SECTIONS[effectiveDayType(data)]){
       // FIXED (Aug 12): was using s.items (includes optional items like
       // Ensure/Adderall/the temp-optional steam items), while the top
       // progress bar, CSV export, and soft-fatigue signal all correctly use
       // requiredItems(s). Same day was showing two different percentages
       // depending which part of the dashboard you looked at.
-      const all = SECTIONS[data.dayType].flatMap(s=>requiredItems(s));
+      // FIXED (Aug 31): was reading data.dayType directly instead of
+      // effectiveDayType(data), so a cardio day with true-rest toggled on
+      // showed the cardio checklist's percentage here while every other view
+      // correctly showed rest's. Same bug pattern as the Aug 12 fix above.
+      const all = SECTIONS[effectiveDayType(data)].flatMap(s=>requiredItems(s));
       const done = all.filter(it=>isChecked(data.checked,it.id)).length;
       pct = all.length>0?Math.round(done/all.length*100):0;
-      uwDone = parseInt(data.uworld?.done||0);
-      tag = data.cycleDay ? CYCLE.find(c=>c.id===data.cycleDay)?.label.split(' ')[0]||'' : '';
+      tag = data.cycleDay ? CYCLE.find(c=>c.id===data.cycleDay)?.label.split(' ')[0]||'' : (effectiveDayType(data)==='rest' ? 'REST' : '');
     }
     const div = document.createElement('div');
     div.className='wd'+(isToday?' today':'')+((!isFut&&pct===100)?' done':'');
-    div.innerHTML=`<div class="wd-dow">${dl[i]}</div><div class="wd-date">${d.getDate()}</div><span class="wd-tag" style="${tag?'':'opacity:.2'}">${tag||'·'}</span><div class="wd-pct">${isFut?'—':pct+'%'}</div><div class="wd-uw">${(!isFut&&uwDone)?uwDone+'q':''}</div>`;
+    div.innerHTML=`<div class="wd-dow">${dl[i]}</div><div class="wd-date">${d.getDate()}</div><span class="wd-tag" style="${tag?'':'opacity:.2'}">${tag||'·'}</span><div class="wd-pct">${isFut?'—':pct+'%'}</div>`;
     if(!isFut){ div.style.cursor='pointer'; div.onclick=()=>openDayDetail(localDateStr(d), isToday); }
     strip.appendChild(div);
   }
@@ -1722,22 +1193,6 @@ function openDayDetail(dateStr, isToday){
     <div class="dd-row"><span class="dd-k">Steps</span><span class="dd-v">${m.steps?Math.round(m.steps).toLocaleString():'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Weight</span><span class="dd-v">${m.weight?m.weight+' lbs':'—'}</span></div>
     <div class="dd-row"><span class="dd-k">Water</span><span class="dd-v">${day.water||0}/${W_TARGETS[dt]||5} bottles (${ozToMl((day.water||0)*32)}/${ozToMl((W_TARGETS[dt]||5)*32)}mL)</span></div>
-    ${isToday
-      ? `<div class="dd-row"><span class="dd-k">UWorld</span><span class="dd-v">${(day.uworld&&day.uworld.done)||0} redo done</span></div>`
-      : `<div class="dd-notes">
-          <div class="dd-notes-lbl">UWorld <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">— editable</span></div>
-          <div class="uw-inputs" style="margin-top:4px">
-            <div class="uw-ig"><div class="uw-il">Redo done</div><input class="uw-in" type="number" id="ddUwRedo" min="0" placeholder="0" value="${(day.uworld&&day.uworld.redoDone)||''}"></div>
-            <div class="uw-ig"><div class="uw-il">Wrong</div><input class="uw-in" type="number" id="ddUwWrong" min="0" placeholder="0" value="${(day.uworld&&day.uworld.redoWrong)||''}"></div>
-            <div class="uw-ig"><div class="uw-il">Mkd-correct</div><input class="uw-in" type="number" id="ddUwMc" min="0" placeholder="0" value="${(day.uworld&&day.uworld.redoMarkedCorrect)||''}"></div>
-          </div>
-          ${(day.uworld&&day.uworld.unusedDone) ? `<div class="uw-inputs" style="margin-top:4px">
-            <div class="uw-ig"><div class="uw-il">Unused done <span style="text-transform:none;font-weight:400;">(legacy — pre-Aug 3 only)</span></div><input class="uw-in" type="number" id="ddUwUnused" min="0" placeholder="0" value="${day.uworld.unusedDone}"></div>
-          </div>` : `<input type="hidden" id="ddUwUnused" value="">`}
-          <button class="sync-alt" style="margin-top:6px" onclick="saveDayUworld('${dateStr}')">Save UWorld</button>
-          <div class="anki-sub" id="ddUwStatus" style="margin-top:4px"></div>
-        </div>`}
-    <div class="dd-row"><span class="dd-k">Anki</span><span class="dd-v">${(day.anki&&day.anki.done)||0} done</span></div>
     ${day.crashSeverity?`<div class="dd-row"><span class="dd-k">Crash severity</span><span class="dd-v">${day.crashSeverity}</span></div>`:''}
     ${isToday
       ? (day.notes?`<div class="dd-notes"><div class="dd-notes-lbl">Notes</div><div class="dd-notes-txt">${day.notes.replace(/</g,'&lt;')}</div></div>`:'')
@@ -1777,7 +1232,7 @@ function closeDayDetail(){
   document.getElementById('dayDetailModal').classList.remove('show');
 }
 // Notes-only editing for past days — deliberately doesn't touch checklist
-// items or timestamps, since those feed streaks and the deload engine and
+// items or timestamps, since those feed the readiness/deload engine and
 // retroactive edits there would get complicated fast. Notes are just text.
 function saveDayNote(dateStr){
   const day = loadDay(dateStr);
@@ -1787,38 +1242,6 @@ function saveDayNote(dateStr){
   try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
   const status = document.getElementById('ddNoteStatus');
   if(status) status.textContent = 'Saved ✓';
-}
-function saveDayUworld(dateStr){
-  const day = loadDay(dateStr);
-  if(!day) return;
-  if(!day.uworld) day.uworld = {};
-  const uEl = document.getElementById('ddUwUnused');
-  const rEl = document.getElementById('ddUwRedo');
-  const wEl = document.getElementById('ddUwWrong');
-  const mEl = document.getElementById('ddUwMc');
-  const unusedDone = uEl ? uEl.value : '';
-  const redoDone = rEl ? rEl.value : '';
-  day.uworld.unusedDone = unusedDone;
-  day.uworld.redoDone = redoDone;
-  day.uworld.redoWrong = wEl ? wEl.value : '';
-  day.uworld.redoMarkedCorrect = mEl ? mEl.value : '';
-  // FIXED (Aug 12): was unusedDone+redoDone, which stopped matching reality
-  // the moment syncUworldDone() switched to redo-only on Aug 4 — this was
-  // silently able to produce a different "done" total for a corrected past
-  // day than the live app would ever produce for the same numbers today.
-  day.uworld.done = parseInt(redoDone||0);
-  try{ localStorage.setItem('pplua_'+dateStr, JSON.stringify(day)); }catch(e){}
-  // Re-anchor the pool baseline to the corrected total — otherwise this
-  // correction gets silently double-subtracted from unusedLeft later,
-  // the same way a fresh pool-number entry re-anchors it today. Both split
-  // baselines need resetting, same fix as the bind handlers below.
-  settings.poolBaselineCum = getCumDone();
-  settings.poolBaselineCumUnused = getCumUnusedDone();
-  settings.poolBaselineCumRedo = getCumRedoDone();
-  saveSettings();
-  const status = document.getElementById('ddUwStatus');
-  if(status) status.textContent = 'Saved ✓ — '+day.uworld.done+' redo done';
-  renderUWorld(); renderWeekly(); renderStreaks();
 }
 
 function renderCycle() {
@@ -1941,7 +1364,6 @@ function renderTrend(){
   }
 
   let html = '';
-  html += row('UWorld/day', t.thisWeek.uwPerDay, t.lastWeek.uwPerDay, v=>v.toFixed(0), 'up');
   html += row('Sleep avg', t.thisWeek.sleepAvg, t.lastWeek.sleepAvg, v=>v.toFixed(1)+'h', 'up');
   html += row('Resting HR avg', t.thisWeek.hrAvg, t.lastWeek.hrAvg, v=>v.toFixed(0)+'bpm', 'down');
   if(t.weightDelta!=null){
@@ -1957,10 +1379,47 @@ function renderTrend(){
   document.getElementById('trendRows').innerHTML = html;
 }
 
-function renderStreaks() {
-  const s = computeStreaks();
-  document.getElementById('streakProtein').textContent = s.proteinStreak;
-  document.getElementById('streakUworld').textContent = s.uworldStreak;
+// ── HEALTH TAB: 14-DAY HISTORY ───────────────────────────────────────────
+// Plain recent-history list, not a chart — this app has no charting library
+// and doesn't need one for 14 rows. Shows every day in the window even if
+// nothing was logged, so a real sync gap is visible as dashes, not silently
+// skipped, same reasoning as the weekly strip's future-day handling.
+function renderHealthHistory(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const rows = [`<div class="hh-row hh-head"><span class="hh-d">Date</span><span class="hh-v">Weight</span><span class="hh-v">Sleep</span><span class="hh-v">RHR</span><span class="hh-v">Steps</span></div>`];
+  for(let i=13;i>=0;i--){
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    const day = loadDay(localDateStr(d));
+    const m = (day && day.metrics) || {};
+    const vs = validSleepHours(m);
+    const sleep = vs!=null ? vs.toFixed(1)+'h' : (m.sleep?'no-watch':'—');
+    const hr = m.hr ? Math.round(m.hr)+'bpm' : '—';
+    const steps = m.steps ? Math.round(m.steps).toLocaleString() : '—';
+    const weight = m.weight ? m.weight+'lb' : '—';
+    const label = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    rows.push(`<div class="hh-row"><span class="hh-d">${label}</span><span class="hh-v">${weight}</span><span class="hh-v">${sleep}</span><span class="hh-v">${hr}</span><span class="hh-v">${steps}</span></div>`);
+  }
+  document.getElementById('healthHistory').innerHTML = rows.join('');
+}
+
+// ── PROGRESS PHOTO / MEASUREMENT CHECK-IN ────────────────────────────────
+// Deliberately infrequent — settings-level, not a daily checklist item.
+// Amber past 35 days (roughly monthly plus slack), not a hard rule.
+function renderPhotoCheckin(){
+  const el = document.getElementById('photoCheckinStatus');
+  const last = settings.lastPhotoCheckin;
+  if(!last){ el.textContent = 'Never logged'; el.style.color = 'var(--am)'; return; }
+  const [y,m,d] = last.split('-').map(Number);
+  const lastDate = new Date(y,m-1,d);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysSince = Math.round((today-lastDate)/864e5);
+  el.textContent = daysSince<=0 ? 'Today' : `${daysSince}d ago`;
+  el.style.color = daysSince>35 ? 'var(--am)' : 'var(--t3)';
+}
+function logPhotoCheckin(){
+  settings.lastPhotoCheckin = todayKey();
+  saveSettings();
+  renderPhotoCheckin();
 }
 
 function renderMetrics() {
@@ -1999,77 +1458,6 @@ function renderWater() {
     cardio:'Cardio day: 4 bottles',
   })[edt];
   document.getElementById('waterSub').textContent = `${dayDesc} (${mlNow}/${mlTgt}mL) — auto-filled from sync`;
-}
-
-function renderUWorld() {
-  const c = computeStudy();
-  const redoDone = parseInt(state.uworld.redoDone||0);
-  // "done" stays in sync as just the redo count now — unused tracking is
-  // paused (not deleted) until the deferred set starts closer to the exam.
-  state.uworld.done = redoDone;
-
-  document.getElementById('uwPhaseTag').textContent = getPhase().label;
-  document.getElementById('uwWeekLbl').textContent = `Week: ${getWeekDone()}/300`;
-  document.getElementById('uwCumLbl').textContent = `Total: ${c.totalDone} done`;
-  document.getElementById('uwRedo').textContent = c.redoLeft;
-  document.getElementById('uwDaysLeft').textContent = c.daysLeft;
-  document.getElementById('uwSuggest').textContent = c.suggested;
-  document.getElementById('uwDeferred').textContent = c.deferredCount;
-
-  const rMin = DAILY_TARGET.redoMin, rMax = DAILY_TARGET.redoMax;
-  document.getElementById('uwRedoTargetLbl').textContent = `Redo: ${redoDone}/${rMin}\u2013${rMax}`;
-  document.getElementById('uwProgRedo').style.width = Math.min(100, Math.round(redoDone/rMin*100))+'%';
-
-  const wrongToday = parseInt(state.uworld.redoWrong||0);
-  const mcToday = parseInt(state.uworld.redoMarkedCorrect||0);
-  const acc = redoDone>0 ? Math.round((redoDone-wrongToday)/redoDone*100) : null;
-  document.getElementById('uwTodayBreakdown').textContent =
-    `Today: ${redoDone} redo \u00b7 ${wrongToday} wrong \u00b7 ${mcToday} mkd-correct \u00b7 ${acc===null?'\u2014':acc+'%'} accuracy`;
-  document.getElementById('uwConfirmedHard').textContent = `Confirmed hard (wrong during redo, all-time): ${getCumRedoWrong()}`;
-
-  const paceR = document.getElementById('uwPaceRedo');
-  paceR.className = 'uw-pace '+c.status;
-  document.getElementById('uwPaceRedoTxt').innerHTML = c.txt;
-
-  if(document.activeElement !== document.getElementById('poolUnused')) document.getElementById('poolUnused').value = settings.unused;
-  if(document.activeElement !== document.getElementById('poolIncorrect')) document.getElementById('poolIncorrect').value = settings.incorrect;
-  if(document.activeElement !== document.getElementById('poolMarked')) document.getElementById('poolMarked').value = settings.marked;
-  if(document.activeElement !== document.getElementById('poolMarkedCorrect')) document.getElementById('poolMarkedCorrect').value = settings.markedCorrect;
-  if(document.activeElement !== document.getElementById('poolDeferred')) document.getElementById('poolDeferred').value = settings.deferredCount;
-  if(document.activeElement !== document.getElementById('poolTotal')) document.getElementById('poolTotal').value = settings.totalQuestions;
-  document.getElementById('missRateDisplay').textContent = c.missRatePct.toFixed(1)+'%';
-
-  renderStudyExplain(c);
-}
-
-// Builds a plain-language, numbers-shown breakdown of exactly how today's
-// suggested question count was derived — regenerated live from the same
-// values computeStudy() just used, so it can never drift out of sync with
-// the number actually shown above.
-function renderStudyExplain(c){
-  const parts = [];
-  parts.push(`<b style="color:var(--t1)">Daily structure (set Aug 3):</b> redo-only now, ${DAILY_TARGET.redoMin}\u2013${DAILY_TARGET.redoMax}/day, timed, no tutor mode. Unused/first-pass tracking is paused — the 3-line unused/redo/overall split existed to separate two problems that only mattered while both were live at once; there's one pool left, so there's one line.`);
-  parts.push(`<b style="color:var(--t1)">Known redo backlog:</b> ${c.knownRedoLeft} (incorrect + marked-but-correct — the true union of incorrect ∪ marked, not a raw sum, since marked and incorrect overlap).`);
-  parts.push(`<b style="color:var(--t1)">Projected additional redo:</b> ${c.actionableUnusedLeft} actionable unused × ${c.missRatePct.toFixed(1)}% miss rate = <b style="color:var(--t1)">~${c.expectedFutureIncorrect}</b> future incorrect, plus × ${c.markedCorrectPct.toFixed(1)}% marked-but-correct rate = <b style="color:var(--t1)">~${c.expectedFutureMarkedCorrect}</b> future marked-but-correct. Only counts the ${c.actionableUnusedLeft} actionable questions, not the ${c.deferredCount} deferred ones sitting untouched.`);
-  parts.push(`<b style="color:var(--t1)">Total remaining redo:</b> ${c.knownRedoLeft} known + ${c.expectedFutureIncorrect + c.expectedFutureMarkedCorrect} projected = <b style="color:var(--t1)">${c.redoLeft}</b>.`);
-  parts.push(`<b style="color:var(--t1)">Study days left:</b> ${c.daysLeft}, at 6 days/week with one floating day off, through ${fmtMonthDay(STUDY_END)}. Deferred set (${c.deferredCount}) planned for Aug 22\u201323, taper ${fmtMonthDay(TAPER_START)}, exam ${fmtMonthDay(EXAM)}.`);
-  parts.push(`<b style="color:var(--t1)">Forward pace:</b> ${c.redoLeft} ÷ ${c.daysLeft} days = <b style="color:var(--t1)">${c.redoPerDay.toFixed(1)}/day</b>, rounded up to ${c.suggested}/day. Clean forward math only — not a deficit carried from whenever tracking started.`);
-
-  document.getElementById('uwExplainBody').innerHTML = parts.map(p=>`<div style="margin-bottom:6px">${p}</div>`).join('');
-}
-
-function renderAnki() {
-  const done = parseInt(state.anki.done||0);
-  const due = parseInt(state.anki.due||0);
-  const pct = due>0 ? Math.min(100, Math.round(done/due*100)) : 0;
-  document.getElementById('ankiProg').style.width = pct+'%';
-  document.getElementById('ankiPct').textContent = due>0 ? (pct+'% done') : 'Set due cards';
-  const rem = Math.max(0, due-done);
-  document.getElementById('ankiSub').textContent = due>0 ?
-    (rem>0 ? `${rem} cards remaining today` : 'All due cards done ✓') :
-    'Set due cards, update done as you go';
-  if(document.activeElement !== document.getElementById('ankiDone')) document.getElementById('ankiDone').value = state.anki.done||'';
-  if(document.activeElement !== document.getElementById('ankiDue')) document.getElementById('ankiDue').value = state.anki.due||'';
 }
 
 // ── WORKOUT PAGE ────────────────────────────────────────────────────────────
@@ -2166,8 +1554,7 @@ function renderChecklist() {
       <div class="sec-items${isCol?' hi':''}" id="items_${sec.id}">${items}</div>`;
     container.appendChild(div);
   });
-  updateProgress();
-  updateBanner();
+  renderPresence();
 }
 function toggleItem(id) {
   const secs = SECTIONS[effectiveDayType(state)];
@@ -2181,7 +1568,7 @@ function toggleItem(id) {
   } else {
     state.checked[id] = {done:true, at:nowTimeString()};
   }
-  saveState(); renderChecklist(); renderStreaks(); renderCoach();
+  saveState(); renderChecklist(); renderCoach();
 }
 function editItemTime(id, val){
   if(!isChecked(state.checked, id)) return;
@@ -2199,18 +1586,16 @@ function toggleSection(id) {
   document.getElementById('items_'+id)?.classList.toggle('hi', !!state.collapsed[id]);
   document.getElementById('chev_'+id)?.classList.toggle('cl', !!state.collapsed[id]);
 }
-function updateProgress() {
-  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>requiredItems(s));
-  const done = all.filter(it=>isChecked(state.checked,it.id)).length;
-  const pct = all.length>0 ? Math.round(done/all.length*100) : 0;
-  document.getElementById('progBar').style.width = pct+'%';
-  document.getElementById('progTxt').textContent = done+'/'+all.length+' done';
-  document.getElementById('progPct').textContent = pct+'%';
-}
-function updateBanner() {
-  const all = SECTIONS[effectiveDayType(state)].flatMap(s=>requiredItems(s));
-  const done = all.filter(it=>isChecked(state.checked,it.id)).length;
-  document.getElementById('doneBanner').classList.toggle('show', done===all.length && all.length>0);
+// Loose presence log, not a completion score. Each category pill lights up
+// once anything in it is logged today, required or optional alike, there's
+// no total to hit and nothing to fall short of.
+function renderPresence() {
+  const secs = SECTIONS[effectiveDayType(state)];
+  const wrap = document.getElementById('presenceRow');
+  wrap.innerHTML = secs.map(s=>{
+    const any = s.items.some(it=>isChecked(state.checked,it.id));
+    return `<span class="presence-pill${any?' active':''}">${s.label}</span>`;
+  }).join('');
 }
 
 // ── FULL DATA EXPORT (CSV backup) ───────────────────────────────────────────
@@ -2220,7 +1605,7 @@ function updateBanner() {
 function generateFullCSV(){
   const keys = Object.keys(localStorage).filter(k=>k.startsWith('pplua_') && k!=='pplua_settings').sort();
   const header = ['date','dayType','cycleDay','realRest','checklist_done','checklist_total','checklist_pct',
-    'sleep_h','resting_hr','steps','weight_lbs','water_bottles','water_oz','water_ml','uworld_done','anki_done','crash_severity','notes',
+    'sleep_h','resting_hr','steps','weight_lbs','water_bottles','water_oz','water_ml','crash_severity','notes',
     ...CORRELATION_ITEMS.map(ci=>ci.id+'_time')];
   const rows = [header.join(',')];
   keys.forEach(k=>{
@@ -2238,7 +1623,6 @@ function generateFullCSV(){
       doneCnt, all.length, pct,
       m.sleep||'', m.hr||'', m.steps||'', m.weight||'',
       day.water!=null?day.water:'', day.waterOz!=null?day.waterOz:'', day.waterOz!=null?ozToMl(day.waterOz):'',
-      (day.uworld&&day.uworld.done)||'', (day.anki&&day.anki.done)||'',
       day.crashSeverity||'', day.notes||'',
       ...CORRELATION_ITEMS.map(ci=>getCheckedTime(day.checked, ci.id)||'')
     ];
@@ -2288,9 +1672,7 @@ function generateExport(){
     const steps = m.steps ? Math.round(m.steps) : '—';
     const waterBottlesVal = day.water!=null?day.water:0;
     const water = waterBottlesVal + '/' + (W_TARGETS[dt]||5) + ' (' + ozToMl(waterBottlesVal*32) + 'mL)';
-    const uw = (day.uworld && day.uworld.done) ? day.uworld.done : '0';
-    const ak = (day.anki && day.anki.done) ? day.anki.done : '0';
-    lines.push(`${ds} | ${dtLabel} | ${cyc} | checklist ${pct}% (${doneCnt}/${all.length}) | sleep ${sleep} | rHR ${hr} | steps ${steps} | water ${water} | uworld ${uw} | anki ${ak}`);
+    lines.push(`${ds} | ${dtLabel} | ${cyc} | checklist ${pct}% (${doneCnt}/${all.length}) | sleep ${sleep} | rHR ${hr} | steps ${steps} | water ${water}`);
     const times = CORRELATION_ITEMS
       .filter(ci=>isChecked(day.checked, ci.id))
       .map(ci=>{
@@ -2303,7 +1685,6 @@ function generateExport(){
   }
   const r = computeReadiness();
   const trigLines = r.triggers.map(t=>`  - ${t.hot?'[ACTIVE] ':'[clear]  '}${t.label}`).join('\n');
-  const s = computeStudy();
   const out = `PPLUA WEEKLY EXPORT — generated ${todayKey()}
 
 DAILY LOG (last 7 days)
@@ -2313,13 +1694,6 @@ READINESS (app-computed)
 Level: ${r.level} (${r.hotCount} active trigger${r.hotCount===1?'':'s'})
 ${trigLines}
 HR baseline: ${settings.hrBaseline} bpm
-
-STUDY STATUS (app-computed)
-Pool remaining: ${s.unusedLeft} first-pass, ${s.redoLeft} redo
-Total done (incl. pre-tracker): ${s.totalDone}
-Days to exam: ${getDaysLeft()}
-Suggested pace: ${s.suggested}/day
-Status: ${s.status} — ${s.txt}
 
 Paste this to Claude along with any JEFIT export or notes on how sessions felt, and ask what to adjust.`;
   const ta = document.getElementById('exportText');
@@ -2356,11 +1730,15 @@ function setDayType(t) {
   state.dayType = t;
   state.checked = {};
   if(t!=='cardio') state.realRest=false;
-  // if the chosen cycle day conflicts with manual type, clear cycle alignment note only
+  // A true Rest day never consumes a rotation slot, regardless of whether a
+  // cycle day was already selected first. Cleared here so suggestCycleDay()'s
+  // backward search skips this day and resumes from the last real cycle day.
+  if(t==='rest') state.cycleDay='';
   saveState();
   setDayTypeButtons();
   renderRealRestUI();
   renderWater(); renderChecklist(); renderCoach(); renderSync();
+  renderCycle();
 }
 function setDayTypeButtons(){
   ['Training','Rest','Cardio'].forEach(n => document.getElementById('btn'+n).classList.toggle('active',state.dayType===n.toLowerCase()));
@@ -2386,12 +1764,12 @@ function renderRealRestUI(){
 
 // ── TABS ────────────────────────────────────────────────────────────────────
 function switchTab(name){
-  ['today','train','study','setup','tasks'].forEach(t=>{
+  ['today','train','health','setup','tasks'].forEach(t=>{
     document.getElementById('page-'+t).classList.toggle('active', t===name);
     document.getElementById('tab-'+t).classList.toggle('active', t===name);
   });
   if(name==='train'){ previewDay=null; renderWorkoutPage(); }
-  if(name==='study'){ renderUWorld(); renderAnki(); }
+  if(name==='health'){ renderTrend(); renderHealthHistory(); renderPhotoCheckin(); }
   if(name==='tasks'){ renderTasksToday(); renderTasksOngoing(); renderTopicsReview(); }
   window.scrollTo(0,0);
 }
@@ -2403,7 +1781,7 @@ function openShortcut(){ window.location.href = 'shortcuts://run-shortcut?name=P
 function resetDay(){
   if(!confirm('Reset all checkmarks and water for today?')) return;
   state.checked={}; state.water=0;
-  saveState(); renderWater(); renderChecklist(); updateProgress();
+  saveState(); renderWater(); renderChecklist(); renderPresence();
 }
 
 // ── INPUT HANDLERS ──────────────────────────────────────────────────────────
@@ -2413,54 +1791,6 @@ bind('metWeight',function(){ if(!isMonday())return; state.metrics.weight=this.va
 bind('metSleep', function(){ state.metrics.sleep=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 bind('metHR',    function(){ state.metrics.hr=this.value; saveState(); renderSync(); renderReadiness(); renderCoach(); });
 
-function syncUworldDone(){
-  // Unused tracking paused (Aug 3) — done is just redo now. state.uworld.unusedDone
-  // stays in the data model untouched (old days keep their real values,
-  // CSV/history unaffected), it's just not written to from the UI anymore.
-  state.uworld.done = parseInt(state.uworld.redoDone||0);
-}
-// ── REDO BLOCK LOGGING (Aug 4) ───────────────────────────────────────────
-// Replaces the single "Redo done today" input. Blocks run whatever size
-// feels right that session (10, 25, 15...) — this adds each one to the
-// day's running totals instead of making you sum them in your head first.
-// Wrong/marked-correct are optional per block (blank = 0), so a quick
-// "just did 10 more" still logs fast without forcing detail every time.
-function addRedoBlock(){
-  const sizeEl = document.getElementById('blkSize');
-  const wrongEl = document.getElementById('blkWrong');
-  const mcEl = document.getElementById('blkMarkedCorrect');
-  const size = parseInt(sizeEl.value||0);
-  if(!size || size<=0) return;
-  const wrong = Math.max(0, Math.min(size, parseInt(wrongEl.value||0)));
-  const mc = parseInt(mcEl.value||0);
-
-  state.uworld.redoDone = parseInt(state.uworld.redoDone||0) + size;
-  state.uworld.redoWrong = parseInt(state.uworld.redoWrong||0) + wrong;
-  state.uworld.redoMarkedCorrect = parseInt(state.uworld.redoMarkedCorrect||0) + mc;
-  state.uworld.lastBlock = {size, wrong, mc}; // one-deep undo, not a full history
-
-  sizeEl.value=''; wrongEl.value=''; mcEl.value='';
-  syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks();
-}
-function undoLastBlock(){
-  const last = state.uworld.lastBlock;
-  if(!last) return;
-  state.uworld.redoDone = Math.max(0, parseInt(state.uworld.redoDone||0) - last.size);
-  state.uworld.redoWrong = Math.max(0, parseInt(state.uworld.redoWrong||0) - last.wrong);
-  state.uworld.redoMarkedCorrect = Math.max(0, parseInt(state.uworld.redoMarkedCorrect||0) - last.mc);
-  state.uworld.lastBlock = null; // one-deep only — can't chain undos
-  syncUworldDone(); saveState(); renderUWorld(); renderWeekly(); renderStreaks();
-}
-
-bind('ankiDone',function(){ state.anki.done=this.value; saveState(); renderAnki(); });
-bind('ankiDue', function(){ state.anki.due=this.value; saveState(); renderAnki(); });
-
-bind('poolUnused',   function(){ settings.unused=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
-bind('poolIncorrect',function(){ settings.incorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
-bind('poolMarked',   function(){ settings.marked=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
-bind('poolMarkedCorrect', function(){ settings.markedCorrect=Math.max(0,parseInt(this.value||0)); settings.poolBaselineCum=getCumDone(); settings.poolBaselineCumUnused=getCumUnusedDone(); settings.poolBaselineCumRedo=getCumRedoDone(); saveSettings(); renderUWorld(); });
-bind('poolDeferred', function(){ settings.deferredCount=Math.max(0,parseInt(this.value||0)); saveSettings(); renderUWorld(); });
-bind('poolTotal',    function(){ settings.totalQuestions=Math.max(1,parseInt(this.value||UW_DEFAULT.total)); saveSettings(); renderUWorld(); });
 bind('dayNotes',     function(){ state.notes = this.value; saveState(); });
 
 // ── TASKS (Today's List + Ongoing) ──────────────────────────────────────────
@@ -2619,10 +1949,9 @@ function renderTasksOngoing(){
   }).join('');
 }
 
-// ── TOPICS TO REVIEW — same pattern as Ongoing, own storage key. Point is a
-// running list of specific sub-topics (e.g. "SJS/TEN vs DRESS") to pair with
-// the weak-subject-weighted UWorld blocks, not a duplicate of the subject
-// list itself.
+// ── TOPICS TO REVIEW — same pattern as Ongoing, own storage key. A running
+// list of specific things worth a closer look, not a duplicate of the
+// Ongoing list itself.
 function loadTopicsReview(){
   try{ const s = localStorage.getItem('ppluaTopicsReview'); return s?JSON.parse(s):[]; }
   catch(e){ return []; }
@@ -2696,12 +2025,11 @@ function init(){
   renderSync();
   renderReadiness();
   renderTrend();
+  renderHealthHistory();
+  renderPhotoCheckin();
   renderCoach();
-  renderStreaks();
   renderMetrics();
   renderWater();
-  renderUWorld();
-  renderAnki();
   setDayTypeButtons();
   renderRealRestUI();
   renderChecklist();
